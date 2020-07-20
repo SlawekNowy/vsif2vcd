@@ -1,7 +1,7 @@
 ﻿// Vsif2vcd_c++.cpp: definiuje punkt wejścia dla aplikacji.
 //
-
 #include "program.h"
+
 
 using namespace std;
 
@@ -20,7 +20,6 @@ int main(int argc, char* argv[]){
 	return ExitCode;
 }
 
-#include "thirdparty/vdf_parser.hpp"
 
 using boost::filesystem::path;
 using boost::filesystem::canonical;

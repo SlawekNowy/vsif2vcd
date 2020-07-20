@@ -5,7 +5,7 @@
 #include "gameinfo.hpp"
 #include "VSIF.hpp"
 
-using namespace GI;
+using namespace FileSystem;
 
 
 namespace Program {

@@ -1,11 +1,27 @@
+#ifdef ENABLE_TESTING
+
+#define BOOST_TEST_MODULE "testGameInfo"
+
+#define BOOST_TEST_MAIN
+#if !defined( WIN32 )
+#define BOOST_TEST_DYN_LINK
+#endif
+#include <boost/test/unit_test.hpp>
+#endif
+
+
+#include <typeinfo>
 #include "gameinfo.hpp"
 #include <boost/lexical_cast.hpp>
+
+
+
 
 #ifdef _WIN32
 #include <windows.h>
 #include <comdef.h>
 #elif __linux__
-
+#include <cstdlib>
 #elif __APPLE__ && __MACH__
 // TODO
 #endif
@@ -58,43 +74,53 @@ LONG GetStringRegKey(HKEY hKey, const std::wstring& strValueName, std::wstring& 
 }
 #endif
 
-void GI::CGameInfo::initGamepaths()
+template <typename K,typename V>
+struct CompareFirst
+{
+	CompareFirst(K val) : val_(val) {}
+	bool operator()(const std::pair<K, V>& elem) const {
+		return val_ == elem.first;
+	}
+private:
+	K val_;
+};
+void FileSystem::CGameInfo::initGamepaths()
 {
 	assert(memGI.name == "GameInfo"); 
 	bool isMultiPlayer =true;
 	//check if the key exists and it's singleplayer
-	if (memGI.attribs.find("type")!= memGI.attribs.end()) {
-		auto gameType = memGI.attribs.find("type")->second;
+	if (std::find_if(memGI.attribs.begin(), memGI.attribs.end(),CompareFirst<std::string,std::string>("type")) != memGI.attribs.end()) {
+		auto gameType = std::find_if(memGI.attribs.begin(), memGI.attribs.end(), CompareFirst<std::string, std::string>("type"))->second;
 		if (gameType == "singleplayer_only") {
 			isMultiPlayer = false;
 		}
 	}
-	auto fsNode = memGI.childs.find("FileSystem")->second;
-	if (fsNode->attribs.find("SteamAppID")->second !="") {
-		appID = boost::lexical_cast<int>(fsNode->attribs.find("SteamAppID")->second);
+	auto fsNode = std::find_if(memGI.childs.begin(),memGI.childs.end(),CompareFirst<std::string, std::shared_ptr<gameInfoKV>>("FileSystem"))->second;
+	if (std::find_if(fsNode->attribs.begin(), fsNode->attribs.end(), CompareFirst<std::string, std::string>("SteamAppId"))->second !="") {
+		appID = boost::lexical_cast<int>(std::find_if(fsNode->attribs.begin(), fsNode->attribs.end(), CompareFirst<std::string, std::string>("SteamAppId"))->second);
 	}
 	
-	auto searchPaths_raw = *(fsNode->childs.find("SearchPaths")->second);
+	//We have to use iterators for this one
+	auto searchPaths_raw = *(std::find_if(fsNode->childs.begin(), fsNode->childs.end(), CompareFirst<std::string, std::shared_ptr<gameInfoKV>>("SearchPaths"))->second);
 	
 
 
-	//We have to use iterators for this one
+	
 	for (auto iterator = searchPaths_raw.attribs.begin(); iterator != searchPaths_raw.attribs.end(); ++iterator) {
 		std::pair<std::string, std::string> path = *iterator;
 		PathID pPathID = resolvePathIDs(path.first);
-		searchPaths.insert(std::make_pair(pPathID,path.second));
+		searchPaths.emplace_back(pPathID,path.second);
 	}
-
 }
 
-void GI::CGameInfo::resolveLoadDir()
+void FileSystem::CGameInfo::resolveLoadDir()
 {
 	//TODO this might not have ending slash
 	for (auto iterator = searchPaths.begin(); iterator != searchPaths.end(); ++iterator) {
 		if ((iterator->second.find(BASEGAME_DIR_TMPL) != std::string::npos)) {
-			replace(iterator->second, BASEGAME_DIR_TMPL, baseDir);
+			replace(iterator->second, BASEGAME_DIR_TMPL, baseDir+"/");
 		}else if ((iterator->second.find(MODDIR_TMPL) != std::string::npos)) {
-			replace(iterator->second, MODDIR_TMPL, modDir);
+			replace(iterator->second, MODDIR_TMPL, modDir+"/");
 		}
 		else {
 			//assume we're loading from |gameinfo_path|
@@ -103,7 +129,7 @@ void GI::CGameInfo::resolveLoadDir()
 	}
 }
 
-bool GI::CGameInfo::replace(std::string& str, const std::string& from, const std::string& to) {
+bool FileSystem::CGameInfo::replace(std::string& str, const std::string& from, const std::string& to) {
 	size_t start_pos = str.find(from);
 	if (start_pos == std::string::npos)
 		return false;
@@ -111,19 +137,19 @@ bool GI::CGameInfo::replace(std::string& str, const std::string& from, const std
 	return true;
 }
 
-void GI::CGameInfo::prepareTmpDirectory()
+void FileSystem::CGameInfo::prepareTmpDirectory()
 {
 }
 
-void GI::CGameInfo::resolveBaseDir()
+void FileSystem::CGameInfo::resolveBaseDir()
 {
 	std::string steamDir;
 	std::vector<std::string> steamLibDirs;
 #ifdef _WIN32
 	HKEY hKey;
-#ifdef _M_AMD64 ||_x86_64_
+#if defined(_M_AMD64) || defined(_x86_64_)
 	LONG lRes = RegOpenKeyExW(HKEY_LOCAL_MACHINE,L"SOFTWARE\\Wow6432Node\\Valve\\Steam", 0, KEY_READ, &hKey);
-#elif  	_M_IX86 || _x86_
+#elif defined(_M_IX86) || defined(_x86_)
 	LONG lRes = RegOpenKeyExW(HKEY_LOCAL_MACHINE, L"SOFTWARE\\\Valve\\Steam", 0, KEY_READ, &hKey);
 #endif
 	
@@ -135,17 +161,22 @@ void GI::CGameInfo::resolveBaseDir()
 	steamDir = std::string(b);
 
 #elif __linux__
-
+	//under normal conditions check for presence of ~/.steam/root
+	// resolve the symlink and set it as steamDir
+	char* steamPath = getenv("HOME") + "/.steam/root";
+	steamDir = boost::filesystem::canonical(steamPath);
 #elif __APPLE__ && __MACH__
 	// TODO
+	//Assume this is in ~/Applications where instructed.
+	//If not... um well.
 #endif
 	steamLibDirs.push_back(steamDir);
 	std::ifstream VDF;
 	VDF.open(steamDir+"/steamapps/libraryfolders.vdf");
+
 	auto libraryFoldersVDF = tyti::vdf::read< tyti::vdf::multikey_object>(VDF);
 	VDF.close();
 
-	libraryFoldersVDF = *(libraryFoldersVDF.childs.find("LibraryFolders")->second);
 	steamLibDirs.reserve(libraryFoldersVDF.attribs.size() - 2);
 	for (auto iterator = libraryFoldersVDF.attribs.begin(); iterator != libraryFoldersVDF.attribs.end(); ++iterator) {
 		std::pair<std::string, std::string> pair = *iterator;
@@ -162,29 +193,29 @@ void GI::CGameInfo::resolveBaseDir()
 
 }
 
-GI::PathID GI::CGameInfo::resolvePathIDs(std::string input) {
+FileSystem::PathID FileSystem::CGameInfo::resolvePathIDs(std::string input) {
 	boost::char_separator<char> sep("+");
 	typedef boost::tokenizer<boost::char_separator<char> >
 		tokenizer;
 
-	GI::PathID out=(GI::PathID)0;
+	FileSystem::PathID out=(FileSystem::PathID)0;
 	tokenizer tokens(input, sep);
 	for (tokenizer::iterator tok_iter = tokens.begin();
 		tok_iter != tokens.end(); ++tok_iter) {
 		if (*tok_iter == "game" || *tok_iter == "vpk")
-			out |= GI::PathID::GAME;
+			out |= FileSystem::PathID::GAME;
 		else if (*tok_iter == "game_write")
-			out |= GI::PathID::GAME_WRITE;
+			out |= FileSystem::PathID::GAME_WRITE;
 		else if (*tok_iter == "gamebin")
-			out |= GI::PathID::GAMEBIN;
+			out |= FileSystem::PathID::GAMEBIN;
 		else if (*tok_iter == "mod")
-			out |= GI::PathID::MOD;
+			out |= FileSystem::PathID::MOD;
 		else if (*tok_iter == "mod_write")
-			out |= GI::PathID::MOD_WRITE;
+			out |= FileSystem::PathID::MOD_WRITE;
 		else if (*tok_iter == "platform")
-			out |= GI::PathID::PLATFORM;
+			out |= FileSystem::PathID::PLATFORM;
 		else if (*tok_iter == "download")
-			out |= GI::PathID::DOWNLOAD;
+			out |= FileSystem::PathID::DOWNLOAD;
 
 	}
 
@@ -192,7 +223,7 @@ GI::PathID GI::CGameInfo::resolvePathIDs(std::string input) {
 
 }
 
-std::string GI::CGameInfo::getPathFromAppID(int appID, std::vector<std::string> steamLibDirs)
+std::string FileSystem::CGameInfo::getPathFromAppID(int appID, std::vector<std::string> steamLibDirs)
 {
 	//The game cannot be installed in more than one location.
 	for (auto iterator = steamLibDirs.begin(); iterator != steamLibDirs.end(); ++iterator) {
@@ -204,10 +235,17 @@ std::string GI::CGameInfo::getPathFromAppID(int appID, std::vector<std::string> 
 		auto appManifest = tyti::vdf::read< tyti::vdf::multikey_object>(VDF);
 		VDF.close();
 
-		appManifest = *(appManifest.childs.find("AppState")->second);
+		//appManifest = *(appManifest.childs.find("AppState")->second);
 		return gamePath + "/steamapps/common/" + appManifest.attribs.find("installdir")->second;
 	}
-	
+	return std::string("");
 }
 
+
+#ifdef ENABLE_TESTING
+BOOST_AUTO_TEST_CASE(testGI) {
+
+	FileSystem::CGameInfo gameInfo("E:/source-sdk-2013/mp/game/mod_hl2mp");
+}
+#endif
 

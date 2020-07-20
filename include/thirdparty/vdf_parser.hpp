@@ -31,6 +31,7 @@
 #include <memory>
 #include <unordered_set>
 #include <algorithm>
+#include <iterator>
 
 #include <system_error>
 #include <exception>
@@ -136,7 +137,7 @@ namespace tyti
                 std::basic_string<charT> print() const { return std::basic_string<charT>(t, TYTI_L(charT, '\t')); }
                 inline CONSTEXPR tabs operator+(size_t i) const NOEXCEPT
                 {
-                    return tabs(i + 1);
+                    return tabs(t + i);
                 }
             };
 
@@ -186,8 +187,11 @@ namespace tyti
         template <typename CharT>
         struct basic_multikey_object
         {
+
+            
             typedef CharT char_type;
             std::basic_string<char_type> name;
+            //this is far from perfect.
             std::unordered_multimap<std::basic_string<char_type>, std::basic_string<char_type>> attribs;
             std::unordered_multimap<std::basic_string<char_type>, std::shared_ptr<basic_multikey_object<char_type>>> childs;
 
@@ -260,17 +264,38 @@ namespace tyti
             */
             template <typename OutputT, typename IterT>
             std::vector<std::unique_ptr<OutputT>> read_internal(IterT first, const IterT last,
-                                                                std::unordered_set<std::basic_string<typename std::decay<decltype(*first)>::type>> &exclude_files)
+                                                                std::unordered_set<std::basic_string<typename std::iterator_traits<IterT>::value_type>> &exclude_files)
             {
                 static_assert(std::is_default_constructible<OutputT>::value,
                               "Output Type must be default constructible (provide constructor without arguments)");
                 static_assert(std::is_move_constructible<OutputT>::value,
                               "Output Type must be move constructible");
 
-                typedef typename std::decay<decltype(*first)>::type charT;
+                typedef typename std::iterator_traits<IterT>::value_type charT;
 
                 const std::basic_string<charT> comment_end_str = TYTI_L(charT, "*/");
                 const std::basic_string<charT> whitespaces = TYTI_L(charT, " \n\v\f\r\t");
+
+#ifdef WIN32
+                auto is_platform_str = [](const std::basic_string<charT> &in) {
+                    return in == TYTI_L(charT, "$WIN32") || in == TYTI_L(charT, "$WINDOWS");
+                };
+#elif __APPLE__
+                // WIN32 stands for pc in general
+                auto is_platform_str = [](const std::basic_string<charT> &in) {
+                    return in == TYTI_L(charT, "$WIN32") || in == TYTI_L(charT, "$POSIX") || in == TYTI_L(charT, "$OSX");
+                };
+
+#elif __linux__
+                // WIN32 stands for pc in general
+                auto is_platform_str = [](const std::basic_string<charT> &in) {
+                    return in == TYTI_L(charT, "$WIN32") || in == TYTI_L(charT, "$POSIX") || in == TYTI_L(charT, "$LINUX");
+                };
+#else
+                auto is_platform_str = [](const std::basic_string<charT> &in) {
+                    return false;
+                };
+#endif
 
                 // function for skipping a comment block
                 // iter: iterator poition to the position after a '/'
@@ -357,6 +382,25 @@ namespace tyti
                     }
                 };
 
+                auto conditional_fullfilled = [&skip_whitespaces, &is_platform_str](IterT &iter, const IterT &last) {
+                    iter = skip_whitespaces(iter, last);
+                    if (*iter == '[')
+                    {
+                        ++iter;
+                        const auto end = std::find(iter, last, ']');
+                        const bool negate = *iter == '!';
+                        if (negate)
+                            ++iter;
+                        auto conditional = std::basic_string<charT>(iter, end);
+
+                        const bool is_platform = is_platform_str(conditional);
+                        iter = end + 1;
+
+                        return static_cast<bool>(is_platform ^ negate);
+                    }
+                    return true;
+                };
+
                 //read header
                 // first, quoted name
                 std::unique_ptr<OutputT> curObj = nullptr;
@@ -386,6 +430,11 @@ namespace tyti
                         curIter = keyEnd + ((*keyEnd == TYTI_L(charT, '\"')) ? 1 : 0);
 
                         curIter = skip_whitespaces(curIter, last);
+
+                        auto conditional = conditional_fullfilled(curIter, last);
+                        if (!conditional)
+                            continue;
+
                         while (*curIter == TYTI_L(charT, '/'))
                         {
 
@@ -406,6 +455,10 @@ namespace tyti
                             auto value = std::basic_string<charT>(curIter, valueEnd);
                             strip_escape_symbols(value);
                             curIter = valueEnd + ((*valueEnd == TYTI_L(charT, '\"')) ? 1 : 0);
+
+                            auto conditional = conditional_fullfilled(curIter, last);
+                            if (!conditional)
+                                continue;
 
                             // process value
                             if (key != TYTI_L(charT, "#include") && key != TYTI_L(charT, "#base"))
@@ -478,7 +531,7 @@ namespace tyti
         template <typename OutputT, typename IterT>
         OutputT read(IterT first, const IterT last)
         {
-            auto exclude_files = std::unordered_set<std::basic_string<typename std::decay<decltype(*first)>::type>>{};
+            auto exclude_files = std::unordered_set<std::basic_string<typename std::iterator_traits<IterT>::value_type>>{};
             auto roots = detail::read_internal<OutputT>(first, last, exclude_files);
 
             OutputT result;
@@ -546,23 +599,23 @@ namespace tyti
         }
 
         template <typename IterT>
-        inline auto read(IterT first, const IterT last, bool *ok) NOEXCEPT -> basic_object<typename std::decay<decltype(*first)>::type>
+        inline auto read(IterT first, const IterT last, bool *ok) NOEXCEPT -> basic_object<typename std::iterator_traits<IterT>::value_type>
         {
-            return read<basic_object<typename std::decay<decltype(*first)>::type>>(first, last, ok);
+            return read<basic_object<typename std::iterator_traits<IterT>::value_type>>(first, last, ok);
         }
 
         template <typename IterT>
         inline auto read(IterT first, IterT last, std::error_code &ec) NOEXCEPT
-            -> basic_object<typename std::decay<decltype(*first)>::type>
+            -> basic_object<typename std::iterator_traits<IterT>::value_type>
         {
-            return read<basic_object<typename std::decay<decltype(*first)>::type>>(first, last, ec);
+            return read<basic_object<typename std::iterator_traits<IterT>::value_type>>(first, last, ec);
         }
 
         template <typename IterT>
         inline auto read(IterT first, const IterT last)
-            -> basic_object<typename std::decay<decltype(*first)>::type>
+            -> basic_object<typename std::iterator_traits<IterT>::value_type>
         {
-            return read<basic_object<typename std::decay<decltype(*first)>::type>>(first, last);
+            return read<basic_object<typename std::iterator_traits<IterT>::value_type>>(first, last);
         }
 
         /** \brief Loads a stream (e.g. filestream) into the memory and parses the vdf formatted data.
@@ -626,8 +679,8 @@ namespace tyti
             return read<basic_object<typename iStreamT::char_type>>(inStream);
         }
 
-    } // end namespace vdf
-} // end namespace tyti
+    } // namespace vdf
+} // namespace tyti
 #ifndef TYTI_NO_L_UNDEF
 #undef TYTI_L
 #endif

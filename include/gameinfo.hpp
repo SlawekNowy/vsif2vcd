@@ -10,7 +10,9 @@
 //Determine which is which
 #include "thirdparty/vdf_parser.hpp"
 #include "enum_bitmask.hpp"
+#include "gameinfoKV.hpp"
 #include "pch.hpp"
+#include <unordered_map>
 //this is first-in set for file seek
 //TODO: |gameinfo_path| and |all_source_engine_paths|
 
@@ -23,7 +25,7 @@
 
 #define BASEGAME_DIR_TMPL "|all_source_engine_paths|"
 #define MODDIR_TMPL "|gameinfo_path|"
-namespace GI {
+namespace FileSystem {
 	enum class PathID : unsigned char
 	{
 		GAME = 1 << 0,
@@ -40,11 +42,11 @@ namespace GI {
 	class CGameInfo {
 		//this class represents gameinfo.txt keyvalues file.
 	private:
-		std::unordered_multimap<PathID, std::string> searchPaths;
+		std::vector<std::pair<PathID, std::string>> searchPaths;
 		std::string baseDir;
 
 		std::string modDir;
-		tyti::vdf::multikey_object memGI; //this var holds memory representation of gameinfo.txt
+		gameInfoKV memGI; //this var holds memory representation of gameinfo.txt
 		
 
 
@@ -52,16 +54,20 @@ namespace GI {
 		void initGamepaths();
 		void resolveLoadDir();
 
+		void resolveBaseDir();
 		bool replace(std::string& str, const std::string& from, const std::string& to);
 
 	public:
-		int appID;
+		int appID=0;
 		CGameInfo() {};
 		CGameInfo(std::string modDir) {
 			std::ifstream txtGI_str;
 			this->modDir = modDir;
 			txtGI_str.open(modDir+"/gameinfo.txt");
-			memGI = tyti::vdf::read< tyti::vdf::multikey_object>(txtGI_str);
+			memGI = tyti::vdf::read< gameInfoKV>(txtGI_str);
+			txtGI_str.close();
+			
+			//memGI = tyti::vdf::read< tyti::vdf::multikey_object>(txtGI_str);
 			txtGI_str.close();
 			initGamepaths();
 			resolveBaseDir();
@@ -70,7 +76,6 @@ namespace GI {
 		~CGameInfo() {
 		};
 		void prepareTmpDirectory();
-		void resolveBaseDir();
 
 		
 	private:
