@@ -59,9 +59,12 @@ namespace VSIF {
 		s.value4b(vsif.msecs);
 		uint32_t tmp;
 		s.value4b(tmp); //size of the below vector
-		s.container4b(vsif.soundIDs, tmp);
+
+		vsif.soundIDs.resize(tmp);
+		for (int i = 0; i < tmp; i++) {
+			s.object(vsif.soundIDs[i]);
+		}
 	};
-	
 
 
 
@@ -108,17 +111,16 @@ namespace VSIF {
 
 	//representaion of scenes.image file
 	struct ValveScenesImageFile {
-
+		uint32_t size;
 		VSIF_Header header;
 		CStringPool stringPool;
 		std::vector<VSIF_Entry> entries;
 		std::vector<VSIF_SceneSummary> summaries;
-		unsigned int dataPos;
+		uint32_t dataPos;
 		//Cannot make a vector of structs since that data might be compressed
-		char* sceneBuffer;
+		std::vector<char> sceneBuffer;
 
-
-
+	
 		ValveScenesImageFile() {
 			//ValveScenesImageFile("scenes.image");
 		}
@@ -130,7 +132,7 @@ namespace VSIF {
 			using InputAdapter = bitsery::InputBufferAdapter<Buffer>;
 			std::ifstream fileStream = std::ifstream(filePath, std::ios::in | std::ios::binary);
 			fileStream.seekg(0, std::ios_base::end);
-			uint32_t size = fileStream.tellg();
+			size = fileStream.tellg();
 
 			fileStream.seekg(0, std::ios_base::beg);
 			Buffer fileBuf(std::istreambuf_iterator<char>(fileStream), {});
@@ -141,30 +143,9 @@ namespace VSIF {
 			*/
 			bitsery::quickDeserialization<InputAdapter, ValveScenesImageFile>(InputAdapter{ fileBuf.begin(),fileBuf.end() }, *this);
 
-			dataPos = fileStream.tellg();
-			//copy raw BVCD buffer to memory
-			fileStream.seekg(0, fileStream.end);
-			unsigned int fileEnd = fileStream.tellg();
-			fileStream.seekg(dataPos, fileStream.beg);
-			fileStream.read(sceneBuffer, fileEnd - dataPos);
-#if 0
-			boost::archive::binary_iarchive VSIFStream(fileBuffer);
-			VSIFStream >> header;
-			stringPool = CStringPool::loadFromArchive(VSIFStream, header, &fileBuffer);
-			//Those two have same indexes
-			summaries.resize(header.ScenesCount);
-			for (int i = 0; i < header.ScenesCount; i++)
-				VSIFStream >> entries[i];
-			for (int i = 0; i < header.ScenesCount; i++)
-				VSIFStream >> summaries[i];
-			dataPos = fileBuffer.tellg();
-			//copy raw BVCD buffer to memory
-			fileBuffer.seekg(0, fileBuffer.end);
-			unsigned int fileEnd = fileBuffer.tellg();
-			fileBuffer.seekg(dataPos, fileBuffer.beg);
-			fileBuffer.read(sceneBuffer, fileEnd - dataPos);
+			
+			
 
-#endif
 		};
 	};
 
@@ -195,40 +176,69 @@ namespace VSIF {
 						iter != stringOffsets.end();
 						++iter)
 					{
+						int stringSize = 0;
 						if (std::next(iter)==stringOffsets.end())
 						{ //check if this is the last element
 
-							int stringSize = vsif.header.EntryOffset - *(iter); //do NOT use incrementation here.
-							char* stringRaw = new char[stringSize];
-							//HACK: very naive C style pointer array, but it should be sufficient.
-							for (int i = 0; i < stringSize; i++) {
-								des.value1b(*(stringRaw + i));
-							}
-							//des.ext(stringRaw, PointerObserver{});
-							obj.findOrAddString(stringRaw);
-							//delete stringRaw[];
+							stringSize = vsif.header.EntryOffset - *(iter); //do NOT use incrementation here.
 						}
 						else
 						{
-							int stringSize = *(iter + 1) - *(iter); //do NOT use incrementation here.
-							char* stringRaw = new char[stringSize];
-							for (int i = 0; i < stringSize; i++) {
-								des.value1b(*(stringRaw + i));
-							}
-							//des.ext(stringRaw, PointerObserver{});
-							obj.findOrAddString(stringRaw);
-							//delete stringRaw[];
+							stringSize = *(iter + 1) - *(iter); //do NOT use incrementation here.
 						};
+						char* stringRaw = new char[stringSize];
+						des.adapter().readBuffer<1, char>(stringRaw, stringSize);
+						//des.ext(stringRaw, PointerObserver{});
+						obj.findOrAddString(stringRaw);
+						delete[] stringRaw;
 					};
 
-					//TODO: This ends up misaligned. I cannot use currentReadPos for some reason
+					//TODO: This might end up misaligned. I cannot use currentReadPos for some reason
+					//Reason: des is Deserializer, and I need access to InputAdapter
+					//This should work. Might be not needed tho.
+					while (des.adapter().currentReadPos() % 4 != 0) {
+						des.adapter().currentReadPos(des.adapter().currentReadPos() + 1);
+					}
 				}
 			)
 		);
 		//HACK: anonymous struct access erroneously selects container(type,func) overload
 		size_t scenesCount = vsif.header.ScenesCount;
-		s.container(vsif.entries, scenesCount);
-		s.container(vsif.summaries, scenesCount);
+		vsif.entries.resize(scenesCount);
+		vsif.summaries.resize(scenesCount);
+		for (int i = 0; i < scenesCount; i++) {
+			s.object(vsif.entries[i]);
+		}
+
+		for (int i = 0; i < scenesCount; i++) {
+			s.object(vsif.summaries[i]);
+		}
+		//s.container(vsif.entries, scenesCount);
+		//s.container(vsif.summaries, scenesCount);
+
+
+		/*
+		dataPos = fileStream.tellg();
+		//copy raw BVCD buffer to memory
+		fileStream.seekg(0, fileStream.end);
+		unsigned int fileEnd = fileStream.tellg();
+		fileStream.seekg(dataPos, fileStream.beg);
+		fileStream.read(sceneBuffer, fileEnd - dataPos);
+		*/
+		vsif.dataPos = s.adapter().currentReadPos();
+		uint32_t dataSize = vsif.size - vsif.dataPos;
+		//s.adapter().currentReadPos(dataPos);
+		vsif.sceneBuffer.resize(dataSize);
+		char* tmp = new char[dataSize];
+		//HACK: There MUST be faster way. 
+		s.adapter().readBuffer<1,char>(tmp,(size_t)dataSize);
+		vsif.sceneBuffer = std::vector<char>(tmp, tmp + dataSize + 1);
+		delete[] tmp;
+		/*
+		for (int i = 0; i < (vsif.size - vsif.dataPos); i++) {
+			s.value1b(vsif.sceneBuffer[i]);
+		}
+		*/
 	};
 
 };

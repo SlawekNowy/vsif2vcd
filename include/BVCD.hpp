@@ -1,8 +1,8 @@
 
 
 namespace BVCD {
-#define One255th 0.003922f
-#define One4096th 0.000244f
+	constexpr float One255th = 0.003922f;
+	constexpr float One4096th = 0.000244f;
 	typedef enum {
 		Event_Unspecified,
 		Event_Section, Event_Expression, Event_LookAt, Event_MoveTo,
@@ -18,6 +18,7 @@ namespace BVCD {
 		"firetrigger", "flexanimation", "subscene", "loop",
 		"interrupt", "stoppoint", "permitresponses", "generic"
 	};
+
 }
 
 
