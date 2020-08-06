@@ -11,8 +11,17 @@
 
 #include <boost/iostreams/filter/lzma.hpp>
 #include <boost/iostreams/filtering_stream.hpp>
-#include <boost/archive/binary_oarchive.hpp>
-#include <boost/archive/binary_iarchive.hpp>
+
+
+
+
+#include <bitsery/bitsery.h>
+#include <bitsery/brief_syntax.h>
+#include <bitsery/adapter/buffer.h>
+#include <bitsery/traits/vector.h>
+#include <bitsery/traits/string.h>
+
+#include "split_serialization.h"
 
 // see src/game/server/AI_responserules.cpp from source-sdk for reference implementation of response_rules parser
 

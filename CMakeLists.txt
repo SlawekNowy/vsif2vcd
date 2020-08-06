@@ -16,7 +16,9 @@ configure_file (
 )
 
 find_package(Boost 1.73.0 REQUIRED
-    COMPONENTS iostreams serialization filesystem )
+    COMPONENTS iostreams filesystem )
+
+find_package (bitsery CONFIG REQUIRED)
 
 
 
@@ -33,13 +35,13 @@ set(SOURCES
     "include/program.h" "include/BVCD.hpp" 
     "include/gameinfo.hpp" 
      
-     )
+      "src/VSIF.cpp" "include/split_serialization.h")
 # Dodaj źródło do pliku wykonywalnego tego projektu.
 add_executable (Vsif2vcd ${SOURCES})
 target_precompile_headers(Vsif2vcd PUBLIC "include/pch.hpp")
 
-set_property(TARGET Vsif2vcd PROPERTY CXX_STANDARD 11)
-target_link_libraries(Vsif2vcd PUBLIC Boost::iostreams Boost::serialization Boost::filesystem )
+set_property(TARGET Vsif2vcd PROPERTY CXX_STANDARD 17)
+target_link_libraries(Vsif2vcd PUBLIC Boost::iostreams Boost::filesystem Bitsery::bitsery)
 
 find_path(BOOST_CRC_INCLUDE_DIRS "boost/crc.hpp")
 target_include_directories(Vsif2vcd PRIVATE ${BOOST_CRC_INCLUDE_DIRS})
@@ -52,7 +54,8 @@ target_include_directories(Vsif2vcd PRIVATE ${BOOST_TOKENIZER_INCLUDE_DIRS})
 target_include_directories(Vsif2vcd PUBLIC 
      ${Boost_INCLUDE_DIR} 
     "${PROJECT_SOURCE_DIR}/include/" 
-    "${PROJECT_BINARY_DIR}/include/")
+    "${PROJECT_BINARY_DIR}/include/"
+    ${Bitsery_INCLUDE_DIR})
 
 
 
@@ -60,12 +63,14 @@ target_include_directories(Vsif2vcd PUBLIC
         #Setup CMake to run tests
 enable_testing()
 #Prep ourselves for compiling boost
-find_package(Boost COMPONENTS unit_test_framework iostreams serialization filesystem REQUIRED)
+find_package(Boost COMPONENTS unit_test_framework iostreams filesystem REQUIRED)
 
+find_package (bitsery CONFIG REQUIRED)
 #I like to keep test files in a separate source directory called test
 
 set(TEST_SRCS
 "src/gameinfo.cpp"
+"src/VSIF.cpp"
 )
 #Run through each source
 foreach(testSrc ${TEST_SRCS})
@@ -74,14 +79,17 @@ foreach(testSrc ${TEST_SRCS})
         #Add compile target
         add_executable(${testName} ${testSrc})
         #link to Boost libraries AND your targets and dependencies
-        target_link_libraries(${testName} ${Boost_LIBRARIES} )
+        target_link_libraries(${testName} ${Boost_LIBRARIES} Bitsery::bitsery )
         #I like to move testing binaries into a testBin directory
 
         target_compile_definitions(${testName} PRIVATE ENABLE_TESTING)
         target_include_directories(${testName} PUBLIC 
      ${Boost_INCLUDE_DIR} 
     "${PROJECT_SOURCE_DIR}/include/" 
-    "${PROJECT_BINARY_DIR}/include/")
+    "${PROJECT_BINARY_DIR}/include/"
+    ${Bitsery_INCLUDE_DIR})
+
+    set_property(TARGET ${testName} PROPERTY CXX_STANDARD 17)
         set_target_properties(${testName} PROPERTIES
             RUNTIME_OUTPUT_DIRECTORY  ${CMAKE_CURRENT_SOURCE_DIR}/testBin)
         #Finally add it to test execution -

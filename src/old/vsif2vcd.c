@@ -1008,7 +1008,6 @@ int VSIF_Extract(Map* Maps, unsigned int MapsCount, char* GameDirectory)
 	return 0;
 }
 
-
 /*
 --------------------------------------------------------------------------------
 CONVERSION ENTRY POINT

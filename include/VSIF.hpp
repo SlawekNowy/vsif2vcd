@@ -1,6 +1,8 @@
 
 #include "pch.hpp"
 
+
+
 namespace VSIF {
 	typedef struct {
 		unsigned int ID;
@@ -9,67 +11,58 @@ namespace VSIF {
 		unsigned int StringsCount;
 		unsigned int EntryOffset;
 
-	private:
-		friend class boost::serialization::access;
-		// When the class Archive corresponds to an output archive, the
-		// & operator is defined similar to <<.  Likewise, when the class Archive
-		// is a type of input archive the & operator is defined similar to >>.
-		template<class Archive>
-		void serialize(Archive& ar, const unsigned int version = 1)
-		{
-			ar& ID;
-			ar& Version;
-			ar& ScenesCount;
-			ar& StringsCount;
-			ar& EntryOffset;
-		}
+		
 	} VSIF_Header;
+
+	template <typename S>
+	void serialize(S& s, VSIF_Header& vsif) {
+		s.value4b(vsif.ID);
+		s.value4b(vsif.Version);
+		s.value4b(vsif.ScenesCount);
+		s.value4b(vsif.StringsCount);
+		s.value4b(vsif.EntryOffset);
+	};
+	
 	typedef struct {
 		unsigned int CRC;
 		unsigned int Offset, Size;
 		unsigned int SummaryOffset;
-	private:
-		friend class boost::serialization::access;
-		// When the class Archive corresponds to an output archive, the
-		// & operator is defined similar to <<.  Likewise, when the class Archive
-		// is a type of input archive the & operator is defined similar to >>.
-		template<class Archive>
-		void serialize(Archive& ar, const unsigned int version = 1)
-		{
-			ar& CRC;
-			ar& Offset;
-			ar& Size;
-			ar& SummaryOffset;
-		}
+
+
+		
 	} VSIF_Entry;
+	
+
+	template <typename S>
+	void serialize(S& s, VSIF_Entry& vsif) {
+		s.value4b(vsif.CRC);
+		s.value4b(vsif.Offset);
+		s.value4b(vsif.Size);
+		s.value4b(vsif.SummaryOffset);
+	};
+
+	
+
 	typedef struct {
 		unsigned int msecs;
 		std::vector<int> soundIDs;
-	private:
-		friend class boost::serialization::access;
-		// When the class Archive corresponds to an output archive, the
-		// & operator is defined similar to <<.  Likewise, when the class Archive
-		// is a type of input archive the & operator is defined similar to >>.
-		template<class Archive>
-		void save(Archive& ar, const unsigned int version = 1)
-		{
-			ar& msecs;
-			ar& (unsigned int)soundIDs.size();
-			for (int i = 0; i < soundIDs.size(); i++)
-				ar& soundIDs[i];
-		}
-		template<class Archive>
-		void load(Archive& ar, const unsigned int version = 1)
-		{
-			ar& msecs;
-			unsigned int size;
-			ar& size;
-			soundIDs.resize(size);
-			for (int i = 0; i < size; i++)
-				ar& soundIDs[i];
-		}
-		BOOST_SERIALIZATION_SPLIT_MEMBER();
+
+
+		
+		
+
 	} VSIF_SceneSummary;
+
+
+	template <typename S>
+	void serialize(S& s, VSIF_SceneSummary& vsif) {
+		s.value4b(vsif.msecs);
+		uint32_t tmp;
+		s.value4b(tmp); //size of the below vector
+		s.container4b(vsif.soundIDs, tmp);
+	};
+	
+
 
 
 
@@ -77,46 +70,10 @@ namespace VSIF {
 	private:
 		std::vector<std::string> pool;
 
-		friend class boost::serialization::access;
 	public:
 		std::string getStringByID(unsigned short ID);
 		unsigned short findOrAddString(std::string stringToPool);
 		void prepareToMultiInsert(int howMuch);
-		template<class Archive>
-
-		inline static CStringPool loadFromArchive(Archive& ar, VSIF_Header header, std::istream* file) {
-			std::vector<unsigned int> stringOffsets;
-			stringOffsets.resize(header.StringsCount);
-			for (int i = 0; i < stringOffsets.size(); i++)
-				ar& stringOffsets[i];
-			CStringPool poolObj;
-			poolObj.prepareToMultiInsert(header.StringsCount);
-			int bytesShifted = 0;
-
-			for (int i = 0; i < stringOffsets.size(); i++) {
-				std::string stringPresent;
-
-				unsigned int stringStart = stringOffsets[i];
-				unsigned int stringEnd;
-				if (i + 1 > header.StringsCount - 1) {
-					stringEnd = header.EntryOffset;
-				}
-				else {
-					stringEnd = stringOffsets[i + 1];
-				}
-				bytesShifted += stringEnd - stringStart;
-				char* stringRaw{ new char[stringEnd - stringStart]{} };
-
-				poolObj.findOrAddString(std::string(stringRaw));
-				assert(bytesShifted % 4 == 0);
-				delete[] stringRaw;
-
-				//this should end up with
-				//1. Archive seek pointer already at next DWORD
-				//2. Null terminated strings with no more than 1 null.
-			}
-			return poolObj;
-		};
 
 	};
 	inline std::string CStringPool::getStringByID(unsigned short ID)
@@ -143,9 +100,15 @@ namespace VSIF {
 	{
 		pool.reserve(howMuch);
 	}
+
+
+
+	
+
+
 	//representaion of scenes.image file
 	struct ValveScenesImageFile {
-	
+
 		VSIF_Header header;
 		CStringPool stringPool;
 		std::vector<VSIF_Entry> entries;
@@ -154,16 +117,40 @@ namespace VSIF {
 		//Cannot make a vector of structs since that data might be compressed
 		char* sceneBuffer;
 
-		
-	
+
+
 		ValveScenesImageFile() {
-			ValveScenesImageFile("scenes.image");
+			//ValveScenesImageFile("scenes.image");
 		}
 		ValveScenesImageFile(std::string filePath) {
-			std::ifstream fileBuffer = std::ifstream(filePath);
+
+
+			using Buffer = std::vector<char>;
+			using OutputAdapter = bitsery::OutputBufferAdapter<Buffer>;
+			using InputAdapter = bitsery::InputBufferAdapter<Buffer>;
+			std::ifstream fileStream = std::ifstream(filePath, std::ios::in | std::ios::binary);
+			fileStream.seekg(0, std::ios_base::end);
+			uint32_t size = fileStream.tellg();
+
+			fileStream.seekg(0, std::ios_base::beg);
+			Buffer fileBuf(std::istreambuf_iterator<char>(fileStream), {});
+			/*
+			fileBuf.reserve(size);
+			fileStream.read(fileBuf.data(), size);
+			assert(fileBuf.size() != 0);
+			*/
+			bitsery::quickDeserialization<InputAdapter, ValveScenesImageFile>(InputAdapter{ fileBuf.begin(),fileBuf.end() }, *this);
+
+			dataPos = fileStream.tellg();
+			//copy raw BVCD buffer to memory
+			fileStream.seekg(0, fileStream.end);
+			unsigned int fileEnd = fileStream.tellg();
+			fileStream.seekg(dataPos, fileStream.beg);
+			fileStream.read(sceneBuffer, fileEnd - dataPos);
+#if 0
 			boost::archive::binary_iarchive VSIFStream(fileBuffer);
 			VSIFStream >> header;
-			stringPool = CStringPool::loadFromArchive(VSIFStream, header,&fileBuffer);
+			stringPool = CStringPool::loadFromArchive(VSIFStream, header, &fileBuffer);
 			//Those two have same indexes
 			summaries.resize(header.ScenesCount);
 			for (int i = 0; i < header.ScenesCount; i++)
@@ -177,11 +164,76 @@ namespace VSIF {
 			fileBuffer.seekg(dataPos, fileBuffer.beg);
 			fileBuffer.read(sceneBuffer, fileEnd - dataPos);
 
-
+#endif
 		};
 	};
 
-	
+
+	//template <typename S>
+	template <typename S>
+	void serialize(S& s, ValveScenesImageFile& vsif) {
+		s.object(vsif.header);
+		s.ext
+		(
+			vsif.stringPool,
+			bitsery::ext::SaveAndLoad
+			(
+				[](auto& ser, const CStringPool& obj) 
+				{
+				}, // save function
+				[vsif](auto& des, CStringPool& obj) 
+				{ //friend CStringPool;
 
 
-}
+					//static_assert(std::is_same<decltype(des), bitsery::InputBufferAdapter<std::vector<char>>,"buffers only.");
+					std::vector<int> stringOffsets;
+					stringOffsets.resize(vsif.header.StringsCount);
+					for (int i = 0; i < vsif.header.StringsCount; i++) {
+						des.value4b(stringOffsets[i]);
+					}
+					for (std::vector<int>::iterator iter = stringOffsets.begin();
+						iter != stringOffsets.end();
+						++iter)
+					{
+						if (std::next(iter)==stringOffsets.end())
+						{ //check if this is the last element
+
+							int stringSize = vsif.header.EntryOffset - *(iter); //do NOT use incrementation here.
+							char* stringRaw = new char[stringSize];
+							//HACK: very naive C style pointer array, but it should be sufficient.
+							for (int i = 0; i < stringSize; i++) {
+								des.value1b(*(stringRaw + i));
+							}
+							//des.ext(stringRaw, PointerObserver{});
+							obj.findOrAddString(stringRaw);
+							//delete stringRaw[];
+						}
+						else
+						{
+							int stringSize = *(iter + 1) - *(iter); //do NOT use incrementation here.
+							char* stringRaw = new char[stringSize];
+							for (int i = 0; i < stringSize; i++) {
+								des.value1b(*(stringRaw + i));
+							}
+							//des.ext(stringRaw, PointerObserver{});
+							obj.findOrAddString(stringRaw);
+							//delete stringRaw[];
+						};
+					};
+
+					//TODO: This ends up misaligned. I cannot use currentReadPos for some reason
+				}
+			)
+		);
+		//HACK: anonymous struct access erroneously selects container(type,func) overload
+		size_t scenesCount = vsif.header.ScenesCount;
+		s.container(vsif.entries, scenesCount);
+		s.container(vsif.summaries, scenesCount);
+	};
+
+};
+
+
+
+
+
