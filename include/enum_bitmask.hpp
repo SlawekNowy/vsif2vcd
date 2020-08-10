@@ -1,3 +1,5 @@
+
+#pragma once
 template<typename Enum>
 struct EnableBitMaskOperators
 {

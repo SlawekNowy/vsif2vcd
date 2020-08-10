@@ -10,15 +10,18 @@ using namespace FileSystem;
 
 namespace Program {
 
-	std::vector<BSPParser::Map> scenesPerMap;
+	extern  std::vector<BSPParser::Map> scenesPerMap;
 
 	int doStart(std::string gameDir);
 
 	//gameinfo object
-	CGameInfo gi;
-	//
-	VSIF::ValveScenesImageFile vsif;
+	extern CGameInfo gi;
+	extern VSIF::ValveScenesImageFile vsif;
+
+	void appendHardCodedEntries();
 
 };
+
+
 
 

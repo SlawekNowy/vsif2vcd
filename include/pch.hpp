@@ -1,5 +1,7 @@
 // bulk of the includes are located here.
 
+
+#pragma once
 #include <iostream>
 
 //From boost we need lzma, filesys, and serialization
@@ -21,7 +23,14 @@
 #include <bitsery/traits/vector.h>
 #include <bitsery/traits/string.h>
 
+
 #include "split_serialization.h"
+#include <set>
+
+
+
+
+
 
 // see src/game/server/AI_responserules.cpp from source-sdk for reference implementation of response_rules parser
 

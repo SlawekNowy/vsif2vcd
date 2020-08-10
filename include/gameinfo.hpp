@@ -1,3 +1,6 @@
+
+
+#pragma once
 //GameInfo parsing.
 //TODO Get files to copy to tmpdir for cleaning
 

@@ -1,8 +1,15 @@
 
+
+
+
+#pragma once
 #include "pch.hpp"
 
+#include "helper.hpp"
+using namespace Helper;
 
 
+//ODR
 namespace VSIF {
 	typedef struct {
 		unsigned int ID;
@@ -143,6 +150,8 @@ namespace VSIF {
 			*/
 			bitsery::quickDeserialization<InputAdapter, ValveScenesImageFile>(InputAdapter{ fileBuf.begin(),fileBuf.end() }, *this);
 
+
+			
 			
 			
 
@@ -153,7 +162,9 @@ namespace VSIF {
 	//template <typename S>
 	template <typename S>
 	void serialize(S& s, ValveScenesImageFile& vsif) {
+		
 		s.object(vsif.header);
+		assert(vsif.header.ID==FourCC("VSIF") && vsif.header.Version ==2);
 		s.ext
 		(
 			vsif.stringPool,

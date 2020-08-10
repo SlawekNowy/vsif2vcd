@@ -245,6 +245,7 @@ std::string FileSystem::CGameInfo::getPathFromAppID(int appID, std::vector<std::
 #ifdef ENABLE_TESTING
 BOOST_AUTO_TEST_CASE(testGI) {
 
+
 	FileSystem::CGameInfo gameInfo("E:/source-sdk-2013/mp/game/mod_hl2mp");
 }
 #endif

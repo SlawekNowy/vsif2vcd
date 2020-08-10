@@ -34,8 +34,9 @@ set(SOURCES
     "include/gameinfoKV.hpp"
     "include/program.h" "include/BVCD.hpp" 
     "include/gameinfo.hpp" 
+    "include/hardcoded_entries.h" 
      
-      "src/VSIF.cpp" "include/split_serialization.h")
+      "src/VSIF.cpp" "include/split_serialization.h" "include/helper.hpp")
 # Dodaj źródło do pliku wykonywalnego tego projektu.
 add_executable (Vsif2vcd ${SOURCES})
 target_precompile_headers(Vsif2vcd PUBLIC "include/pch.hpp")
@@ -71,6 +72,7 @@ find_package (bitsery CONFIG REQUIRED)
 set(TEST_SRCS
 "src/gameinfo.cpp"
 "src/VSIF.cpp"
+"src/map_bsp.cpp"
 )
 #Run through each source
 foreach(testSrc ${TEST_SRCS})

@@ -1,5 +1,5 @@
 
-
+#pragma once
 namespace BVCD {
 	constexpr float One255th = 0.003922f;
 	constexpr float One4096th = 0.000244f;
@@ -18,6 +18,10 @@ namespace BVCD {
 		"firetrigger", "flexanimation", "subscene", "loop",
 		"interrupt", "stoppoint", "permitresponses", "generic"
 	};
+
+
+
+
 
 }
 
