@@ -12,46 +12,42 @@ jobs:
     # well on Windows or Mac.  You can convert this to a matrix build if you need
     # cross-platform coverage.
     # See: https://docs.github.com/en/actions/configuring-and-managing-workflows/configuring-a-workflow#configuring-a-build-matrix
-    runs-on: ubuntu-latest
+    runs-on: [ubuntu-latest]
 
     steps:
     - uses: actions/checkout@v2
       
-    - name: run-vcpkg
-  # You may pin to the exact commit or the version.
-  # uses: lukka/run-vcpkg@4e3951f18c751083c2fdc199046eaf8bb459b3ef
-  uses: lukka/run-vcpkg@v3.3
-  with:
-    # Indicates whether to only setup vcpkg (i.e. installing it and setting the environment variables VCPKG_ROOT, RUNVCPK_VCPKG_ROOT), without installing any port.
-    setupOnly: # optional
-    # This value is added to the precomputed key used to restore/save the cached artifacts produced by vcpkg.
-    appendedCacheKey: # optional
-    # Specify the Git commit id (not a branch name nor a tag!) that establishes which version of vcpkg needs to be used. When using vcpkg as a Git submodule, this input is not needed as impicitly specified by the submodule. [More information](https://github.com/lukka/CppBuildTasks/blob/master/README.md)
-    vcpkgGitCommitId: # optional
-    # 
-    vcpkgArguments: install bitsery boost-iostreams boost-filesystem boost-unit_test_framework # optional, default is 
-    # 
-    vcpkgDirectory: # optional, default is ${{ github.workspace }}/vcpkg
-    # Specify entries to append to the .artifactignore file. This file specifies which directory to ignore or to include by the Cache task. For more info: https://docs.microsoft.com/en-us/azure/devops/artifacts/reference/artifactignore?view=azure-devops . The file is created if not already existing.
-    vcpkgArtifactIgnoreEntries: # optional, default is !.git
-    **/*
-    !installed
-    !/vcpkg
-    !vcpkg.exe
-    !vcpkgArtifactIgnoreEntries
+      # Sample when vcpkg is a submodule of your repository (highly recommended!)
 
-    # Specify the URL Git repository to download vcpkg from. Defaults to https://github.com/microsoft/vcpkg.git
-    vcpkgGitURL: # optional, default is https://github.com/microsoft/vcpkg.git
-    # Specify the vcpkg triplet. Common values are x64-windows, x64-linux and x64-osx. It is recommended to specify the triplet in the response file provided in the arguments instead than here.
-    vcpkgTriplet: # optional, default is 
-    # Append the argument '--clean-after-build' to vcpkgArgument input, to clean buildtrees, packages and downloads after building each port. Default is true.
-    cleanAfterBuild: # optional, default is true
-    # Avoid to update vcpkg(launching git) in the specified 'vcpkgDirectory'. This is useful when vcpkg is being checkout indipendently of the run-vcpkg task. Default is false.
-    doNotUpdateVcpkg: # optional
-    # Specify which shell to be used when launching commands. 'true' means the default shell is used. 'false' means no shell is used. It also can be an absolute path and arguments of the shell to spawn commands with.
-    useShell: # optional, default is true
-    # Disable the automatic caching mechanism by setting it to true. Default is false.
-    doNotCache: # optional
+    #-uses: actions/cache@v1   <===== YOU DO NOT NEED THIS!
+
+    # Install latest CMake.
+    - uses: lukka/get-cmake@latest
+
+    # Restore from cache the previously built ports. If "cache miss", then provision vcpkg, install desired ports, finally cache everything for the next run.
+    - name: Restore from cache and run vcpkg
+      uses: lukka/run-vcpkg@v3
+      with:
+        # Response file stored in source control, it provides the list of ports and triplet(s).
+        vcpkgArguments: '@${{ env.vcpkgResponseFile }}'
+        # Location of the vcpkg as submodule of the repository.
+        vcpkgDirectory: '${{ github.workspace }}/vcpkg'
+        # Since the cache must be invalidated when content of the response file changes, let's
+        # compute its hash and append this to the computed cache's key.
+        appendedCacheKey: ${{ hashFiles(env.vcpkgResponseFile) }}
+
+    - name: 'Build with CMake and Ninja'
+      uses: lukka/run-cmake@v2
+      with:
+        cmakeListsOrSettingsJson: CMakeListsTxtAdvanced
+        cmakeListsTxtPath: '${{ github.workspace }}/cmakesettings.json/CMakeLists.txt'
+        useVcpkgToolchainFile: true
+        buildDirectory: '${{ runner.workspace }}/b/ninja'
+        cmakeAppendedArgs: '-GNinja Multi-Config'
+        # Or build multiple configurations out of a CMakeSettings.json file created with Visual Studio.
+        # cmakeListsOrSettingsJson: CMakeSettingsJson
+        # cmakeSettingsJsonPath: '${{ github.workspace }}/cmakesettings.json/CMakeSettings.json'
+        # configurationRegexFilter: '${{ matrix.configuration }}'
       
 
     - name: Create Build Environment
