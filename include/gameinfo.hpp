@@ -41,7 +41,7 @@ namespace FileSystem {
 		DOWNLOAD = 1 << 7, //download dir for multiplayer
 
 	};
-	ENABLE_BITMASK_OPERATORS(PathID);
+
 	class CGameInfo {
 		//this class represents gameinfo.txt keyvalues file.
 	private:
@@ -86,3 +86,5 @@ namespace FileSystem {
 		std::string getPathFromAppID(int appID, std::vector<std::string> steamLibDirs);
 	};
 }
+
+ENABLE_BITMASK_OPERATORS(FileSystem::PathID);

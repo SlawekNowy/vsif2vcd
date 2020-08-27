@@ -3,8 +3,10 @@
 #define BOOST_TEST_MODULE "testGameInfo"
 
 #define BOOST_TEST_MAIN
+#if 0
 #if !defined( WIN32 )
 #define BOOST_TEST_DYN_LINK
+#endif
 #endif
 #include <boost/test/unit_test.hpp>
 #endif
@@ -163,8 +165,16 @@ void FileSystem::CGameInfo::resolveBaseDir()
 #elif __linux__
 	//under normal conditions check for presence of ~/.steam/root
 	// resolve the symlink and set it as steamDir
-	char* steamPath = getenv("HOME") + "/.steam/root";
-	steamDir = boost::filesystem::canonical(steamPath);
+    char* steamPath = new char[65536];
+    const char* tmp = "/.steam/root";
+    char *begin = steamPath;
+    char *end = begin + 65536;
+    std::fill(begin, end, 0);
+    strcat(steamPath,getenv("HOME"));
+    strcat(steamPath,tmp);
+    //char* steamPath = getenv("HOME") + "/.steam/root";
+    steamDir = boost::filesystem::canonical(steamPath).native();
+    delete[] steamPath;
 #elif __APPLE__ && __MACH__
 	// TODO
 	//Assume this is in ~/Applications where instructed.
@@ -181,7 +191,7 @@ void FileSystem::CGameInfo::resolveBaseDir()
 	for (auto iterator = libraryFoldersVDF.attribs.begin(); iterator != libraryFoldersVDF.attribs.end(); ++iterator) {
 		std::pair<std::string, std::string> pair = *iterator;
 		try {
-			int i = boost::lexical_cast<int>(pair.first);
+            boost::lexical_cast<int>(pair.first);
 			steamLibDirs.push_back(pair.second);
 		}
 		catch (boost::bad_lexical_cast) {
@@ -245,8 +255,11 @@ std::string FileSystem::CGameInfo::getPathFromAppID(int appID, std::vector<std::
 #ifdef ENABLE_TESTING
 BOOST_AUTO_TEST_CASE(testGI) {
 
-
+#ifdef _WIN32
 	FileSystem::CGameInfo gameInfo("E:/source-sdk-2013/mp/game/mod_hl2mp");
+#else
+    FileSystem::CGameInfo gameInfo("/home/slawomir/Dane/source-sdk-2013/mp/game/mod_hl2mp/");
+#endif
 }
 #endif
 

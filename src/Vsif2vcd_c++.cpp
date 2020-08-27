@@ -44,8 +44,9 @@ int Program::doStart(std::string gameDir) {
 	appendHardCodedEntries();
 	//TODO: Response rules parsing.
 	//Also static names of scenes added by source code itself
-	gi = CGameInfo::CGameInfo(gameDir);
-	vsif = VSIF::ValveScenesImageFile(gameDir + "/scenes/scenes.image");
+    gi = CGameInfo(gameDir);
+
+    vsif = VSIF::ValveScenesImageFile(gameDir + "/scenes/scenes.image");
 	return 0;
 
 
@@ -53,9 +54,14 @@ int Program::doStart(std::string gameDir) {
 
 void Program::appendHardCodedEntries()
 {
-
+    BSPParser::Map hardcoded;
+    memcpy(hardcoded.Name,"hardcoded",32);
+    hardcoded.Scenes.resize();
 	for (auto iter = hardcodedEntries.begin(); iter != hardcodedEntries.end(); ++iter) {
 
+        //hardcoded.Scenes.emplace((char*)iter->c_str());
+        //scenesPerMap.emplace_back();
 	}
+    scenesPerMap.push_back(hardcoded);
 }
 

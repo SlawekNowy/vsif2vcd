@@ -1,13 +1,18 @@
 #ifdef ENABLE_TESTING
 
-#define BOOST_TEST_MODULE "testGameInfo"
+#define BOOST_TEST_MODULE "testVSIF"
 
 #define BOOST_TEST_MAIN
+//vcpkg provides only static libraries
+#if 0
 #if !defined( WIN32 )
 #define BOOST_TEST_DYN_LINK
 #endif
+#endif
 #include <boost/test/unit_test.hpp>
 #endif
+
+
 #include "VSIF.hpp"
 
 

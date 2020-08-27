@@ -6,6 +6,7 @@
 #include "pch.hpp"
 
 #include "helper.hpp"
+#include "BVCD.hpp"
 using namespace Helper;
 
 
@@ -127,6 +128,7 @@ namespace VSIF {
 		//Cannot make a vector of structs since that data might be compressed
 		std::vector<char> sceneBuffer;
 
+        std::vector<BVCD::VCD> vcds;
 	
 		ValveScenesImageFile() {
 			//ValveScenesImageFile("scenes.image");
@@ -150,7 +152,7 @@ namespace VSIF {
 			*/
 			bitsery::quickDeserialization<InputAdapter, ValveScenesImageFile>(InputAdapter{ fileBuf.begin(),fileBuf.end() }, *this);
 
-
+            vcds.resize(header.ScenesCount);
 			
 			
 			
@@ -198,7 +200,7 @@ namespace VSIF {
 							stringSize = *(iter + 1) - *(iter); //do NOT use incrementation here.
 						};
 						char* stringRaw = new char[stringSize];
-						des.adapter().readBuffer<1, char>(stringRaw, stringSize);
+                        des.adapter().template readBuffer<1, char>(stringRaw, stringSize);
 						//des.ext(stringRaw, PointerObserver{});
 						obj.findOrAddString(stringRaw);
 						delete[] stringRaw;
@@ -208,7 +210,7 @@ namespace VSIF {
 					//Reason: des is Deserializer, and I need access to InputAdapter
 					//This should work. Might be not needed tho.
 					while (des.adapter().currentReadPos() % 4 != 0) {
-						des.adapter().currentReadPos(des.adapter().currentReadPos() + 1);
+                        des.adapter().currentReadPos(des.adapter().currentReadPos() + 1);
 					}
 				}
 			)
@@ -242,7 +244,7 @@ namespace VSIF {
 		vsif.sceneBuffer.resize(dataSize);
 		char* tmp = new char[dataSize];
 		//HACK: There MUST be faster way. 
-		s.adapter().readBuffer<1,char>(tmp,(size_t)dataSize);
+        s.adapter().template readBuffer<1,char>(tmp,(size_t)dataSize);
 		vsif.sceneBuffer = std::vector<char>(tmp, tmp + dataSize + 1);
 		delete[] tmp;
 		/*

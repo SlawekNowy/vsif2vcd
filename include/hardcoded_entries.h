@@ -1,4 +1,5 @@
-
+#include <vector>
+#include <string>
 
 std::vector<std::string> hardcodedEntries = {
 	//HL2

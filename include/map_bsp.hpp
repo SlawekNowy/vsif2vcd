@@ -33,15 +33,11 @@ constexpr auto Map_MaxValue = 1024;
 		}
 	} ;
 	struct Map {
-		std::set<Map_Scene> Scenes;
+        std::unordered_set<Map_Scene> Scenes;
 		char Name[Map_MaxName] = "global"; //default value if this is from response file. Multiplayer games are global
-	} ;
-	static char BVCD_Interpolators[16][23] = {
-		"default", "catmullrom_normalize_x", "easein", "easeout",
-		"easeinout", "bspline", "linear_interp", "kochanek",
-		"kochanek_early", "kochanek_late", "simple_cubic", "catmullrom",
-		"catmullrom_normalize", "catmullrom_tangent", "exponential_decay", "hold"
-	};
+
+    } ;
+
 	int ExtractNames(std::string GameDirectory);
 
 }

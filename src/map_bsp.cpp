@@ -1,9 +1,11 @@
 #ifdef ENABLE_TESTING
-#define BOOST_TEST_MODULE "testGameInfo"
+#define BOOST_TEST_MODULE "testMap"
 
 #define BOOST_TEST_MAIN
+#if 0
 #if !defined( WIN32 )
 #define BOOST_TEST_DYN_LINK
+#endif
 #endif
 #include <boost/test/unit_test.hpp>
 #endif
@@ -29,7 +31,7 @@ std::vector<BSPParser::Map> Program::scenesPerMap;
 BOOST_AUTO_TEST_CASE(testVSIF) {
 
 	//VSIF::ValveScenesImageFile vsif("E:/hl2_tmp/scenes/scenes.image");
-	BSPParser::ExtractNames("E:\hl2_tmp");
+    BSPParser::ExtractNames("E:/hl2_tmp");
 
 }
 #endif

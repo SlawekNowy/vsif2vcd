@@ -4,6 +4,10 @@ if(${CMAKE_VERSION} VERSION_LESS 3.12)
     cmake_policy(VERSION ${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION})
 endif()
 
+
+include(cmake/locate_vcpkg.cmake)
+setup_vcpkg_before_project()
+
 #TODO: stop if we use vs2015 or older
 
 project(Vsif2Vcd VERSION 0.1.0.0
@@ -18,7 +22,7 @@ configure_file (
 find_package(Boost 1.73.0 REQUIRED
     COMPONENTS iostreams filesystem )
 
-find_package (bitsery CONFIG REQUIRED)
+find_package (Bitsery CONFIG REQUIRED)
 
 
 
@@ -26,6 +30,7 @@ find_package (bitsery CONFIG REQUIRED)
 
 set(SOURCES 
     "src/Vsif2vcd_c++.cpp"
+    "src/BVCD.cpp"
     "src/map_bsp.cpp"
     "src/gameinfo.cpp"
     "include/VSIF.hpp"
@@ -35,6 +40,7 @@ set(SOURCES
     "include/program.h" "include/BVCD.hpp" 
     "include/gameinfo.hpp" 
     "include/hardcoded_entries.h" 
+    "include/CRC.h"
      
       "src/VSIF.cpp" "include/split_serialization.h" "include/helper.hpp")
 # Dodaj źródło do pliku wykonywalnego tego projektu.
@@ -66,13 +72,15 @@ enable_testing()
 #Prep ourselves for compiling boost
 find_package(Boost COMPONENTS unit_test_framework iostreams filesystem REQUIRED)
 
-find_package (bitsery CONFIG REQUIRED)
+find_package (Bitsery CONFIG REQUIRED)
 #I like to keep test files in a separate source directory called test
 
 set(TEST_SRCS
 "src/gameinfo.cpp"
 "src/VSIF.cpp"
 "src/map_bsp.cpp"
+
+"src/BVCD.cpp"
 )
 #Run through each source
 foreach(testSrc ${TEST_SRCS})
