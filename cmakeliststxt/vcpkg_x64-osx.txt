@@ -2,3 +2,6 @@ bitsery
 boost-iostreams
 boost-filesystem
 boost-test
+boost-crc
+boost-lexical-cast
+boost-tokenizer
