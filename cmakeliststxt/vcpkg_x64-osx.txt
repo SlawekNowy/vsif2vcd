@@ -1,4 +1,4 @@
 bitsery
 boost-iostreams
 boost-filesystem
-boost-unit_test_framework
+boost-test
