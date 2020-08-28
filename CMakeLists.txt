@@ -19,10 +19,10 @@ configure_file (
     "${PROJECT_BINARY_DIR}/include/version.hpp"
 )
 
-find_package(boost 1.73.0 REQUIRED
+find_package(Boost 1.73.0 REQUIRED
     COMPONENTS iostreams filesystem )
 
-find_package (Bitsery CONFIG REQUIRED)
+find_package (bitsery CONFIG REQUIRED)
 
 
 
@@ -48,7 +48,7 @@ add_executable (Vsif2vcd ${SOURCES})
 target_precompile_headers(Vsif2vcd PUBLIC "include/pch.hpp")
 
 set_property(TARGET Vsif2vcd PROPERTY CXX_STANDARD 17)
-target_link_libraries(Vsif2vcd PUBLIC boost::iostreams boost::filesystem Bitsery::bitsery)
+target_link_libraries(Vsif2vcd PUBLIC Boost::iostreams Boost::filesystem Bitsery::bitsery)
 
 find_path(BOOST_CRC_INCLUDE_DIRS "boost/crc.hpp")
 target_include_directories(Vsif2vcd PRIVATE ${BOOST_CRC_INCLUDE_DIRS})
@@ -70,7 +70,7 @@ target_include_directories(Vsif2vcd PUBLIC
         #Setup CMake to run tests
 enable_testing()
 #Prep ourselves for compiling boost
-find_package(boost COMPONENTS unit_test_framework iostreams filesystem REQUIRED)
+find_package(Boost COMPONENTS unit_test_framework iostreams filesystem REQUIRED)
 
 find_package (Bitsery CONFIG REQUIRED)
 #I like to keep test files in a separate source directory called test
