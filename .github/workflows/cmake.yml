@@ -30,7 +30,23 @@ jobs:
         uses: lukka/set-shell-env@master
         with:
           VCPKGRESPONSEFILE: ${{ github.workspace }}/cmakeliststxt/vcpkg_${{ matrix.triplet }}.txt
-
+          
+      - name: (OSX) Install brew
+  # You may pin to the exact commit or the version.
+  # uses: KnicKnic/os-specific-run@eb51dfa53ed605420adc08dc67c36f5d4ff6ec21
+        uses: KnicKnic/os-specific-run@v1.0.2
+        with:
+    # macos commandline
+          macos: '/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)"'
+      - name: (OSX) Install dependencies
+  # You may pin to the exact commit or the version.
+  # uses: KnicKnic/os-specific-run@eb51dfa53ed605420adc08dc67c36f5d4ff6ec21
+        uses: KnicKnic/os-specific-run@v1.0.2
+        with:
+    # macos commandline
+          macos: 'brew install pkg-config' # optional, default is echo "No command specified for macos"
+          
+          
       - name: dir
         run: find $RUNNER_WORKSPACE
         shell: bash
