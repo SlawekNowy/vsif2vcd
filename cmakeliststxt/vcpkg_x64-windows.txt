@@ -6,3 +6,5 @@ boost-crc
 boost-lexical-cast
 boost-tokenizer
 boost-math
+--triplet
+x64-windows
