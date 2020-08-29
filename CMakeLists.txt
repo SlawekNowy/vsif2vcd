@@ -19,7 +19,7 @@ configure_file (
     "${PROJECT_BINARY_DIR}/include/version.hpp"
 )
 
-find_package(Boost 1.73.0 REQUIRED
+find_package(Boost REQUIRED
     COMPONENTS iostreams filesystem )
 
 find_package (Bitsery CONFIG REQUIRED)
