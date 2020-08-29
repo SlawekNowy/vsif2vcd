@@ -58,6 +58,10 @@ target_include_directories(Vsif2vcd PRIVATE ${BOOST_LEXICAL_CAST_INCLUDE_DIRS})
 
 find_path(BOOST_TOKENIZER_INCLUDE_DIRS "boost/token_functions.hpp")
 target_include_directories(Vsif2vcd PRIVATE ${BOOST_TOKENIZER_INCLUDE_DIRS})
+
+find_path(BOOST_ALGORITHM_INCLUDE_DIRS "boost/algorithm/algorithm.hpp")
+target_include_directories(Vsif2vcd PRIVATE ${BOOST_ALGORITHM_INCLUDE_DIRS})
+
 target_include_directories(Vsif2vcd PUBLIC 
      ${Boost_INCLUDE_DIR} 
     "${PROJECT_SOURCE_DIR}/include/" 

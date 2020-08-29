@@ -10,7 +10,7 @@ using namespace FileSystem;
 
 namespace Program {
 
-	extern  std::vector<BSPParser::Map> scenesPerMap;
+    extern  std::vector<BSPParser::Map_Scene> scenesPerMap;
 
 	int doStart(std::string gameDir);
 

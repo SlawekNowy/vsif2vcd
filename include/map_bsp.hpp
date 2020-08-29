@@ -1,7 +1,7 @@
 
 #pragma once
 #include "pch.hpp"
-
+#include "CRC.h"
 namespace BSPParser {
 constexpr auto Map_MaxName = 32;
 constexpr auto Map_MaxKey = 64;
@@ -10,33 +10,46 @@ constexpr auto Map_MaxValue = 1024;
 		unsigned int CRC;
 		char Name[Map_MaxValue + 1];
 
+
+
 		Map_Scene() {
 
 		}
 		Map_Scene(char* name) {
 
-			memcpy(this->Name, name, Map_MaxName + 1);
+            strncpy(this->Name, name, Map_MaxName + 1);
 			//this->Name = name;
 			normalizeString();
 			recalculateCRC();
 
 		}
 
+
 		
 
 	 private:
 		void recalculateCRC() {
-
+            CRC = CRC_Hash((unsigned char*)Name,strlen(Name));
 		}
 		void normalizeString() {
+            std::string name = Name;
+            boost::algorithm::to_lower(name);
+            std::replace(name.begin(),name.end(),'/','\\');
+            //Name = name.c_str();
+            strncpy(Name,name.c_str(),Map_MaxValue+1);
 
 		}
-	} ;
-	struct Map {
-        std::unordered_set<Map_Scene> Scenes;
-		char Name[Map_MaxName] = "global"; //default value if this is from response file. Multiplayer games are global
-
     } ;
+    extern std::map<std::string,std::vector<Map_Scene>> Scenes;
+
+
+    static std::vector<BSPParser::Map_Scene> getScenesPerMap(std::string map) {
+        return Scenes.find(map)->second;
+    }
+
+
+
+
 
 	int ExtractNames(std::string GameDirectory);
 

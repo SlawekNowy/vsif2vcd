@@ -26,9 +26,10 @@ int main(int argc, char* argv[]){
 
 
 
-std::vector<BSPParser::Map> Program::scenesPerMap;
+std::vector<BSPParser::Map_Scene> Program::scenesPerMap;
 
 CGameInfo Program::gi;
+std::map<std::string,std::vector<BSPParser::Map_Scene>> BSPParser::Scenes;
 
 VSIF::ValveScenesImageFile Program::vsif;
 using boost::filesystem::path;
@@ -54,14 +55,11 @@ int Program::doStart(std::string gameDir) {
 
 void Program::appendHardCodedEntries()
 {
-    BSPParser::Map hardcoded;
-    memcpy(hardcoded.Name,"hardcoded",32);
-    hardcoded.Scenes.resize();
+    std::vector<BSPParser::Map_Scene> hardcodedScenes;
+    hardcodedScenes.reserve(hardcodedEntries.size());
 	for (auto iter = hardcodedEntries.begin(); iter != hardcodedEntries.end(); ++iter) {
-
-        //hardcoded.Scenes.emplace((char*)iter->c_str());
-        //scenesPerMap.emplace_back();
-	}
-    scenesPerMap.push_back(hardcoded);
+        hardcodedScenes.emplace_back((char*)iter->c_str());
+    }
+    BSPParser::Scenes.emplace("hardcoded",hardcodedScenes);
 }
 

@@ -3,6 +3,9 @@
 
 #ifdef __cplusplus
 extern "C" {
+#include <cstddef>
+#else
+#include <stddef.h>
 #endif
 const unsigned int CRC_Table[256] =
 {
@@ -80,8 +83,8 @@ const unsigned int CRC_Table[256] =
 unsigned int inline CRC_Hash(unsigned char* Buffer, unsigned int Size)
 {
     unsigned int CRC = 0xffffffff;
-    unsigned int Front;
-    unsigned int Main;
+    size_t Front; //pointer to the beginning
+    size_t Main; //iterator
     for (;;)
     {
         switch (Size)
@@ -104,7 +107,7 @@ unsigned int inline CRC_Hash(unsigned char* Buffer, unsigned int Size)
         case 0:
             return CRC ^ 0xffffffff;
         }
-        Front = ((unsigned int)Buffer) & 3;
+        Front = ((size_t)Buffer) & 3;
         Size -= Front;
         switch (Front)
         {

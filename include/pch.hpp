@@ -13,6 +13,7 @@
 
 #include <boost/iostreams/filter/lzma.hpp>
 #include <boost/iostreams/filtering_stream.hpp>
+#include <boost/algorithm/string.hpp>
 
 
 
@@ -25,7 +26,7 @@
 
 
 #include "split_serialization.h"
-#include <unordered_set>
+#include <map>
 
 
 

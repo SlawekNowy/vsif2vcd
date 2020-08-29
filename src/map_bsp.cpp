@@ -25,9 +25,13 @@ int BSPParser::ExtractNames(std::string GameDirectory)
 
 
 
+
+
+
 #ifdef ENABLE_TESTING
 
-std::vector<BSPParser::Map> Program::scenesPerMap;
+std::vector<BSPParser::Map_Scene> Program::scenesPerMap;
+std::map<std::string,std::vector<BSPParser::Map_Scene>> BSPParser::Scenes;
 BOOST_AUTO_TEST_CASE(testVSIF) {
 
 	//VSIF::ValveScenesImageFile vsif("E:/hl2_tmp/scenes/scenes.image");
