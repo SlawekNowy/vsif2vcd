@@ -47,9 +47,25 @@ namespace BVCD {
 
     };
 
+    template <typename S>
+    void serialize(S& s, VCD_Event& e) {
+}
+
+
     struct VCD_Actor {
 
     };
+    template <typename S>
+    void serialize(S& s, VCD_Actor& a) {
+}
+
+    struct VCD_Channel {
+
+    };
+    template <typename S>
+    void serialize(S& s, VCD_Channel& c) {
+}
+
     class VCD {
     public:
         uint32_t magic; // bvcd
@@ -60,6 +76,11 @@ namespace BVCD {
         uint8_t ignorePhonemes;
 
     };
+
+    template <typename S>
+    void serialize(S& s, VCD& vcd) {
+
+}
 
 
     class CompressedVCD {
