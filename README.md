@@ -5,7 +5,7 @@ The expectations are to run on any computer that HLLib supports.
 
 
 # TODO
-- [ ] Make LZMALib static and use its API instead.
+- [X] Make LZMALib static and use its API instead.
 - [ ] Parse scripts/talker/response_rules.txt file to get scene values
 - [ ] SteamPipe update brought necessary files packed. Unpack those via HLLib.
 - [ ] We do not wanna dirty the game directory. Make temporary directory, where we do all work.
