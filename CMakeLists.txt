@@ -49,6 +49,7 @@ target_precompile_headers(Vsif2vcd PUBLIC "include/pch.hpp")
 
 
 add_subdirectory(thirdparty/liblzma)
+add_dependencies(Vsif2vcd lzma)
 set_property(TARGET Vsif2vcd PROPERTY CXX_STANDARD 17)
 target_link_libraries(Vsif2vcd PUBLIC Boost::iostreams Boost::filesystem Bitsery::bitsery lzma)
 
@@ -99,7 +100,9 @@ foreach(testSrc ${TEST_SRCS})
         #Add compile target
         add_executable(${testName} ${testSrc})
         #link to Boost libraries AND your targets and dependencies
-        target_link_libraries(${testName} ${Boost_LIBRARIES} Bitsery::bitsery )
+        target_link_libraries(${testName} ${Boost_LIBRARIES} Bitsery::bitsery lzma)
+
+
         #I like to move testing binaries into a testBin directory
 
         target_compile_definitions(${testName} PRIVATE ENABLE_TESTING)
