@@ -34,7 +34,6 @@ if(WIN32)
         "src/win/LzmaLibExports.c"
         "src/win/Threads.c"
         "include/win/LzFindMt.h"
-        "include/win/LzmaLibExports.h"
         "include/win/Threads.h"
         "src/win/LzmaLib.def"
         "src/win/resource.rc")
