@@ -125,8 +125,8 @@ void FileSystem::CGameInfo::resolveLoadDir()
 			replace(iterator->second, MODDIR_TMPL, modDir+"/");
 		}
 		else {
-			//assume we're loading from |gameinfo_path|
-			iterator->second = modDir + iterator->second;
+            //assume we're loading from |all_source_engine_paths|
+            iterator->second = baseDir + iterator->second;
 		}
 	}
 }

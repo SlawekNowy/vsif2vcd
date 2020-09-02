@@ -20,7 +20,7 @@ configure_file (
 )
 
 find_package(Boost REQUIRED
-    COMPONENTS iostreams filesystem )
+    COMPONENTS iostreams filesystem)
 
 find_package (Bitsery CONFIG REQUIRED)
 
@@ -47,8 +47,10 @@ set(SOURCES
 add_executable (Vsif2vcd ${SOURCES})
 target_precompile_headers(Vsif2vcd PUBLIC "include/pch.hpp")
 
+
+add_subdirectory(thirdparty/liblzma)
 set_property(TARGET Vsif2vcd PROPERTY CXX_STANDARD 17)
-target_link_libraries(Vsif2vcd PUBLIC Boost::iostreams Boost::filesystem Bitsery::bitsery)
+target_link_libraries(Vsif2vcd PUBLIC Boost::iostreams Boost::filesystem Bitsery::bitsery lzma)
 
 find_path(BOOST_CRC_INCLUDE_DIRS "boost/crc.hpp")
 target_include_directories(Vsif2vcd PRIVATE ${BOOST_CRC_INCLUDE_DIRS})
@@ -62,9 +64,13 @@ target_include_directories(Vsif2vcd PRIVATE ${BOOST_TOKENIZER_INCLUDE_DIRS})
 find_path(BOOST_ALGORITHM_INCLUDE_DIRS "boost/algorithm/algorithm.hpp")
 target_include_directories(Vsif2vcd PRIVATE ${BOOST_ALGORITHM_INCLUDE_DIRS})
 
+
+
 target_include_directories(Vsif2vcd PUBLIC 
      ${Boost_INCLUDE_DIR} 
-    "${PROJECT_SOURCE_DIR}/include/" 
+    "${PROJECT_SOURCE_DIR}/include/"
+    "${PROJECT_SOURCE_DIR}/thirdparty/vdf_parser/include"
+    "${PROJECT_SOURCE_DIR}/thirdparty/liblzma/include"
     "${PROJECT_BINARY_DIR}/include/"
     ${Bitsery_INCLUDE_DIR})
 
@@ -97,11 +103,13 @@ foreach(testSrc ${TEST_SRCS})
         #I like to move testing binaries into a testBin directory
 
         target_compile_definitions(${testName} PRIVATE ENABLE_TESTING)
-        target_include_directories(${testName} PUBLIC 
-     ${Boost_INCLUDE_DIR} 
-    "${PROJECT_SOURCE_DIR}/include/" 
-    "${PROJECT_BINARY_DIR}/include/"
-    ${Bitsery_INCLUDE_DIR})
+        target_include_directories(${testName} PUBLIC
+            ${Boost_INCLUDE_DIR}
+           "${PROJECT_SOURCE_DIR}/include/"
+           "${PROJECT_SOURCE_DIR}/thirdparty/vdf_parser/include"
+           "${PROJECT_SOURCE_DIR}/thirdparty/liblzma/include"
+           "${PROJECT_BINARY_DIR}/include/"
+           ${Bitsery_INCLUDE_DIR})
 
     set_property(TARGET ${testName} PROPERTY CXX_STANDARD 17)
         set_target_properties(${testName} PROPERTIES

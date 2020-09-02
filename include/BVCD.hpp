@@ -1,6 +1,9 @@
 #include "pch.hpp"
 #include "helper.hpp"
+#include <typeinfo>
 
+
+#include <LzmaLib.h>
 #pragma once
 namespace BVCD {
     using namespace Helper;
@@ -60,6 +63,7 @@ namespace BVCD {
 
 
     class CompressedVCD {
+    public:
         uint32_t magic; //LZMA
         uint32_t realSize;
         uint32_t compressedSize;
@@ -67,19 +71,80 @@ namespace BVCD {
         std::vector<char> compressedBuffer;
     };
 
+    //template <typename S>
+    template <typename S>
+    void serialize(S& s, CompressedVCD& cVCD) {
+        s.value4b(cVCD.magic);
+        s.value4b(cVCD.realSize);
+        s.value4b(cVCD.compressedSize);
+        s.container(cVCD.properties);
+
+        cVCD.compressedBuffer.resize(cVCD.compressedSize);
+        char* tmp = new char[cVCD.compressedSize];
+        //HACK: There MUST be faster way.
+        s.adapter().template readBuffer<1,char>(tmp,(size_t)cVCD.compressedSize);
+        //assert();
+        cVCD.compressedBuffer = std::vector<char>(tmp, tmp + cVCD.compressedSize + 1);
+        delete[] tmp;
+
+    };
+
+
+struct membuf : std::streambuf
+{
+    membuf(char* begin, char* end) {
+        this->setg(begin, begin, end);
+    }
+
+    template <typename Iterator=std::vector<char>::iterator>
+    membuf(Iterator begin, Iterator end) {
+        this->setg(begin.base(),begin.base(),end.base());
+    }
+};
 
 
     inline VCD getSceneFromBuffer(std::vector<char> buffer) {
         uint32_t readMagic = FourCC(new char[4]{buffer[0],buffer[1],buffer[2],buffer[3]});
 
-    if (readMagic == FourCC("LZMA")) {
+        using Buffer = std::vector<char>;
+        using OutputAdapter = bitsery::OutputBufferAdapter<Buffer>;
+        using InputAdapter = bitsery::InputBufferAdapter<Buffer>;
 
-        } else if (readMagic == FourCC("bvcd")) {
+        if (readMagic == FourCC("LZMA")) {
+            CompressedVCD vcdToDecompress;
+            bitsery::quickDeserialization<InputAdapter, CompressedVCD>(InputAdapter{ buffer.begin(),buffer.end() }, vcdToDecompress);
+            //since we use streams we need to copy to one
+            /*
+            boost::iostreams::filtering_istreambuf in;
+            in.push(boost::iostreams::lzma_decompressor());
+            in.push(boost::make_iterator_range(vcdToDecompress.compressedBuffer.begin(),vcdToDecompress.compressedBuffer.end()));
+            */
+            std::vector<char> decompressedBuffer;
+            char* decompressed = new char[vcdToDecompress.realSize];
 
-        }
+            LzmaUncompress((unsigned char*)decompressed,
+                           (size_t*)vcdToDecompress.realSize,
+                           (unsigned char*)vcdToDecompress.compressedBuffer.data(),
+                           (size_t*)vcdToDecompress.compressedSize,
+                           (unsigned char*)&vcdToDecompress.properties,5);
+            decompressedBuffer.assign(decompressed,decompressed+vcdToDecompress.realSize+1);
+
+
+    //        boost::iostreams::stream_buffer<boost::iostreams::back_insert_device<std::vector<uint8_t>>> outStream(decompressedBuffer);
+
+            return getSceneFromBuffer(decompressedBuffer);
+
+            }
+        assert(FourCC("bvcd"));
+        VCD vcd;
+        bitsery::quickDeserialization<InputAdapter, VCD>(InputAdapter{ buffer.begin(),buffer.end() }, vcd);
+
 
         return VCD();
     };
+
+
+
 
 
 

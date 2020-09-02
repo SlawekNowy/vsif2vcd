@@ -11,7 +11,7 @@
 
 //Do we even implement older code? (sdk-2007)
 //Determine which is which
-#include "thirdparty/vdf_parser.hpp"
+#include <vdf_parser.hpp>
 #include "enum_bitmask.hpp"
 #include "gameinfoKV.hpp"
 #include "pch.hpp"

@@ -245,6 +245,7 @@ namespace VSIF {
 		char* tmp = new char[dataSize];
 		//HACK: There MUST be faster way. 
         s.adapter().template readBuffer<1,char>(tmp,(size_t)dataSize);
+        //assert();
 		vsif.sceneBuffer = std::vector<char>(tmp, tmp + dataSize + 1);
 		delete[] tmp;
 		/*
