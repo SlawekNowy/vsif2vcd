@@ -25,7 +25,8 @@ BOOST_AUTO_TEST_CASE(testBVCD) {
     VSIF::ValveScenesImageFile vsif =VSIF::ValveScenesImageFile("/home/slawomir/Dane/hl2_tmp/scenes/scenes.image");
     Helper::vsif =&vsif;
 
-    VSIF::VSIF_Entry entry = Helper::vsif->entries[0];
+    for (unsigned int i=0;i<vsif.header.ScenesCount;i++){
+    VSIF::VSIF_Entry entry = Helper::vsif->entries[i];
     //[first,last) - we need [first,last] so effectively [first,last+sizeof(char))
     //TODO - can std::next return end iterator?
     uint32_t startPos = entry.Offset-Helper::vsif->dataPos;
@@ -37,6 +38,7 @@ BOOST_AUTO_TEST_CASE(testBVCD) {
     BVCD::VCD vcdMem = BVCD::getSceneFromBuffer(bvcd);
 
 
-    std::cout << "Got "<< sizeof(vcdMem)<< " B object from "<<entry.Size<<" B buffer.";
+    std::cout << "Got an object from "<<entry.Size<<" B buffer."<<std::endl; //no reliable way mo measure size of object
+    }
 }
 #endif

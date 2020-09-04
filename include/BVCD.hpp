@@ -175,9 +175,13 @@ void serialize(S& s, Flex_Tracks& track) {
     track.samples.resize(shortTmp);
     for (int i=0;i<shortTmp;i++)
         s.object(track.samples[i]);
-    track.comboSamples.resize(shortTmp);
-    for (int i=0;i<shortTmp;i++)
-        s.object(track.comboSamples[i]);
+    if ((int)(track.flags & TrackFlags::isCombo)){
+
+        s.value2b(shortTmp);
+        track.comboSamples.resize(shortTmp);
+        for (int i=0;i<shortTmp;i++)
+            s.object(track.comboSamples[i]);
+    }
 
 
 }
@@ -276,6 +280,7 @@ void serialize(S& s, VCD_AbsTags& tags) {
 
     template <typename S>
     void serialize(S& s, VCD_Event& e) {
+        /*Header*/
     uint8_t flagTmp;
 
     uint16_t stringIndexTmp;
@@ -283,48 +288,72 @@ void serialize(S& s, VCD_AbsTags& tags) {
     e.eventType=(Event_Type)flagTmp;
     s.value2b(stringIndexTmp);
     e.name=Helper::vsif->stringPool.getStringByID(stringIndexTmp);
+    //Time
     s.value4b(e.eventStart);
     s.value4b(e.eventEnd);
+    //Params
     s.value2b(stringIndexTmp);
     e.param1=Helper::vsif->stringPool.getStringByID(stringIndexTmp);
     s.value2b(stringIndexTmp);
     e.param2=Helper::vsif->stringPool.getStringByID(stringIndexTmp);
     s.value2b(stringIndexTmp);
     e.param3=Helper::vsif->stringPool.getStringByID(stringIndexTmp);
+    //ramp
     s.object(e.ramp);
+    //flags
     s.value1b(flagTmp);
     e.flags = (VCD_Flags)flagTmp;
-    s.value4b(e.distanceToTarget);
+    //distance to target
+    float tmpFloat;
+    s.value4b(tmpFloat);
+    if(tmpFloat>0){
+        e.distanceToTarget = tmpFloat;
+    } else {
+        //Rewind back where we were.
+        s.adapter().currentReadPos(s.adapter().currentReadPos()-4);
+    }
+    //s.value4b(e.distanceToTarget);
+    //relative tags
     uint8_t tagCount;
     s.value1b(tagCount);
     e.relativeTags.resize(tagCount);
     for (int i=0;i<tagCount;i++)
         s.object(e.relativeTags[i]);
+    //flex timing tags
     s.value1b(tagCount);
     e.flexTimingTags.resize(tagCount);
     for (int i=0;i<tagCount;i++)
         s.object(e.flexTimingTags[i]);
+    //absolute tags
     s.value1b(tagCount);
     e.absoluteTags.resize(tagCount);
     for (int i=0;i<tagCount;i++)
         s.object(e.absoluteTags[i]);
     uint8_t tag = tagCount;
     s.value1b(tagCount);
-    e.absoluteTags.reserve(tagCount);
+    std::vector<VCD_AbsTags> absTagsTmp(e.absoluteTags);
+    e.absoluteTags.resize(tagCount+tag);
+    e.absoluteTags.assign(absTagsTmp.begin(),absTagsTmp.end());
     for (int i=0;i<tagCount;i++)
         s.object(e.absoluteTags[i+tag]);
+    //sequence duration
     if(Event_Type::Event_Gesture==e.eventType) {
         s.value4b(e.sequenceDuration);
     }
+    //relative tag
     s.value1b(flagTmp);
     e.usingRelativetag = flagTmp?true:false;
+
     if (e.usingRelativetag)
         s.object(e.relativeTag);
-    s.value1b(e.loopCount);
-    if(Event_Type::Event_Speak==e.eventType) {
-    s.object(e.closeCaptions);
-
-    }
+    //flex
+    s.object(e.flex);
+    //loop
+    if (Event_Type::Event_Loop==e.eventType)
+        s.value1b(e.loopCount);
+    //closed captions
+    if(Event_Type::Event_Speak==e.eventType)
+        s.object(e.closeCaptions);
 
 
 }
@@ -420,7 +449,7 @@ void serialize(S& s, VCD_AbsTags& tags) {
         uint32_t magic; //LZMA
         uint32_t realSize;
         uint32_t compressedSize;
-        char properties[5];
+        unsigned char properties[5];
         std::vector<char> compressedBuffer;
     };
 
@@ -473,14 +502,18 @@ struct membuf : std::streambuf
             in.push(boost::make_iterator_range(vcdToDecompress.compressedBuffer.begin(),vcdToDecompress.compressedBuffer.end()));
             */
             std::vector<char> decompressedBuffer;
-            char* decompressed = new char[vcdToDecompress.realSize];
+            unsigned char* decompressed = new unsigned char[vcdToDecompress.realSize];
+            unsigned char* compressed = new unsigned char[vcdToDecompress.compressedSize];
+            std::copy(vcdToDecompress.compressedBuffer.begin(), vcdToDecompress.compressedBuffer.end(), compressed);
 
-            LzmaUncompress((unsigned char*)decompressed,
-                           (size_t*)vcdToDecompress.realSize,
-                           (unsigned char*)vcdToDecompress.compressedBuffer.data(),
-                           (size_t*)vcdToDecompress.compressedSize,
-                           (unsigned char*)&vcdToDecompress.properties,5);
-            decompressedBuffer.assign(decompressed,decompressed+vcdToDecompress.realSize+1);
+            size_t destSize=vcdToDecompress.realSize,srcSize=vcdToDecompress.compressedSize;
+
+            LzmaUncompress(decompressed,
+                           &destSize,
+                           compressed,
+                           &srcSize,
+                           vcdToDecompress.properties,5);
+            decompressedBuffer.assign(decompressed,decompressed+vcdToDecompress.realSize);
 
 
     //        boost::iostreams::stream_buffer<boost::iostreams::back_insert_device<std::vector<uint8_t>>> outStream(decompressedBuffer);
