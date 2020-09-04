@@ -629,7 +629,7 @@ void BVCD_Event(FILE* VCD, unsigned char** Source, unsigned char* Image, int InC
 	/* Params */
 	fprintf(VCD, "%s  param \"%s\"\r\n", Tab, BVCD_PoolString(*Source, Image));
 	(*Source) += 2;
-	if (strlen(BVCD_PoolString(*Source, Image)))
+	if (strlen(BVCD_PoolString(*Source, Image))) //check if retrieved string ois non-empty
 		fprintf(VCD, "%s  param2 \"%s\"\r\n", Tab, BVCD_PoolString(*Source, Image));
 	(*Source) += 2;
 	if (strlen(BVCD_PoolString(*Source, Image)))

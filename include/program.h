@@ -16,7 +16,7 @@ namespace Program {
 
 	//gameinfo object
 	extern CGameInfo gi;
-	extern VSIF::ValveScenesImageFile vsif;
+    //extern VSIF::ValveScenesImageFile vsif;
 
 	void appendHardCodedEntries();
 

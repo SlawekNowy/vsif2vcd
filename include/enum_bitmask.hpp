@@ -21,6 +21,9 @@ struct EnableBitMaskOperators<x>     \
     static const bool enable = true; \
 };
 
+
+
+
 template<typename Enum>
 typename std::enable_if<EnableBitMaskOperators<Enum>::enable, Enum>::type
 operator &(Enum lhs, Enum rhs)

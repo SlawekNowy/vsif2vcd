@@ -4,11 +4,13 @@
 
 #pragma once
 #include "pch.hpp"
-
+//#include "BVCD.hpp"
 #include "helper.hpp"
-#include "BVCD.hpp"
-using namespace Helper;
 
+
+namespace BVCD{
+ class VCD;
+}
 
 //ODR
 namespace VSIF {
@@ -117,6 +119,7 @@ namespace VSIF {
 	
 
 
+
 	//representaion of scenes.image file
 	struct ValveScenesImageFile {
 		uint32_t size;
@@ -128,7 +131,7 @@ namespace VSIF {
 		//Cannot make a vector of structs since that data might be compressed
 		std::vector<char> sceneBuffer;
 
-        std::vector<BVCD::VCD> vcds;
+        std::vector<BVCD::VCD*> vcds;
 	
 		ValveScenesImageFile() {
 			//ValveScenesImageFile("scenes.image");
@@ -166,7 +169,7 @@ namespace VSIF {
 	void serialize(S& s, ValveScenesImageFile& vsif) {
 		
 		s.object(vsif.header);
-		assert(vsif.header.ID==FourCC("VSIF") && vsif.header.Version ==2);
+        assert(vsif.header.ID==Helper::FourCC("VSIF") && vsif.header.Version ==2);
 		s.ext
 		(
 			vsif.stringPool,

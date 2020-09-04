@@ -31,7 +31,7 @@ std::vector<BSPParser::Map_Scene> Program::scenesPerMap;
 CGameInfo Program::gi;
 std::map<std::string,std::vector<BSPParser::Map_Scene>> BSPParser::Scenes;
 
-VSIF::ValveScenesImageFile Program::vsif;
+//VSIF::ValveScenesImageFile* Helper::vsif;
 using boost::filesystem::path;
 using boost::filesystem::canonical;
 int Program::doStart(std::string gameDir) {
@@ -49,7 +49,8 @@ int Program::doStart(std::string gameDir) {
 
 #endif
     appendHardCodedEntries();
-    vsif = VSIF::ValveScenesImageFile(gameDir + "/scenes/scenes.image");
+    VSIF::ValveScenesImageFile vsif = VSIF::ValveScenesImageFile(gameDir + "/scenes/scenes.image");
+    Helper::vsif = &vsif;
 	return 0;
 
 
