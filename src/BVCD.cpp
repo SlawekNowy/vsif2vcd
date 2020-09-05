@@ -22,7 +22,7 @@
 
 //VSIF::ValveScenesImageFile* Helper::vsif;
 BOOST_AUTO_TEST_CASE(testBVCD) {
-    VSIF::ValveScenesImageFile vsif =VSIF::ValveScenesImageFile("/home/slawomir/Dane/hl2_tmp/scenes/scenes.image");
+    VSIF::ValveScenesImageFile vsif =VSIF::ValveScenesImageFile("E:/hl2_tmp/scenes/scenes.image");
     Helper::vsif =&vsif;
 
     for (unsigned int i=0;i<vsif.header.ScenesCount;i++){

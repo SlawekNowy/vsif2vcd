@@ -96,11 +96,11 @@ struct VCD_Sample {
 };
 template <typename S>
 void serialize(S& s, VCD_Sample& sample) {
-    uint16_t shortTmp;
+    uint8_t byteTmp;
     s.value4b(sample.time);
 
-    s.value2b(shortTmp);
-    sample.value=shortTmp*One255th;
+    s.value1b(byteTmp);
+    sample.value= byteTmp *One255th;
 
 }
 struct VCD_Ramp { // CCurveData
@@ -142,11 +142,11 @@ struct Flex_Samples {
 };
 template <typename S>
 void serialize(S& s, Flex_Samples& sample) {
-    uint16_t shortTmp;
+    uint8_t byteTmp;
     s.value4b(sample.time);
 
-    s.value2b(shortTmp);
-    sample.value=shortTmp*One255th;
+    s.value1b(byteTmp);
+    sample.value = byteTmp * One255th;
     uint8_t charTmp;
     s.value1b(charTmp);
     sample.toCurve = Interpolators[charTmp];
@@ -170,7 +170,7 @@ void serialize(S& s, Flex_Tracks& track) {
     track.flags=(TrackFlags)byteTmp;
     s.value4b(track.minRange);
     s.value4b(track.minRange);
-    assert(track.minRange>=0&&track.maxRange<=1);
+    //assert(track.minRange>=0&&track.maxRange<=1); //this assertion is ill-formed
     s.value2b(shortTmp);
     track.samples.resize(shortTmp);
     for (int i=0;i<shortTmp;i++)
@@ -206,9 +206,9 @@ void serialize(S& s, VCD_RelTags& tags) {
     uint16_t shortTmp;
     s.value2b(shortTmp);
     tags.name=Helper::vsif->stringPool.getStringByID(shortTmp);
-
-    s.value2b(shortTmp);
-    tags.duration=shortTmp*One255th;
+    uint8_t byteTmp;
+    s.value1b(byteTmp);
+    tags.duration= byteTmp *One255th;
 }
 struct VCD_RelTag {
     std::string name;
@@ -233,8 +233,9 @@ void serialize(S& s, VCD_FlexTimingTags& tags) {
     uint16_t shortTmp;
     s.value2b(shortTmp);
     tags.name=Helper::vsif->stringPool.getStringByID(shortTmp);
-    s.value2b(shortTmp);
-    tags.duration=shortTmp*One255th;
+    uint8_t byteTmp;
+    s.value1b(byteTmp);
+    tags.duration= byteTmp *One255th;
 }
 struct VCD_AbsTags {
     VCD_AbsTagType type;
@@ -245,13 +246,15 @@ struct VCD_AbsTags {
 template <typename S>
 void serialize(S& s, VCD_AbsTags& tags) {
 
+    /*
     uint8_t byteTmp;
     s.value1b(byteTmp);
-    tags.type=(VCD_AbsTagType)byteTmp;
+    tags.type=(VCD_AbsTagType)byteTmp; //This is NOT serialized
+    */
     uint16_t shortTmp;
     s.value2b(shortTmp);
     tags.name=Helper::vsif->stringPool.getStringByID(shortTmp);
-    s.value2b(shortTmp);
+    s.value2b(shortTmp); //here's the source of the confusion
     tags.duration=shortTmp*One4096th;
 }
 
@@ -308,9 +311,6 @@ void serialize(S& s, VCD_AbsTags& tags) {
     s.value4b(tmpFloat);
     if(tmpFloat>0){
         e.distanceToTarget = tmpFloat;
-    } else {
-        //Rewind back where we were.
-        s.adapter().currentReadPos(s.adapter().currentReadPos()-4);
     }
     //s.value4b(e.distanceToTarget);
     //relative tags
@@ -325,17 +325,35 @@ void serialize(S& s, VCD_AbsTags& tags) {
     for (int i=0;i<tagCount;i++)
         s.object(e.flexTimingTags[i]);
     //absolute tags
-    s.value1b(tagCount);
-    e.absoluteTags.resize(tagCount);
-    for (int i=0;i<tagCount;i++)
-        s.object(e.absoluteTags[i]);
-    uint8_t tag = tagCount;
-    s.value1b(tagCount);
-    std::vector<VCD_AbsTags> absTagsTmp(e.absoluteTags);
-    e.absoluteTags.resize(tagCount+tag);
-    e.absoluteTags.assign(absTagsTmp.begin(),absTagsTmp.end());
-    for (int i=0;i<tagCount;i++)
-        s.object(e.absoluteTags[i+tag]);
+    {
+        std::vector<VCD_AbsTags> absTagsPlay;
+        std::vector<VCD_AbsTags> absTagsShift;
+        s.value1b(tagCount);
+        absTagsPlay.resize(tagCount);
+        for (int i = 0; i < tagCount; i++)
+            s.object(absTagsPlay[i]);
+        uint8_t tag = tagCount;
+        s.value1b(tagCount);
+        //std::vector<VCD_AbsTags> absTagsTmp(e.absoluteTags);
+        //e.absoluteTags.resize(tagCount + tag);
+        //e.absoluteTags.assign(absTagsTmp.begin(), absTagsTmp.end());
+
+        absTagsShift.resize(tagCount);
+        for (int i = 0; i < tagCount; i++)
+            s.object(absTagsShift[i + tag]);
+
+        std::for_each(absTagsPlay.begin(), absTagsPlay.end(), [](VCD_AbsTags & absTag) {
+            absTag.type = VCD_AbsTagType::playback;
+        });
+        std::for_each(absTagsShift.begin(), absTagsShift.end(), [](VCD_AbsTags & absTag) {
+                absTag.type = VCD_AbsTagType::shifted;
+        });
+
+        e.absoluteTags.reserve(absTagsPlay.size() + absTagsShift.size()); //we already constructed objects
+        e.absoluteTags.insert(e.absoluteTags.end(), absTagsPlay.begin(), absTagsPlay.end());
+        e.absoluteTags.insert(e.absoluteTags.end(), absTagsShift.begin(), absTagsShift.end());
+    }
+    
     //sequence duration
     if(Event_Type::Event_Gesture==e.eventType) {
         s.value4b(e.sequenceDuration);
