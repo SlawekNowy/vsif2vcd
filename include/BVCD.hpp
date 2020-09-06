@@ -332,7 +332,7 @@ void serialize(S& s, VCD_AbsTags& tags) {
         absTagsPlay.resize(tagCount);
         for (int i = 0; i < tagCount; i++)
             s.object(absTagsPlay[i]);
-        uint8_t tag = tagCount;
+        //uint8_t tag = tagCount;
         s.value1b(tagCount);
         //std::vector<VCD_AbsTags> absTagsTmp(e.absoluteTags);
         //e.absoluteTags.resize(tagCount + tag);
@@ -340,7 +340,7 @@ void serialize(S& s, VCD_AbsTags& tags) {
 
         absTagsShift.resize(tagCount);
         for (int i = 0; i < tagCount; i++)
-            s.object(absTagsShift[i + tag]);
+            s.object(absTagsShift[i]);
 
         std::for_each(absTagsPlay.begin(), absTagsPlay.end(), [](VCD_AbsTags & absTag) {
             absTag.type = VCD_AbsTagType::playback;
@@ -504,7 +504,8 @@ struct membuf : std::streambuf
 
 
     inline VCD getSceneFromBuffer(std::vector<char> buffer) {
-        uint32_t readMagic = FourCC(new char[4]{buffer[0],buffer[1],buffer[2],buffer[3]});
+        char magic[4] = { buffer[0],buffer[1],buffer[2],buffer[3] };
+        uint32_t readMagic = FourCC(magic);
 
         using Buffer = std::vector<char>;
         using OutputAdapter = bitsery::OutputBufferAdapter<Buffer>;
@@ -532,6 +533,9 @@ struct membuf : std::streambuf
                            &srcSize,
                            vcdToDecompress.properties,5);
             decompressedBuffer.assign(decompressed,decompressed+vcdToDecompress.realSize);
+
+            delete[] compressed;
+            delete[] decompressed;
 
 
     //        boost::iostreams::stream_buffer<boost::iostreams::back_insert_device<std::vector<uint8_t>>> outStream(decompressedBuffer);
