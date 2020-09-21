@@ -28,23 +28,33 @@ find_package (Bitsery CONFIG REQUIRED)
 
 
 
+
+
+set(PRIVATE_INCLUDES
+
+    "include/VSIF.hpp"
+    "include/map_bsp.hpp"
+    "include/enum_bitmask.hpp"
+    "include/gameinfoKV.hpp"
+    "include/program.h"
+    "include/BVCD.hpp"
+    "include/gameinfo.hpp"
+    "include/hardcoded_entries.h"
+    "include/CRC.h"
+    "include/pch.hpp"
+
+    "include/split_serialization.h"
+    "include/helper.hpp"
+    )
 set(SOURCES 
     "src/Vsif2vcd_c++.cpp"
     "src/BVCD.cpp"
     "src/map_bsp.cpp"
     "src/gameinfo.cpp"
-    "include/VSIF.hpp"
-    "include/map_bsp.hpp"
-    "include/enum_bitmask.hpp"
-    "include/gameinfoKV.hpp"
-    "include/program.h" "include/BVCD.hpp" 
-    "include/gameinfo.hpp" 
-    "include/hardcoded_entries.h" 
-    "include/CRC.h"
      
-      "src/VSIF.cpp" "include/split_serialization.h" "include/helper.hpp")
+      "src/VSIF.cpp")
 # Dodaj źródło do pliku wykonywalnego tego projektu.
-add_executable (Vsif2vcd ${SOURCES})
+add_executable (Vsif2vcd ${SOURCES} ${PRIVATE_INCLUDES})
 target_precompile_headers(Vsif2vcd PUBLIC "include/pch.hpp")
 
 
@@ -72,6 +82,7 @@ target_include_directories(Vsif2vcd PUBLIC
     "${PROJECT_SOURCE_DIR}/include/"
     "${PROJECT_SOURCE_DIR}/thirdparty/vdf_parser/include"
     "${PROJECT_SOURCE_DIR}/thirdparty/liblzma/include"
+    "${PROJECT_SOURCE_DIR}/thirdparty/ostream_indenter/include"
     "${PROJECT_BINARY_DIR}/include/"
     ${Bitsery_INCLUDE_DIR})
 
@@ -94,33 +105,94 @@ set(TEST_SRCS
 "src/BVCD.cpp"
 )
 #Run through each source
-foreach(testSrc ${TEST_SRCS})
+
+#foreach(testSrc ${TEST_SRCS})
         #Extract the filename without an extension (NAME_WE)
-        get_filename_component(testName ${testSrc} NAME_WE)
-        #Add compile target
-        add_executable(${testName} ${testSrc})
-        #link to Boost libraries AND your targets and dependencies
-        target_link_libraries(${testName} ${Boost_LIBRARIES} Bitsery::bitsery lzma)
+ #       get_filename_component(testName ${testSrc} NAME_WE)
+#endforeach(testSrc)
 
 
-        #I like to move testing binaries into a testBin directory
+#Add compile target
+add_executable(gameinfo "src/gameinfo.cpp" ${PRIVATE_INCLUDES})
+#link to Boost libraries AND your targets and dependencies
+target_link_libraries(gameinfo ${Boost_LIBRARIES} Bitsery::bitsery lzma)
 
-        target_compile_definitions(${testName} PRIVATE ENABLE_TESTING)
-        target_include_directories(${testName} PUBLIC
-            ${Boost_INCLUDE_DIR}
-           "${PROJECT_SOURCE_DIR}/include/"
-           "${PROJECT_SOURCE_DIR}/thirdparty/vdf_parser/include"
-           "${PROJECT_SOURCE_DIR}/thirdparty/liblzma/include"
-           "${PROJECT_BINARY_DIR}/include/"
-           ${Bitsery_INCLUDE_DIR})
 
-    set_property(TARGET ${testName} PROPERTY CXX_STANDARD 17)
-        set_target_properties(${testName} PROPERTIES
-            RUNTIME_OUTPUT_DIRECTORY  ${CMAKE_CURRENT_SOURCE_DIR}/testBin)
-        #Finally add it to test execution -
-        #Notice the WORKING_DIRECTORY and COMMAND
-        add_test(NAME ${testName}
-                 WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/testBin
-                 COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/testBin/${testName} )
-endforeach(testSrc)
+#I like to move testing binaries into a testBin directory
+
+target_compile_definitions(gameinfo PRIVATE ENABLE_TESTING TESTING_GAMEINFO)
+target_include_directories(gameinfo PUBLIC
+    ${Boost_INCLUDE_DIR}
+   "${PROJECT_SOURCE_DIR}/include/"
+   "${PROJECT_SOURCE_DIR}/thirdparty/vdf_parser/include"
+   "${PROJECT_SOURCE_DIR}/thirdparty/liblzma/include"
+
+   "${PROJECT_SOURCE_DIR}/thirdparty/ostream_indenter/include"
+   "${PROJECT_BINARY_DIR}/include/"
+   ${Bitsery_INCLUDE_DIR})
+
+set_property(TARGET gameinfo PROPERTY CXX_STANDARD 17)
+set_target_properties(gameinfo PROPERTIES
+    RUNTIME_OUTPUT_DIRECTORY  ${CMAKE_CURRENT_SOURCE_DIR}/testBin)
+#Finally add it to test execution -
+#Notice the WORKING_DIRECTORY and COMMAND
+add_test(NAME gameinfo
+WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/testBin
+COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/testBin/gameinfo)
+
+
+#Add compile target
+add_executable(VSIF src/VSIF.cpp ${PRIVATE_INCLUDES})
+#link to Boost libraries AND your targets and dependencies
+target_link_libraries(VSIF ${Boost_LIBRARIES} Bitsery::bitsery lzma)
+
+
+#I like to move testing binaries into a testBin directory
+
+target_compile_definitions(VSIF PRIVATE ENABLE_TESTING TESTING_VSIF)
+target_include_directories(VSIF PUBLIC
+    ${Boost_INCLUDE_DIR}
+   "${PROJECT_SOURCE_DIR}/include/"
+   "${PROJECT_SOURCE_DIR}/thirdparty/vdf_parser/include"
+   "${PROJECT_SOURCE_DIR}/thirdparty/liblzma/include"
+
+   "${PROJECT_SOURCE_DIR}/thirdparty/ostream_indenter/include"
+   "${PROJECT_BINARY_DIR}/include/"
+   ${Bitsery_INCLUDE_DIR})
+
+set_property(TARGET VSIF PROPERTY CXX_STANDARD 17)
+set_target_properties(VSIF PROPERTIES
+    RUNTIME_OUTPUT_DIRECTORY  ${CMAKE_CURRENT_SOURCE_DIR}/testBin)
+#Finally add it to test execution -
+#Notice the WORKING_DIRECTORY and COMMAND
+add_test(NAME VSIF
+         WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/testBin
+         COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/testBin/VSIF)
+
+
+     #Add compile target
+     add_executable(BVCD "src/BVCD.cpp" src/VSIF.cpp ${PRIVATE_INCLUDES})
+     #link to Boost libraries AND your targets and dependencies
+     target_link_libraries(BVCD ${Boost_LIBRARIES} Bitsery::bitsery lzma)
+
+
+     #I like to move testing binaries into a testBin directory
+
+     target_compile_definitions(BVCD PRIVATE ENABLE_TESTING TESTING_BVCD)
+     target_include_directories(BVCD PUBLIC
+         ${Boost_INCLUDE_DIR}
+        "${PROJECT_SOURCE_DIR}/include/"
+        "${PROJECT_SOURCE_DIR}/thirdparty/vdf_parser/include"
+        "${PROJECT_SOURCE_DIR}/thirdparty/liblzma/include"
+
+        "${PROJECT_SOURCE_DIR}/thirdparty/ostream_indenter/include"
+        "${PROJECT_BINARY_DIR}/include/"
+        ${Bitsery_INCLUDE_DIR})
+
+     set_property(TARGET BVCD PROPERTY CXX_STANDARD 17)
+     set_target_properties(BVCD PROPERTIES
+         RUNTIME_OUTPUT_DIRECTORY  ${CMAKE_CURRENT_SOURCE_DIR}/testBin)
+     #Finally add it to test execution -
+     #Notice the WORKING_DIRECTORY and COMMAND
+     add_test(NAME BVCD WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/testBin COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/testBin/BVCD)
 

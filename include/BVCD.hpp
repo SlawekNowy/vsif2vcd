@@ -8,7 +8,13 @@
 #include "VSIF.hpp"
 #include <LzmaLib.h>
 
+
+#include <sstream>
+
 VSIF::ValveScenesImageFile* Helper::vsif;
+
+
+
 
 
 namespace BVCD {
@@ -93,126 +99,78 @@ namespace BVCD {
 struct VCD_Sample {
     float time;
     float value;
+
+
+    void dumpText(std::stringstream& stream);
 };
+
 template <typename S>
-void serialize(S& s, VCD_Sample& sample) {
-    uint8_t byteTmp;
-    s.value4b(sample.time);
+void serialize(S& s, VCD_Sample& sample);
 
-    s.value1b(byteTmp);
-    sample.value= byteTmp *One255th;
 
-}
 struct VCD_Ramp { // CCurveData
     //ramp name is event in VCD_Event and scene in VCD
     std::vector<VCD_Sample> samples;
 
+    void dumpText(std::stringstream& stream,bool inEvent);
+
 };
 template <typename S>
-void serialize(S& s, VCD_Ramp& ramp) {
-    uint8_t byteTmp;
-    s.value1b(byteTmp);
-    ramp.samples.resize(byteTmp);
-    for (int i=0;i<byteTmp;i++)
-        s.object(ramp.samples[i]);
-
-}
+void serialize(S& s, VCD_Ramp& ramp);
 struct VCD_CC {
     VCD_CC_Type type;
     std::string cc_token;
     VCD_CC_Flags flags;
+
+    void dumpText(std::stringstream& stream);
 };
 template <typename S>
-void serialize(S& s, VCD_CC& subtitles) {
-    uint8_t byteTmp;
-
-    s.value1b(byteTmp);
-    subtitles.type=(VCD_CC_Type)byteTmp;
-    uint16_t shortTmp;
-    s.value2b(shortTmp);
-    subtitles.cc_token=Helper::vsif->stringPool.getStringByID(shortTmp);
-    s.value1b(byteTmp);
-    subtitles.flags=(VCD_CC_Flags)byteTmp;
-}
+void serialize(S& s, VCD_CC& subtitles);
 struct Flex_Samples {
     float time;
     float value;
     std::string fromCurve; //left
     std::string toCurve; //right
+
+
+    void dumpText(std::stringstream& stream);
 };
 template <typename S>
-void serialize(S& s, Flex_Samples& sample) {
-    uint8_t byteTmp;
-    s.value4b(sample.time);
-
-    s.value1b(byteTmp);
-    sample.value = byteTmp * One255th;
-    uint8_t charTmp;
-    s.value1b(charTmp);
-    sample.toCurve = Interpolators[charTmp];
-    s.value1b(charTmp);
-    sample.fromCurve = Interpolators[charTmp];
-}
+void serialize(S& s, Flex_Samples& sample);
 struct Flex_Tracks {
     std::string name;
     TrackFlags flags;
     float minRange,maxRange;//(0.0,1.0)
     std::vector<Flex_Samples> samples;
     std::vector<Flex_Samples> comboSamples;
+
+    void dumpText(std::stringstream& stream);
 };
 template <typename S>
-void serialize(S& s, Flex_Tracks& track) {
-    uint16_t shortTmp;
-    s.value2b(shortTmp);
-    track.name=Helper::vsif->stringPool.getStringByID(shortTmp);
-    uint8_t byteTmp;
-    s.value1b(byteTmp);
-    track.flags=(TrackFlags)byteTmp;
-    s.value4b(track.minRange);
-    s.value4b(track.minRange);
-    //assert(track.minRange>=0&&track.maxRange<=1); //this assertion is ill-formed
-    s.value2b(shortTmp);
-    track.samples.resize(shortTmp);
-    for (int i=0;i<shortTmp;i++)
-        s.object(track.samples[i]);
-    if ((int)(track.flags & TrackFlags::isCombo)){
+void serialize(S& s, Flex_Tracks& track);
 
-        s.value2b(shortTmp);
-        track.comboSamples.resize(shortTmp);
-        for (int i=0;i<shortTmp;i++)
-            s.object(track.comboSamples[i]);
-    }
-
-
-}
 struct VCD_EventFlex {
     std::vector<Flex_Tracks> tracks;
+
+
+    void dumpText(std::stringstream& stream);
 };
 template <typename S>
-void serialize(S& s, VCD_EventFlex& flex) {
-    uint8_t byteTmp;
-    s.value1b(byteTmp);
-    flex.tracks.resize(byteTmp);
-    for (int i=0;i<byteTmp;i++)
-        s.object(flex.tracks[i]);
-}
+void serialize(S& s, VCD_EventFlex& flex);
+
 struct VCD_RelTags {
     std::string name;
     float duration;
+
+    void dumpText(std::stringstream& stream);
 };
 template <typename S>
-void serialize(S& s, VCD_RelTags& tags) {
-
-    uint16_t shortTmp;
-    s.value2b(shortTmp);
-    tags.name=Helper::vsif->stringPool.getStringByID(shortTmp);
-    uint8_t byteTmp;
-    s.value1b(byteTmp);
-    tags.duration= byteTmp *One255th;
-}
+void serialize(S& s, VCD_RelTags& tags);
 struct VCD_RelTag {
     std::string name;
     std::string wavName;
+
+    void dumpText(std::stringstream& stream);
 };
 template <typename S>
 void serialize(S& s, VCD_RelTag& tag) {
@@ -227,36 +185,23 @@ struct VCD_FlexTimingTags {
 
     std::string name;
     float duration;
+
+
+    void dumpText(std::stringstream& stream);
 };
 template <typename S>
-void serialize(S& s, VCD_FlexTimingTags& tags) {
-    uint16_t shortTmp;
-    s.value2b(shortTmp);
-    tags.name=Helper::vsif->stringPool.getStringByID(shortTmp);
-    uint8_t byteTmp;
-    s.value1b(byteTmp);
-    tags.duration= byteTmp *One255th;
-}
+void serialize(S& s, VCD_FlexTimingTags& tags);
 struct VCD_AbsTags {
     VCD_AbsTagType type;
     std::string name;
     float duration;
 
+
+
+    void dumpText(std::stringstream& stream);
 };
 template <typename S>
-void serialize(S& s, VCD_AbsTags& tags) {
-
-    /*
-    uint8_t byteTmp;
-    s.value1b(byteTmp);
-    tags.type=(VCD_AbsTagType)byteTmp; //This is NOT serialized
-    */
-    uint16_t shortTmp;
-    s.value2b(shortTmp);
-    tags.name=Helper::vsif->stringPool.getStringByID(shortTmp);
-    s.value2b(shortTmp); //here's the source of the confusion
-    tags.duration=shortTmp*One4096th;
-}
+void serialize(S& s, VCD_AbsTags& tags);
 
     struct VCD_Event {
         Event_Type eventType;
@@ -278,148 +223,34 @@ void serialize(S& s, VCD_AbsTags& tags) {
 
 
 
+        void dumpText(std::stringstream& stream);
 
     };
 
     template <typename S>
-    void serialize(S& s, VCD_Event& e) {
-        /*Header*/
-    uint8_t flagTmp;
-
-    uint16_t stringIndexTmp;
-    s.value1b(flagTmp);
-    e.eventType=(Event_Type)flagTmp;
-    s.value2b(stringIndexTmp);
-    e.name=Helper::vsif->stringPool.getStringByID(stringIndexTmp);
-    //Time
-    s.value4b(e.eventStart);
-    s.value4b(e.eventEnd);
-    //Params
-    s.value2b(stringIndexTmp);
-    e.param1=Helper::vsif->stringPool.getStringByID(stringIndexTmp);
-    s.value2b(stringIndexTmp);
-    e.param2=Helper::vsif->stringPool.getStringByID(stringIndexTmp);
-    s.value2b(stringIndexTmp);
-    e.param3=Helper::vsif->stringPool.getStringByID(stringIndexTmp);
-    //ramp
-    s.object(e.ramp);
-    //flags
-    s.value1b(flagTmp);
-    e.flags = (VCD_Flags)flagTmp;
-    //distance to target
-    float tmpFloat;
-    s.value4b(tmpFloat);
-    if(tmpFloat>0){
-        e.distanceToTarget = tmpFloat;
-    }
-    //s.value4b(e.distanceToTarget);
-    //relative tags
-    uint8_t tagCount;
-    s.value1b(tagCount);
-    e.relativeTags.resize(tagCount);
-    for (int i=0;i<tagCount;i++)
-        s.object(e.relativeTags[i]);
-    //flex timing tags
-    s.value1b(tagCount);
-    e.flexTimingTags.resize(tagCount);
-    for (int i=0;i<tagCount;i++)
-        s.object(e.flexTimingTags[i]);
-    //absolute tags
-    {
-        std::vector<VCD_AbsTags> absTagsPlay;
-        std::vector<VCD_AbsTags> absTagsShift;
-        s.value1b(tagCount);
-        absTagsPlay.resize(tagCount);
-        for (int i = 0; i < tagCount; i++)
-            s.object(absTagsPlay[i]);
-        //uint8_t tag = tagCount;
-        s.value1b(tagCount);
-        //std::vector<VCD_AbsTags> absTagsTmp(e.absoluteTags);
-        //e.absoluteTags.resize(tagCount + tag);
-        //e.absoluteTags.assign(absTagsTmp.begin(), absTagsTmp.end());
-
-        absTagsShift.resize(tagCount);
-        for (int i = 0; i < tagCount; i++)
-            s.object(absTagsShift[i]);
-
-        std::for_each(absTagsPlay.begin(), absTagsPlay.end(), [](VCD_AbsTags & absTag) {
-            absTag.type = VCD_AbsTagType::playback;
-        });
-        std::for_each(absTagsShift.begin(), absTagsShift.end(), [](VCD_AbsTags & absTag) {
-                absTag.type = VCD_AbsTagType::shifted;
-        });
-
-        e.absoluteTags.reserve(absTagsPlay.size() + absTagsShift.size()); //we already constructed objects
-        e.absoluteTags.insert(e.absoluteTags.end(), absTagsPlay.begin(), absTagsPlay.end());
-        e.absoluteTags.insert(e.absoluteTags.end(), absTagsShift.begin(), absTagsShift.end());
-    }
-    
-    //sequence duration
-    if(Event_Type::Event_Gesture==e.eventType) {
-        s.value4b(e.sequenceDuration);
-    }
-    //relative tag
-    s.value1b(flagTmp);
-    e.usingRelativetag = flagTmp?true:false;
-
-    if (e.usingRelativetag)
-        s.object(e.relativeTag);
-    //flex
-    s.object(e.flex);
-    //loop
-    if (Event_Type::Event_Loop==e.eventType)
-        s.value1b(e.loopCount);
-    //closed captions
-    if(Event_Type::Event_Speak==e.eventType)
-        s.object(e.closeCaptions);
-
-
-}
-
+    void serialize(S& s, VCD_Event& e);
 
     struct VCD_Channel {
         std::string name;
         std::vector<VCD_Event> events;
         bool isActive;
+
+        void dumpText(std::stringstream& stream);
     };
     template <typename S>
-    void serialize(S& s, VCD_Channel& c) {
+    void serialize(S& s, VCD_Channel& c);
 
-        uint16_t stringIndex;
-        s.value2b(stringIndex);
-        c.name = Helper::vsif->stringPool.getStringByID(stringIndex);
-        uint8_t eventCount;
-        s.value1b(eventCount);
-        c.events.resize(eventCount);
-        for (int i=0;i<eventCount;i++)
-            s.object(c.events[i]);
-        uint8_t isActive;
 
-        s.value1b(isActive);
-        c.isActive = (isActive)?true:false;
-};
     struct VCD_Actor {
         std::string name;
         std::vector<VCD_Channel> channels;
         bool isActive;
 
+        void dumpText(std::stringstream& stream);
+
     };
     template <typename S>
-    void serialize(S& s, VCD_Actor& a) {
-        uint16_t stringIndex;
-        s.value2b(stringIndex);
-        a.name = Helper::vsif->stringPool.getStringByID(stringIndex);
-        uint8_t channelCount;
-        s.value1b(channelCount);
-        a.channels.resize(channelCount);
-        for (int i=0;i<channelCount;i++)
-            s.object(a.channels[i]);
-        uint8_t isActive;
-
-        s.value1b(isActive);
-        a.isActive = (isActive)?true:false;
-
-}
+    void serialize(S& s, VCD_Actor& a);
 
 
     class VCD {
@@ -432,34 +263,17 @@ void serialize(S& s, VCD_AbsTags& tags) {
         VCD_Ramp ramp;
         //bool ignorePhonemes;
 
+
+        std::string dumpText();
+
     };
 
     template <typename S>
-    void serialize(S& s, VCD& vcd) {
-        //std::string test = Helper::vsif->stringPool.getStringByID(5);
-        s.value4b(vcd.magic);
-        s.value1b(vcd.version);
-        s.value4b(vcd.CRC);
-        uint8_t eventsCount;
-        s.value1b(eventsCount);
-        vcd.events.resize(eventsCount);
-        for (int i=0;i<eventsCount;i++)
-            s.object(vcd.events[i]);
-        uint8_t actorsCount;
-        s.value1b(actorsCount);
-
-        vcd.actors.resize(actorsCount);
-        for (int i=0;i<actorsCount;i++)
-            s.object(vcd.actors[i]);
-        s.object(vcd.ramp);
+    void serialize(S& s, VCD& vcd);
 
 
-        /*
-        uint8_t tmpIgnorePhonemes;
-        s.value1b(tmpIgnorePhonemes);
-        vcd.ignorePhonemes = (tmpIgnorePhonemes)?true:false;
-        */
-}
+
+
 
 
     class CompressedVCD {
@@ -473,21 +287,7 @@ void serialize(S& s, VCD_AbsTags& tags) {
 
     //template <typename S>
     template <typename S>
-    void serialize(S& s, CompressedVCD& cVCD) {
-        s.value4b(cVCD.magic);
-        s.value4b(cVCD.realSize);
-        s.value4b(cVCD.compressedSize);
-        s.container(cVCD.properties);
-
-        cVCD.compressedBuffer.resize(cVCD.compressedSize);
-        char* tmp = new char[cVCD.compressedSize];
-        //HACK: There MUST be faster way.
-        s.adapter().template readBuffer<1,char>(tmp,(size_t)cVCD.compressedSize);
-        //assert();
-        cVCD.compressedBuffer = std::vector<char>(tmp, tmp + cVCD.compressedSize + 1);
-        delete[] tmp;
-
-    };
+    void serialize(S& s, CompressedVCD& cVCD);
 
 
 struct membuf : std::streambuf
@@ -503,54 +303,7 @@ struct membuf : std::streambuf
 };
 
 
-    inline VCD getSceneFromBuffer(std::vector<char> buffer) {
-        char magic[4] = { buffer[0],buffer[1],buffer[2],buffer[3] };
-        uint32_t readMagic = FourCC(magic);
-
-        using Buffer = std::vector<char>;
-        using OutputAdapter = bitsery::OutputBufferAdapter<Buffer>;
-        using InputAdapter = bitsery::InputBufferAdapter<Buffer>;
-
-        if (readMagic == FourCC("LZMA")) {
-            CompressedVCD vcdToDecompress;
-            bitsery::quickDeserialization<InputAdapter, CompressedVCD>(InputAdapter{ buffer.begin(),buffer.end() }, vcdToDecompress);
-            //since we use streams we need to copy to one
-            /*
-            boost::iostreams::filtering_istreambuf in;
-            in.push(boost::iostreams::lzma_decompressor());
-            in.push(boost::make_iterator_range(vcdToDecompress.compressedBuffer.begin(),vcdToDecompress.compressedBuffer.end()));
-            */
-            std::vector<char> decompressedBuffer;
-            unsigned char* decompressed = new unsigned char[vcdToDecompress.realSize];
-            unsigned char* compressed = new unsigned char[vcdToDecompress.compressedSize];
-            std::copy(vcdToDecompress.compressedBuffer.begin(), vcdToDecompress.compressedBuffer.end(), compressed);
-
-            size_t destSize=vcdToDecompress.realSize,srcSize=vcdToDecompress.compressedSize;
-
-            LzmaUncompress(decompressed,
-                           &destSize,
-                           compressed,
-                           &srcSize,
-                           vcdToDecompress.properties,5);
-            decompressedBuffer.assign(decompressed,decompressed+vcdToDecompress.realSize);
-
-            delete[] compressed;
-            delete[] decompressed;
-
-
-    //        boost::iostreams::stream_buffer<boost::iostreams::back_insert_device<std::vector<uint8_t>>> outStream(decompressedBuffer);
-
-            return getSceneFromBuffer(decompressedBuffer);
-
-            }
-        assert(FourCC("bvcd"));
-        VCD vcd;
-        bitsery::quickDeserialization<InputAdapter, VCD>(InputAdapter{ buffer.begin(),buffer.end() }, vcd);
-
-
-        return vcd;
-    };
-
+VCD getSceneFromBuffer(std::vector<char> buffer);
 
 
 
@@ -561,6 +314,312 @@ struct membuf : std::streambuf
 
 
 }
+
+
+
+template <typename S>
+void BVCD::serialize(S& s, BVCD::VCD_Sample& sample) {
+    uint8_t byteTmp;
+    s.value4b(sample.time);
+
+    s.value1b(byteTmp);
+    sample.value= byteTmp *One255th;
+
+}
+
+template <typename S>
+void BVCD::serialize(S& s, BVCD::VCD_Ramp& ramp) {
+    uint8_t byteTmp;
+    s.value1b(byteTmp);
+    ramp.samples.resize(byteTmp);
+    for (int i=0;i<byteTmp;i++)
+        s.object(ramp.samples[i]);
+
+}
+
+template <typename S>
+void BVCD::serialize(S& s, BVCD::VCD_CC& subtitles) {
+    uint8_t byteTmp;
+
+    s.value1b(byteTmp);
+    subtitles.type=(BVCD::VCD_CC_Type)byteTmp;
+    uint16_t shortTmp;
+    s.value2b(shortTmp);
+    subtitles.cc_token=Helper::vsif->stringPool.getStringByID(shortTmp);
+    s.value1b(byteTmp);
+    subtitles.flags=(BVCD::VCD_CC_Flags)byteTmp;
+}
+
+
+template <typename S>
+void BVCD::serialize(S& s, BVCD::Flex_Samples& sample) {
+    uint8_t byteTmp;
+    s.value4b(sample.time);
+
+    s.value1b(byteTmp);
+    sample.value = byteTmp * BVCD::One255th;
+    uint8_t charTmp;
+    s.value1b(charTmp);
+    sample.toCurve = BVCD::Interpolators[charTmp];
+    s.value1b(charTmp);
+    sample.fromCurve = BVCD::Interpolators[charTmp];
+}
+
+template <typename S>
+void BVCD::serialize(S& s, BVCD::Flex_Tracks& track) {
+    uint16_t shortTmp;
+    s.value2b(shortTmp);
+    track.name=Helper::vsif->stringPool.getStringByID(shortTmp);
+    uint8_t byteTmp;
+    s.value1b(byteTmp);
+    track.flags=(BVCD::TrackFlags)byteTmp;
+    s.value4b(track.minRange);
+    s.value4b(track.minRange);
+    //assert(track.minRange>=0&&track.maxRange<=1); //this assertion is ill-formed
+    s.value2b(shortTmp);
+    track.samples.resize(shortTmp);
+    for (int i=0;i<shortTmp;i++)
+        s.object(track.samples[i]);
+    if ((int)(track.flags & TrackFlags::isCombo)){
+
+        s.value2b(shortTmp);
+        track.comboSamples.resize(shortTmp);
+        for (int i=0;i<shortTmp;i++)
+            s.object(track.comboSamples[i]);
+    }
+
+
+}
+
+template <typename S>
+void BVCD::serialize(S& s, BVCD::VCD_EventFlex& flex) {
+    uint8_t byteTmp;
+    s.value1b(byteTmp);
+    flex.tracks.resize(byteTmp);
+    for (int i=0;i<byteTmp;i++)
+        s.object(flex.tracks[i]);
+}
+
+
+
+template <typename S>
+void BVCD::serialize(S& s, BVCD::VCD_RelTags& tags) {
+
+    uint16_t shortTmp;
+    s.value2b(shortTmp);
+    tags.name=Helper::vsif->stringPool.getStringByID(shortTmp);
+    uint8_t byteTmp;
+    s.value1b(byteTmp);
+    tags.duration= byteTmp *BVCD::One255th;
+}
+
+
+template <typename S>
+void BVCD::serialize(S& s, BVCD::VCD_FlexTimingTags& tags) {
+    uint16_t shortTmp;
+    s.value2b(shortTmp);
+    tags.name=Helper::vsif->stringPool.getStringByID(shortTmp);
+    uint8_t byteTmp;
+    s.value1b(byteTmp);
+    tags.duration= byteTmp *BVCD::One255th;
+}
+
+
+template <typename S>
+void BVCD::serialize(S& s, BVCD::VCD_AbsTags& tags) {
+
+    /*
+    uint8_t byteTmp;
+    s.value1b(byteTmp);
+    tags.type=(VCD_AbsTagType)byteTmp; //This is NOT serialized
+    */
+    uint16_t shortTmp;
+    s.value2b(shortTmp);
+    tags.name=Helper::vsif->stringPool.getStringByID(shortTmp);
+    s.value2b(shortTmp); //here's the source of the confusion
+    tags.duration=shortTmp*BVCD::One4096th;
+}
+
+
+template <typename S>
+void BVCD::serialize(S& s, BVCD::VCD_Event& e) {
+    /*Header*/
+uint8_t flagTmp;
+
+uint16_t stringIndexTmp;
+s.value1b(flagTmp);
+e.eventType=(BVCD::Event_Type)flagTmp;
+s.value2b(stringIndexTmp);
+e.name=Helper::vsif->stringPool.getStringByID(stringIndexTmp);
+//Time
+s.value4b(e.eventStart);
+s.value4b(e.eventEnd);
+//Params
+s.value2b(stringIndexTmp);
+e.param1=Helper::vsif->stringPool.getStringByID(stringIndexTmp);
+s.value2b(stringIndexTmp);
+e.param2=Helper::vsif->stringPool.getStringByID(stringIndexTmp);
+s.value2b(stringIndexTmp);
+e.param3=Helper::vsif->stringPool.getStringByID(stringIndexTmp);
+//ramp
+s.object(e.ramp);
+//flags
+s.value1b(flagTmp);
+e.flags = (BVCD::VCD_Flags)flagTmp;
+//distance to target
+float tmpFloat;
+s.value4b(tmpFloat);
+if(tmpFloat>0){
+    e.distanceToTarget = tmpFloat;
+}
+//s.value4b(e.distanceToTarget);
+//relative tags
+uint8_t tagCount;
+s.value1b(tagCount);
+e.relativeTags.resize(tagCount);
+for (int i=0;i<tagCount;i++)
+    s.object(e.relativeTags[i]);
+//flex timing tags
+s.value1b(tagCount);
+e.flexTimingTags.resize(tagCount);
+for (int i=0;i<tagCount;i++)
+    s.object(e.flexTimingTags[i]);
+//absolute tags
+{
+    std::vector<BVCD::VCD_AbsTags> absTagsPlay;
+    std::vector<BVCD::VCD_AbsTags> absTagsShift;
+    s.value1b(tagCount);
+    absTagsPlay.resize(tagCount);
+    for (int i = 0; i < tagCount; i++)
+        s.object(absTagsPlay[i]);
+    //uint8_t tag = tagCount;
+    s.value1b(tagCount);
+    //std::vector<VCD_AbsTags> absTagsTmp(e.absoluteTags);
+    //e.absoluteTags.resize(tagCount + tag);
+    //e.absoluteTags.assign(absTagsTmp.begin(), absTagsTmp.end());
+
+    absTagsShift.resize(tagCount);
+    for (int i = 0; i < tagCount; i++)
+        s.object(absTagsShift[i]);
+
+    std::for_each(absTagsPlay.begin(), absTagsPlay.end(), [](BVCD::VCD_AbsTags & absTag) {
+        absTag.type = BVCD::VCD_AbsTagType::playback;
+    });
+    std::for_each(absTagsShift.begin(), absTagsShift.end(), [](BVCD::VCD_AbsTags & absTag) {
+            absTag.type = BVCD::VCD_AbsTagType::shifted;
+    });
+
+    e.absoluteTags.reserve(absTagsPlay.size() + absTagsShift.size()); //we already constructed objects
+    e.absoluteTags.insert(e.absoluteTags.end(), absTagsPlay.begin(), absTagsPlay.end());
+    e.absoluteTags.insert(e.absoluteTags.end(), absTagsShift.begin(), absTagsShift.end());
+}
+
+//sequence duration
+if(BVCD::Event_Type::Event_Gesture==e.eventType) {
+    s.value4b(e.sequenceDuration);
+}
+//relative tag
+s.value1b(flagTmp);
+e.usingRelativetag = flagTmp?true:false;
+
+if (e.usingRelativetag)
+    s.object(e.relativeTag);
+//flex
+s.object(e.flex);
+//loop
+if (BVCD::Event_Type::Event_Loop==e.eventType)
+    s.value1b(e.loopCount);
+//closed captions
+if(BVCD::Event_Type::Event_Speak==e.eventType)
+    s.object(e.closeCaptions);
+
+
+}
+
+
+template <typename S>
+void BVCD::serialize(S& s, BVCD::VCD_Channel& c){
+
+    uint16_t stringIndex;
+    s.value2b(stringIndex);
+    c.name = Helper::vsif->stringPool.getStringByID(stringIndex);
+    uint8_t eventCount;
+    s.value1b(eventCount);
+    c.events.resize(eventCount);
+    for (int i=0;i<eventCount;i++)
+        s.object(c.events[i]);
+    uint8_t isActive;
+
+    s.value1b(isActive);
+    c.isActive = (isActive)?true:false;
+};
+
+
+template <typename S>
+void BVCD::serialize(S& s, BVCD::VCD_Actor& a) {
+    uint16_t stringIndex;
+    s.value2b(stringIndex);
+    a.name = Helper::vsif->stringPool.getStringByID(stringIndex);
+    uint8_t channelCount;
+    s.value1b(channelCount);
+    a.channels.resize(channelCount);
+    for (int i=0;i<channelCount;i++)
+        s.object(a.channels[i]);
+    uint8_t isActive;
+
+    s.value1b(isActive);
+    a.isActive = (isActive)?true:false;
+
+}
+
+
+
+template <typename S>
+void BVCD::serialize(S& s, BVCD::VCD& vcd) {
+    //std::string test = Helper::vsif->stringPool.getStringByID(5);
+    s.value4b(vcd.magic);
+    s.value1b(vcd.version);
+    s.value4b(vcd.CRC);
+    uint8_t eventsCount;
+    s.value1b(eventsCount);
+    vcd.events.resize(eventsCount);
+    for (int i=0;i<eventsCount;i++)
+        s.object(vcd.events[i]);
+    uint8_t actorsCount;
+    s.value1b(actorsCount);
+
+    vcd.actors.resize(actorsCount);
+    for (int i=0;i<actorsCount;i++)
+        s.object(vcd.actors[i]);
+    s.object(vcd.ramp);
+
+
+    /*
+    uint8_t tmpIgnorePhonemes;
+    s.value1b(tmpIgnorePhonemes);
+    vcd.ignorePhonemes = (tmpIgnorePhonemes)?true:false;
+    */
+}
+
+
+template <typename S>
+void BVCD::serialize(S& s, BVCD::CompressedVCD& cVCD) {
+    s.value4b(cVCD.magic);
+    s.value4b(cVCD.realSize);
+    s.value4b(cVCD.compressedSize);
+    s.container(cVCD.properties);
+
+    cVCD.compressedBuffer.resize(cVCD.compressedSize);
+    char* tmp = new char[cVCD.compressedSize];
+    //HACK: There MUST be faster way.
+    s.adapter().template readBuffer<1,char>(tmp,(size_t)cVCD.compressedSize);
+    //assert();
+    cVCD.compressedBuffer = std::vector<char>(tmp, tmp + cVCD.compressedSize + 1);
+    delete[] tmp;
+
+};
+
+
 
 
 

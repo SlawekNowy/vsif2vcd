@@ -1,4 +1,4 @@
-#ifdef ENABLE_TESTING
+#if defined(ENABLE_TESTING) && defined(TESTING_VSIF)
 
 #define BOOST_TEST_MODULE "testVSIF"
 
@@ -17,7 +17,7 @@
 
 
 
-#ifdef ENABLE_TESTING
+#if defined(ENABLE_TESTING) && defined(TESTING_VSIF)
 BOOST_AUTO_TEST_CASE(testVSIF) {
 
 
@@ -25,3 +25,5 @@ BOOST_AUTO_TEST_CASE(testVSIF) {
 	
 }
 #endif
+
+
