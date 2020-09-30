@@ -22,6 +22,9 @@ configure_file (
 find_package(Boost REQUIRED
     COMPONENTS iostreams filesystem)
 
+find_package(fmt CONFIG REQUIRED)
+
+
 find_package (Bitsery CONFIG REQUIRED)
 
 
@@ -63,8 +66,12 @@ add_dependencies(Vsif2vcd lzma)
 set_property(TARGET Vsif2vcd PROPERTY CXX_STANDARD 17)
 target_link_libraries(Vsif2vcd PUBLIC Boost::iostreams Boost::filesystem Bitsery::bitsery lzma)
 
+target_link_libraries(Vsif2vcd PRIVATE fmt::fmt fmt::fmt-header-only)
+
 find_path(BOOST_CRC_INCLUDE_DIRS "boost/crc.hpp")
 target_include_directories(Vsif2vcd PRIVATE ${BOOST_CRC_INCLUDE_DIRS})
+
+target_include_directories(Vsif2vcd PRIVATE fmt::fmt-header-only)
 
 find_path(BOOST_LEXICAL_CAST_INCLUDE_DIRS "boost/detail/basic_pointerbuf.hpp")
 target_include_directories(Vsif2vcd PRIVATE ${BOOST_LEXICAL_CAST_INCLUDE_DIRS})
@@ -173,10 +180,12 @@ add_test(NAME VSIF
      #Add compile target
      add_executable(BVCD "src/BVCD.cpp" src/VSIF.cpp ${PRIVATE_INCLUDES})
      #link to Boost libraries AND your targets and dependencies
-     target_link_libraries(BVCD ${Boost_LIBRARIES} Bitsery::bitsery lzma)
+     target_link_libraries(BVCD ${Boost_LIBRARIES} Bitsery::bitsery lzma fmt::fmt fmt::fmt-header-only)
 
 
      #I like to move testing binaries into a testBin directory
+
+     target_include_directories(BVCD PRIVATE fmt::fmt-header-only)
 
      target_compile_definitions(BVCD PRIVATE ENABLE_TESTING TESTING_BVCD)
      target_include_directories(BVCD PUBLIC

@@ -101,7 +101,7 @@ struct VCD_Sample {
     float value;
 
 
-    void dumpText(std::stringstream& stream);
+    void dumpText(std::string& stream);
 };
 
 template <typename S>
@@ -112,7 +112,7 @@ struct VCD_Ramp { // CCurveData
     //ramp name is event in VCD_Event and scene in VCD
     std::vector<VCD_Sample> samples;
 
-    void dumpText(std::stringstream& stream,bool inEvent);
+    void dumpText(std::string& stream,bool inEvent);
 
 };
 template <typename S>
@@ -122,7 +122,7 @@ struct VCD_CC {
     std::string cc_token;
     VCD_CC_Flags flags;
 
-    void dumpText(std::stringstream& stream);
+    void dumpText(std::string& stream);
 };
 template <typename S>
 void serialize(S& s, VCD_CC& subtitles);
@@ -133,7 +133,7 @@ struct Flex_Samples {
     std::string toCurve; //right
 
 
-    void dumpText(std::stringstream& stream);
+    void dumpText(std::string& stream);
 };
 template <typename S>
 void serialize(S& s, Flex_Samples& sample);
@@ -144,7 +144,7 @@ struct Flex_Tracks {
     std::vector<Flex_Samples> samples;
     std::vector<Flex_Samples> comboSamples;
 
-    void dumpText(std::stringstream& stream);
+    void dumpText(std::string& stream);
 };
 template <typename S>
 void serialize(S& s, Flex_Tracks& track);
@@ -153,7 +153,7 @@ struct VCD_EventFlex {
     std::vector<Flex_Tracks> tracks;
 
 
-    void dumpText(std::stringstream& stream);
+    void dumpText(std::string& stream);
 };
 template <typename S>
 void serialize(S& s, VCD_EventFlex& flex);
@@ -162,7 +162,7 @@ struct VCD_RelTags {
     std::string name;
     float duration;
 
-    void dumpText(std::stringstream& stream);
+    void dumpText(std::string& stream);
 };
 template <typename S>
 void serialize(S& s, VCD_RelTags& tags);
@@ -170,7 +170,7 @@ struct VCD_RelTag {
     std::string name;
     std::string wavName;
 
-    void dumpText(std::stringstream& stream);
+    void dumpText(std::string& stream);
 };
 template <typename S>
 void serialize(S& s, VCD_RelTag& tag) {
@@ -187,7 +187,7 @@ struct VCD_FlexTimingTags {
     float duration;
 
 
-    void dumpText(std::stringstream& stream);
+    void dumpText(std::string& stream);
 };
 template <typename S>
 void serialize(S& s, VCD_FlexTimingTags& tags);
@@ -198,7 +198,7 @@ struct VCD_AbsTags {
 
 
 
-    void dumpText(std::stringstream& stream);
+    void dumpText(std::string& stream);
 };
 template <typename S>
 void serialize(S& s, VCD_AbsTags& tags);
@@ -223,7 +223,7 @@ void serialize(S& s, VCD_AbsTags& tags);
 
 
 
-        void dumpText(std::stringstream& stream);
+        void dumpText(std::string& stream);
 
     };
 
@@ -235,7 +235,7 @@ void serialize(S& s, VCD_AbsTags& tags);
         std::vector<VCD_Event> events;
         bool isActive;
 
-        void dumpText(std::stringstream& stream);
+        void dumpText(std::string& stream);
     };
     template <typename S>
     void serialize(S& s, VCD_Channel& c);
@@ -246,7 +246,7 @@ void serialize(S& s, VCD_AbsTags& tags);
         std::vector<VCD_Channel> channels;
         bool isActive;
 
-        void dumpText(std::stringstream& stream);
+        void dumpText(std::string& stream);
 
     };
     template <typename S>

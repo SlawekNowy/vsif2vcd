@@ -18,6 +18,8 @@
 
 
 #include <iomanip>
+
+#include <fmt/core.h>
 //#include <indent_facet.hpp>
 
 
@@ -26,7 +28,32 @@
 
 
 
+struct indenter {
+  int indent;
 
+  template <typename... Args>
+  void print(fmt::string_view format_str, const Args&... args) {
+    fmt::print("{:{}}", "", indent);
+    fmt::print(format_str, args...);
+  }
+
+  template <typename... Args>
+  std::string format(fmt::string_view format_str, const Args&... args) {
+    std::string a = fmt::format("{:{}}", "", indent);
+    a+=fmt::format(format_str, args...);
+    return a;
+  }
+
+
+};
+
+
+namespace BVCD {
+    indenter stringParser;
+}
+
+
+using BVCD::stringParser;
 
 BVCD::VCD BVCD::getSceneFromBuffer(std::vector<char> buffer) {
         char magic[4] = { buffer[0],buffer[1],buffer[2],buffer[3] };
@@ -110,119 +137,150 @@ BOOST_AUTO_TEST_CASE(testBVCD) {
 //#define ADD_LINE_WITH_INDENTS(x) \
 //    stream+=std::string(indentation,'\t')+x;
 
-void BVCD::VCD_Sample::dumpText(std::stringstream& stream)
+void BVCD::VCD_Sample::dumpText(std::string& stream)
 {
-        stream << this->time << " " << this->value << "\n";
+    stream += stringParser.format("{0} {1}\n",this->time,this->value);
+       // stream << this->time << " " << this->value << "\n";
 }
 
-void BVCD::VCD_Ramp::dumpText(std::stringstream& stream,bool inEvent)
+void BVCD::VCD_Ramp::dumpText(std::string& stream,bool inEvent)
 {
      if (inEvent)
-         stream << "event_ramp\n";
+         stream += stringParser.format("event_ramp\n");
      else
-         stream << "scene_ramp\n";
+         stream += stringParser.format("scene_ramp\n");
     if(samples.size()==0) return;
-    stream << "{\n";
+   stream += stringParser.format("{\n");
     for (auto sample=samples.begin();sample!=samples.end();sample++)
         sample->dumpText(stream);
-    stream << "}\n";
+    stream += stringParser.format("}\n");
 }
 
-void BVCD::VCD_AbsTags::dumpText(std::stringstream& stream)
+void BVCD::VCD_AbsTags::dumpText(std::string& stream)
 {
 
     return;
 }
 
-void BVCD::VCD_CC::dumpText(std::stringstream& stream)
+void BVCD::VCD_CC::dumpText(std::string& stream)
 {
 
 }
 
-void BVCD::Flex_Samples::dumpText(std::stringstream& stream)
+void BVCD::Flex_Samples::dumpText(std::string& stream)
 {
 
     return;
 }
 
-void BVCD::Flex_Tracks::dumpText(std::stringstream& stream)
+void BVCD::Flex_Tracks::dumpText(std::string& stream)
 {
     return;
 }
 
-void BVCD::VCD_EventFlex::dumpText(std::stringstream& stream)
+void BVCD::VCD_EventFlex::dumpText(std::string& stream)
 {
 
     if(tracks.size()==0) return;
-    stream << "flexanimations samples_use_time\n" << "{\n";
+    stream += stringParser.format("flexanimations samples_use_time\n");
+    stringParser.indent+=4;
+     stream += stringParser.format( "{\n");
     for (auto track=tracks.begin();track!=tracks.end();track++)
         track->dumpText(stream);
-    stream << "}\n";
+
+    stringParser.indent-=4;
+    stream += stringParser.format("}\n");
     return;
 }
 
-void BVCD::VCD_RelTags::dumpText(std::stringstream& stream)
+void BVCD::VCD_RelTags::dumpText(std::string& stream)
 {
 
     return;
 }
 
-void BVCD::VCD_RelTag::dumpText(std::stringstream& stream)
+void BVCD::VCD_RelTag::dumpText(std::string& stream)
 {
 
     return;
 }
 
-void BVCD::VCD_FlexTimingTags::dumpText(std::stringstream& stream)
+void BVCD::VCD_FlexTimingTags::dumpText(std::string& stream)
 {
 
     return;
 }
 
-void BVCD::VCD_Event::dumpText(std::stringstream& stream)
+void BVCD::VCD_Event::dumpText(std::string& stream)
 {
-    stream <<"event " << eventTypeToString(eventType) << " \"" <<name<<"\"\n";
-    stream << "{\n";
-    stream << "time "<<this->eventStart<< " "<<this->eventEnd<<"\n";
-    stream << "param \"" << this->param1 << "\"\n";
+
+    stream += stringParser.format("event {0} \"{1}\"\n",eventTypeToString(eventType),name);
+   // stream <<"event " << eventTypeToString(eventType) << " \"" <<name<<"\"\n";
+    stream += stringParser.format("{\n");
+    stringParser.indent+=4;
+    stream += stringParser.format("time {0} {1}\n",this->eventStart,this->eventEnd);
+    //stream << "time "<<this->eventStart<< " "<<this->eventEnd<<"\n";
+    stream += stringParser.format("param \"{0}\"\n",this->param1);
+    //stream << "param \"" << this->param1 << "\"\n";
     if (param2.size()>0)
-        stream << "param2 \"" << this->param2 << "\"\n";
+
+        stream += stringParser.format("param2 \"{0}\"\n",this->param2);
+        //stream << "param2 \"" << this->param2 << "\"\n";
     if (param3.size()>0)
-        stream << "param3 \"" << this->param3 << "\"\n";
+
+        stream += stringParser.format("param3 \"{0}\"\n",this->param3);
+        //stream << "param3 \"" << this->param3 << "\"\n";
 
     ramp.dumpText(stream,true);
     if ((bool)(this->flags&VCD_Flags::resumeCondition))
-        stream << "resumecondition\n";
+        stream += stringParser.format("resumecondition\n");
     if ((bool)(this->flags&VCD_Flags::lockBodyFacing))
-        stream << "lockbodyfacing\n";
+        stream += stringParser.format("lockbodyfacing\n");
     if ((bool)(this->flags&VCD_Flags::fixedLength))
-        stream << "fixedlength\n";
+       stream += stringParser.format("fixedlength\n");
     if (!(bool)(this->flags&VCD_Flags::isActive))
-        stream << "active \"0\"\n";
+        stream += stringParser.format("active \"0\"\n");
     if ((bool)(this->flags&VCD_Flags::playOverScript))
-        stream << "playoverscript\n";
-    int precision = stream.precision();
+        stream += stringParser.format("playoverscript\n");
+    //int precision = stream.precision();
     if (distanceToTarget>0)
-        stream <<"distancetotarget "<< std::setprecision (2) << std::fixed << distanceToTarget<<"\n";
-    stream.unsetf(std::ios_base::floatfield);
-    stream<< std::setprecision(precision);
+        stream += stringParser.format("distancetotarget {0:%2f}",distanceToTarget);
+        //stream <<"distancetotarget "<< std::setprecision (2) << std::fixed << distanceToTarget<<"\n";
+    //stream.unsetf(std::ios_base::floatfield);
+    //stream<< std::setprecision(precision);
 
     //Relative Tags
     if (relativeTags.size()!=0)
     {
-        stream << "tags\n"<<"{\n";
+        stream += stringParser.format("tags\n");
+
+        stringParser.indent+=4;
+
+         stream +=stringParser.format("{\n");
+        //stream << "tags\n"<<"{\n";
         for (auto tag=relativeTags.begin();tag!=relativeTags.end();tag++)
             tag->dumpText(stream);
-        stream << "}\n";
+        //stream << "}\n";
+        stringParser.indent-=4;
+        stream +=stringParser.format("}\n");
     }
 
     //Flex Timing Tags
     if (flexTimingTags.size()!=0)
     {
-        stream << "flextimingtags\n"<<"{\n";
+        stream += stringParser.format("flextimingtags\n");
+
+        stringParser.indent+=4;
+
+         stream +=stringParser.format("{\n");
+
+       // stream << "flextimingtags\n"<<"{\n";
         for (auto tag=flexTimingTags.begin();tag!=flexTimingTags.end();tag++)
             tag->dumpText(stream);
-        stream << "}\n";
+
+
+        stringParser.indent-=4;
+        stream +=stringParser.format("}\n");
     }
 
     //Absolute Tags
@@ -238,63 +296,87 @@ void BVCD::VCD_Event::dumpText(std::stringstream& stream)
     });
     if (shiftedTime.size()!=0)
     {
-        stream << "flextimingtags\n"<<"{\n";
+        stream += stringParser.format("absolutetags\n");
+
+        stringParser.indent+=4;
+
+         stream +=stringParser.format("{\n");
+        //stream << "absolutetags\n"<<"{\n";
         for (auto tag=shiftedTime.begin();tag!=shiftedTime.end();tag++)
             tag->dumpText(stream);
-        stream << "}\n";
+       // stream << "}\n";
+        stringParser.indent-=4;
+        stream +=stringParser.format("}\n");
     }
     if (playbackTime.size()!=0)
-    {
-        stream << "flextimingtags\n"<<"{\n";
+    {stream += stringParser.format("absolutetags\n");
+
+        stringParser.indent+=4;
+
+         stream +=stringParser.format("{\n");
+        //stream << "flextimingtags\n"<<"{\n";
         for (auto tag=playbackTime.begin();tag!=playbackTime.end();tag++)
             tag->dumpText(stream);
-        stream << "}\n";
+        //stream << "}\n";
+        stringParser.indent-=4;
+        stream +=stringParser.format("}\n");
     }
 
 
     //Sequence duration
     if (eventType==Event_Type::Event_Gesture)
-        stream <<"sequenceduration "<< sequenceDuration <<"\n";
+        stream += stringParser.format("sequenceduration {0}\n",sequenceDuration);
+       // stream <<"sequenceduration "<< sequenceDuration <<"\n";
 
     //relative tag
     relativeTag.dumpText(stream);
     //flexAnimation
     flex.dumpText(stream);
     if (eventType==Event_Type::Event_Loop)
-        stream << "loopcount \""<<loopCount<<"\"\n";
+
+        stream += stringParser.format("loopcount {0}\n",loopCount);
+       // stream << "loopcount \""<<loopCount<<"\"\n";
     //CCs
     if (eventType==Event_Type::Event_Speak)
     {
         closeCaptions.dumpText(stream);
     }
 
-    stream << "}\n";
+    stringParser.indent-=4;
+    stream +=stringParser.format("}\n");
+    //stream << "}\n";
 
 }
 
-void BVCD::VCD_Channel::dumpText(std::stringstream& stream)
+void BVCD::VCD_Channel::dumpText(std::string& stream)
 {
-    stream << "channel \""<<this->name<<"\"\n";
-    stream << "{\n";
+    stream+=stringParser.format("channel \"{0}\"\n",this->name);
+    //stream << "channel \""<<this->name<<"\"\n";
+    stringParser.indent+=4;
+    stream += stringParser.format("{\n");
     for (auto event = events.begin();event!=events.end();event++)
         event->dumpText(stream);
     if (!isActive)
-        stream << "active \"0\"\n";
+        stream += stringParser.format("active \"0\"\n");
 
-
-    stream << "}\n";
+    stringParser.indent-=4;
+    stream += stringParser.format("}\n");
 }
 
-void BVCD::VCD_Actor::dumpText(std::stringstream& stream)
+void BVCD::VCD_Actor::dumpText(std::string& stream)
 {
-    stream << "actor \"" << this->name <<"\"\n";
-    stream << "{\n";
+    stream+=stringParser.format("actor \"{0}\"\n",this->name);
+    //stream << "channel \""<<this->name<<"\"\n";
+    stringParser.indent+=4;
+    stream += stringParser.format("{\n");
     for (auto channel = channels.begin();channel !=channels.end();channel++) {
         channel->dumpText(stream);
     }
     if (!isActive)
-        stream << "active \"0\"\n";
-    stream << "}\n";
+        stream += stringParser.format("active \"0\"\n");
+
+    stringParser.indent-=4;
+    stream += stringParser.format("}\n");
 
 }
 
@@ -302,13 +384,13 @@ std::string BVCD::VCD::dumpText()
 {
     //indentStringStream streamOut;
 
-    std::stringstream stream;
-
+    std::string stream="";
+    stringParser.indent =0;
     //int indentation=0;
 
     //streamOut << incrementIndent;
     std::ios_base::sync_with_stdio(false);
-    stream << "//Choreo version 1\n";
+    stream +=  stringParser.format("//Choreo version 1\n");
 
     for(auto element=events.begin();element!=events.end();element++) {
         element->dumpText(stream);
@@ -318,24 +400,29 @@ std::string BVCD::VCD::dumpText()
     }
     ramp.dumpText(stream,false);
 
-    stream << "\"scalesettings\"\n";
+    assert(stringParser.indent==0);
+    stream +=  stringParser.format( "\"scalesettings\"\n");
+
+    stringParser.indent+=4;
     //indentation++;
-    stream << "{\n" ;//<<indent_manip::push;
+    stream +=  stringParser.format( "{\n") ;//<<indent_manip::push;
 
-    stream << "\"CChoreoView\" \"100\"\n" ;
-    stream << "\"SceneRampTool\" \"100\"\n" ;
-    stream << "\"ExpressionTool\" \"100\"\n" ;
-    stream << "\"GestureTool\" \"100\"\n" ;
-    stream << "\"RampTool\" \"100\"\n" ;//<<indent_manip::pop;
+    stream +=  stringParser.format( "\"CChoreoView\" \"100\"\n" );
+    stream +=  stringParser.format( "\"SceneRampTool\" \"100\"\n" );
+    stream +=  stringParser.format( "\"ExpressionTool\" \"100\"\n") ;
+    stream +=  stringParser.format( "\"GestureTool\" \"100\"\n" );
+    stream +=  stringParser.format( "\"RampTool\" \"100\"\n") ;//<<indent_manip::pop;
+
+    stringParser.indent-=4;
 //indentation--;
-    stream <<"}\n" ;
-    stream <<"fps 60\n";
-    stream <<"snap off\n";
+   stream +=  stringParser.format("}\n" );
+    stream +=  stringParser.format("fps 60\n");
+    stream +=  stringParser.format("snap off\n");
 
 
 
 
-    return stream.str();
+    return stream;
 }
 
 //#undef ADD_LINE_WITH_INDENTS
