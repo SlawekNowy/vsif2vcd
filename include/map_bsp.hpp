@@ -18,9 +18,8 @@ constexpr auto Map_MaxValue = 1024;
 		Map_Scene(char* name) {
 
             strncpy(this->Name, name, Map_MaxName + 1);
-			//this->Name = name;
-			normalizeString();
-			recalculateCRC();
+            //this->Name = name;
+            recalculateCRC(normalizeString());
 
 		}
 
@@ -28,15 +27,16 @@ constexpr auto Map_MaxValue = 1024;
 		
 
 	 private:
-		void recalculateCRC() {
-            CRC = CRC_Hash((unsigned char*)Name,strlen(Name));
+        void recalculateCRC(std::string name) {
+            CRC = CRC_Hash((unsigned char*)name.data(),name.size());
 		}
-		void normalizeString() {
+        std::string normalizeString() {
             std::string name = Name;
             boost::algorithm::to_lower(name);
             std::replace(name.begin(),name.end(),'/','\\');
+            return name;
             //Name = name.c_str();
-            strncpy(Name,name.c_str(),Map_MaxValue+1);
+           // strncpy(Name,name.c_str(),Map_MaxValue+1);
 
 		}
     } ;

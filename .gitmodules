@@ -1,6 +1,3 @@
 [submodule "vcpkg"]
 	path = vcpkg
 	url = https://github.com/microsoft/vcpkg
-[submodule "thirdparty/fmt"]
-	path = thirdparty/fmt
-	url = https://github.com/fmtlib/fmt.git
