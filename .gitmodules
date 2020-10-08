@@ -1,6 +1,6 @@
 [submodule "vcpkg"]
 	path = vcpkg
 	url = https://github.com/microsoft/vcpkg
-[submodule "thirdparty/fmt"]
-	path = thirdparty/fmt
-	url = https://github.com/fmtlib/fmt.git
+[submodule "externals/sanitizers-cmake"]
+	path = externals/sanitizers-cmake
+	url = git://github.com/arsenm/sanitizers-cmake.git
