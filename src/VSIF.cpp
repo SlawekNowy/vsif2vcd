@@ -21,7 +21,7 @@
 BOOST_AUTO_TEST_CASE(testVSIF) {
 
 
-	VSIF::ValveScenesImageFile vsif("E:/hl2_tmp/scenes/scenes.image");
+	VSIF::ValveScenesImageFile vsif("/home/slawomir/Dane/hl2_tmp/scenes/scenes.image");
 	
 }
 #endif

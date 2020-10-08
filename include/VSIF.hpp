@@ -1,7 +1,3 @@
-
-
-
-
 #pragma once
 #include "pch.hpp"
 //#include "BVCD.hpp"
@@ -155,8 +151,9 @@ namespace VSIF {
 			assert(fileBuf.size() != 0);
 			*/
 			bitsery::quickDeserialization<InputAdapter, ValveScenesImageFile>(InputAdapter{ fileBuf.begin(),fileBuf.end() }, *this);
-
+#ifndef ENABLE_TESTING
             vcds.resize(header.ScenesCount);
+#endif
 			
 			
 			
@@ -242,15 +239,17 @@ namespace VSIF {
         fileStream.seekg(dataPos, fileStream.beg);
         fileStream.read(sceneBuffer, fileEnd - dataPos);
         */
+
         vsif.dataPos = s.adapter().currentReadPos();
         uint32_t dataSize = vsif.size - vsif.dataPos;
         //s.adapter().currentReadPos(dataPos);
         vsif.sceneBuffer.resize(dataSize);
-        char* tmp = new char[dataSize];
+        char* tmp = new char[dataSize+1];
+        memset(tmp,0,dataSize+1);
         //HACK: There MUST be faster way.
         s.adapter().template readBuffer<1,char>(tmp,(size_t)dataSize);
         //assert();
-        vsif.sceneBuffer = std::vector<char>(tmp, tmp + dataSize + 1);
+        vsif.sceneBuffer = std::vector<char>(tmp, tmp + dataSize+1);
         delete[] tmp;
         /*
         for (int i = 0; i < (vsif.size - vsif.dataPos); i++) {

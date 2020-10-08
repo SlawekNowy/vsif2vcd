@@ -30,18 +30,24 @@
 
 struct indenter {
   int indent;
+  std::string tabulation="";
+public:
 
   template <typename... Args>
   void print(fmt::string_view format_str, const Args&... args) {
-    fmt::print("{:{}}", "", indent);
-    fmt::print(format_str, args...);
+    tabulation=indent?std::string(indent,'\t'):"";
+    std::string tmp=fmt::format(format_str, args...);
+    ReplaceAll(tmp,"\n","\n"+tabulation);
+    fmt::print(tmp);
   }
 
   template <typename... Args>
   std::string format(fmt::string_view format_str, const Args&... args) {
-    std::string a = fmt::format("{:{}}", "", indent);
-    a+=fmt::format(format_str, args...);
-    return a;
+      tabulation=indent?std::string(indent,'\t'):"";
+      std::string tmp=fmt::format(format_str, args...);
+      ReplaceAll(tmp,"\n","\n"+tabulation);
+      return tmp;
+      //fmt::print(tmp);
   }
 
 
@@ -73,8 +79,10 @@ BVCD::VCD BVCD::getSceneFromBuffer(std::vector<char> buffer) {
             in.push(boost::make_iterator_range(vcdToDecompress.compressedBuffer.begin(),vcdToDecompress.compressedBuffer.end()));
             */
             std::vector<char> decompressedBuffer;
-            unsigned char* decompressed = new unsigned char[vcdToDecompress.realSize];
-            unsigned char* compressed = new unsigned char[vcdToDecompress.compressedSize];
+            unsigned char* decompressed = new unsigned char[vcdToDecompress.realSize+1];
+            unsigned char* compressed = new unsigned char[vcdToDecompress.compressedSize+1];
+            memset(decompressed,0,vcdToDecompress.realSize+1);
+            memset(compressed,0,vcdToDecompress.compressedSize+1);
             std::copy(vcdToDecompress.compressedBuffer.begin(), vcdToDecompress.compressedBuffer.end(), compressed);
 
             size_t destSize=vcdToDecompress.realSize,srcSize=vcdToDecompress.compressedSize;
@@ -86,6 +94,10 @@ BVCD::VCD BVCD::getSceneFromBuffer(std::vector<char> buffer) {
                            vcdToDecompress.properties,5);
             decompressedBuffer.assign(decompressed,decompressed+vcdToDecompress.realSize);
 
+
+
+            memset(decompressed,0,vcdToDecompress.realSize);
+            memset(compressed,0,vcdToDecompress.compressedSize);
             delete[] compressed;
             delete[] decompressed;
 
@@ -126,6 +138,13 @@ BOOST_AUTO_TEST_CASE(testBVCD) {
     BVCD::VCD vcdMem = BVCD::getSceneFromBuffer(bvcd);
 
     std::string vcdText = vcdMem.dumpText();
+    std::ofstream vcdFileOut;
+    boost::filesystem::create_directories("temp/");
+    std::string fileToOpen = "temp/"+std::to_string(vcdMem.CRC)+".vcd";
+    vcdFileOut.open(fileToOpen);
+vcdFileOut << vcdText;
+vcdFileOut.flush();
+vcdFileOut.close();
 
 
     std::cout << "Got an object from "<<entry.Size<<" B buffer."<<std::endl; //no reliable way mo measure size of object
@@ -150,10 +169,16 @@ void BVCD::VCD_Ramp::dumpText(std::string& stream,bool inEvent)
      else
          stream += stringParser.format("scene_ramp\n");
     if(samples.size()==0) return;
-   stream += stringParser.format("{\n");
+    stringParser.indent++;
+   stream += stringParser.format("{{\n");
+
     for (auto sample=samples.begin();sample!=samples.end();sample++)
         sample->dumpText(stream);
-    stream += stringParser.format("}\n");
+
+
+    stringParser.indent--;
+     stream = stream.substr(0, stream.size()-1);
+    stream += stringParser.format("}}\n");
 }
 
 void BVCD::VCD_AbsTags::dumpText(std::string& stream)
@@ -183,13 +208,14 @@ void BVCD::VCD_EventFlex::dumpText(std::string& stream)
 
     if(tracks.size()==0) return;
     stream += stringParser.format("flexanimations samples_use_time\n");
-    stringParser.indent+=4;
-     stream += stringParser.format( "{\n");
+    stringParser.indent++;
+     stream += stringParser.format( "{{\n");
     for (auto track=tracks.begin();track!=tracks.end();track++)
         track->dumpText(stream);
 
-    stringParser.indent-=4;
-    stream += stringParser.format("}\n");
+    stringParser.indent--;
+     stream = stream.substr(0, stream.size()-1);
+    stream += stringParser.format("}}\n");
     return;
 }
 
@@ -216,8 +242,9 @@ void BVCD::VCD_Event::dumpText(std::string& stream)
 
     stream += stringParser.format("event {0} \"{1}\"\n",eventTypeToString(eventType),name);
    // stream <<"event " << eventTypeToString(eventType) << " \"" <<name<<"\"\n";
-    stream += stringParser.format("{\n");
-    stringParser.indent+=4;
+
+    stringParser.indent++;
+    stream += stringParser.format("{{\n");
     stream += stringParser.format("time {0} {1}\n",this->eventStart,this->eventEnd);
     //stream << "time "<<this->eventStart<< " "<<this->eventEnd<<"\n";
     stream += stringParser.format("param \"{0}\"\n",this->param1);
@@ -244,7 +271,7 @@ void BVCD::VCD_Event::dumpText(std::string& stream)
         stream += stringParser.format("playoverscript\n");
     //int precision = stream.precision();
     if (distanceToTarget>0)
-        stream += stringParser.format("distancetotarget {0:%2f}",distanceToTarget);
+        stream += stringParser.format("distancetotarget {0:-.2f}",distanceToTarget);
         //stream <<"distancetotarget "<< std::setprecision (2) << std::fixed << distanceToTarget<<"\n";
     //stream.unsetf(std::ios_base::floatfield);
     //stream<< std::setprecision(precision);
@@ -254,15 +281,16 @@ void BVCD::VCD_Event::dumpText(std::string& stream)
     {
         stream += stringParser.format("tags\n");
 
-        stringParser.indent+=4;
+        stringParser.indent++;
 
-         stream +=stringParser.format("{\n");
-        //stream << "tags\n"<<"{\n";
+         stream +=stringParser.format("{{\n");
+        //stream << "tags\n"<<"{{\n";
         for (auto tag=relativeTags.begin();tag!=relativeTags.end();tag++)
             tag->dumpText(stream);
-        //stream << "}\n";
-        stringParser.indent-=4;
-        stream +=stringParser.format("}\n");
+        //stream << "}}\n";
+        stringParser.indent--;
+         stream = stream.substr(0, stream.size()-1);
+        stream +=stringParser.format("}}\n");
     }
 
     //Flex Timing Tags
@@ -270,17 +298,18 @@ void BVCD::VCD_Event::dumpText(std::string& stream)
     {
         stream += stringParser.format("flextimingtags\n");
 
-        stringParser.indent+=4;
+        stringParser.indent++;
 
-         stream +=stringParser.format("{\n");
+         stream +=stringParser.format("{{\n");
 
-       // stream << "flextimingtags\n"<<"{\n";
+       // stream << "flextimingtags\n"<<"{{\n";
         for (auto tag=flexTimingTags.begin();tag!=flexTimingTags.end();tag++)
             tag->dumpText(stream);
 
 
-        stringParser.indent-=4;
-        stream +=stringParser.format("}\n");
+        stringParser.indent--;
+         stream = stream.substr(0, stream.size()-1);
+        stream +=stringParser.format("}}\n");
     }
 
     //Absolute Tags
@@ -298,28 +327,31 @@ void BVCD::VCD_Event::dumpText(std::string& stream)
     {
         stream += stringParser.format("absolutetags\n");
 
-        stringParser.indent+=4;
+        stringParser.indent++;
 
-         stream +=stringParser.format("{\n");
-        //stream << "absolutetags\n"<<"{\n";
+         stream +=stringParser.format("{{\n");
+        //stream << "absolutetags\n"<<"{{\n";
         for (auto tag=shiftedTime.begin();tag!=shiftedTime.end();tag++)
             tag->dumpText(stream);
-       // stream << "}\n";
-        stringParser.indent-=4;
-        stream +=stringParser.format("}\n");
+       // stream << "}}\n";
+        stringParser.indent--;
+         stream = stream.substr(0, stream.size()-1);
+        stream +=stringParser.format("}}\n");
     }
     if (playbackTime.size()!=0)
     {stream += stringParser.format("absolutetags\n");
 
-        stringParser.indent+=4;
+        stringParser.indent++;
 
-         stream +=stringParser.format("{\n");
-        //stream << "flextimingtags\n"<<"{\n";
+         stream +=stringParser.format("{{\n");
+        //stream << "flextimingtags\n"<<"{{\n";
         for (auto tag=playbackTime.begin();tag!=playbackTime.end();tag++)
             tag->dumpText(stream);
-        //stream << "}\n";
-        stringParser.indent-=4;
-        stream +=stringParser.format("}\n");
+        //stream << "}}\n";
+        stringParser.indent--;
+         stream = stream.substr(0, stream.size()-1);
+
+        stream +=stringParser.format("}}\n");
     }
 
 
@@ -342,9 +374,10 @@ void BVCD::VCD_Event::dumpText(std::string& stream)
         closeCaptions.dumpText(stream);
     }
 
-    stringParser.indent-=4;
-    stream +=stringParser.format("}\n");
-    //stream << "}\n";
+    stringParser.indent--;
+     stream = stream.substr(0, stream.size()-1);
+    stream +=stringParser.format("}}\n");
+    //stream << "}}\n";
 
 }
 
@@ -352,31 +385,33 @@ void BVCD::VCD_Channel::dumpText(std::string& stream)
 {
     stream+=stringParser.format("channel \"{0}\"\n",this->name);
     //stream << "channel \""<<this->name<<"\"\n";
-    stringParser.indent+=4;
-    stream += stringParser.format("{\n");
+    stringParser.indent++;
+    stream += stringParser.format("{{\n");
     for (auto event = events.begin();event!=events.end();event++)
         event->dumpText(stream);
     if (!isActive)
         stream += stringParser.format("active \"0\"\n");
 
-    stringParser.indent-=4;
-    stream += stringParser.format("}\n");
+    stringParser.indent--;
+     stream = stream.substr(0, stream.size()-1);
+    stream += stringParser.format("}}\n");
 }
 
 void BVCD::VCD_Actor::dumpText(std::string& stream)
 {
     stream+=stringParser.format("actor \"{0}\"\n",this->name);
     //stream << "channel \""<<this->name<<"\"\n";
-    stringParser.indent+=4;
-    stream += stringParser.format("{\n");
+    stringParser.indent++;
+    stream += stringParser.format("{{\n");
     for (auto channel = channels.begin();channel !=channels.end();channel++) {
         channel->dumpText(stream);
     }
     if (!isActive)
         stream += stringParser.format("active \"0\"\n");
 
-    stringParser.indent-=4;
-    stream += stringParser.format("}\n");
+    stringParser.indent--;
+     stream = stream.substr(0, stream.size()-1);
+    stream += stringParser.format("}}\n");
 
 }
 
@@ -403,9 +438,9 @@ std::string BVCD::VCD::dumpText()
     assert(stringParser.indent==0);
     stream +=  stringParser.format( "\"scalesettings\"\n");
 
-    stringParser.indent+=4;
+    stringParser.indent++;
     //indentation++;
-    stream +=  stringParser.format( "{\n") ;//<<indent_manip::push;
+    stream +=  stringParser.format( "{{\n") ;//<<indent_manip::push;
 
     stream +=  stringParser.format( "\"CChoreoView\" \"100\"\n" );
     stream +=  stringParser.format( "\"SceneRampTool\" \"100\"\n" );
@@ -413,9 +448,10 @@ std::string BVCD::VCD::dumpText()
     stream +=  stringParser.format( "\"GestureTool\" \"100\"\n" );
     stream +=  stringParser.format( "\"RampTool\" \"100\"\n") ;//<<indent_manip::pop;
 
-    stringParser.indent-=4;
+    stringParser.indent--;
+     stream = stream.substr(0, stream.size()-1);
 //indentation--;
-   stream +=  stringParser.format("}\n" );
+   stream +=  stringParser.format("}}\n" );
     stream +=  stringParser.format("fps 60\n");
     stream +=  stringParser.format("snap off\n");
 

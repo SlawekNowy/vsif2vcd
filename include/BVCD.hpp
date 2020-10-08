@@ -610,7 +610,8 @@ void BVCD::serialize(S& s, BVCD::CompressedVCD& cVCD) {
     s.container(cVCD.properties);
 
     cVCD.compressedBuffer.resize(cVCD.compressedSize);
-    char* tmp = new char[cVCD.compressedSize];
+    char* tmp = new char[cVCD.compressedSize+1];
+    memset(tmp,0,cVCD.compressedSize+1);
     //HACK: There MUST be faster way.
     s.adapter().template readBuffer<1,char>(tmp,(size_t)cVCD.compressedSize);
     //assert();
