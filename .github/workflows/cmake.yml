@@ -2,7 +2,10 @@
 # Released under the term specified in file LICENSE.txt
 # SPDX short identifier: MIT
 name: hosted-basic-submod_vcpkg-autocache
-on: [push]
+on: 
+  release:
+    # Only use the types keyword to narrow down the activity types that will trigger your workflow.
+    types: [published, created, edited]
 
 jobs:
   job:
