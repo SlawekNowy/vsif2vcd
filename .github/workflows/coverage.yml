@@ -58,4 +58,4 @@ jobs:
       - name: Upload coverage statistcs
         run: bash <(curl -s https://codecov.io/bash)
         env:
-          CODECOV_TOKEN: "83395dbd-e9dc-4445-9a9a-dbd775926865"
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
