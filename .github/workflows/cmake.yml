@@ -5,8 +5,6 @@
 name: release-test
 on: [push]
 
-env:
-  BUILD_TYPE: Release
 
 jobs:
   job:
@@ -29,6 +27,8 @@ jobs:
 
     env:
       buildDir: '${{ github.workspace }}/build'
+      BUILD_TYPE: Release
+      VCPKG_FEATURE_FLAGS: 'versions'
 
     steps:
       - uses: actions/checkout@v1
