@@ -47,7 +47,7 @@ jobs:
         id: runvcpkg
         with:
           setupOnly: true
-          vcpkgDirectory: '${{ runner.workspace }}/b/vcpkg'
+          vcpkgDirectory: '${{ runner.workspace }}/vcpkg'
           vcpkgGitCommitId: '${{ matrix.vcpkgCommitId}}'
           # Ensure the cache key changes any time the content of the manifest file changes.
           appendedCacheKey: ${{ hashFiles( '**/vcpkg.json' ) }}
