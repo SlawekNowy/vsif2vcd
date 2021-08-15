@@ -1,0 +1,16 @@
+{
+    "$schema": "https://raw.githubusercontent.com/microsoft/vcpkg/master/scripts/vcpkg.schema.json",
+    "name": "my-application",
+    "version": "0.10.0",
+    "dependencies": [
+      "bitsery",
+      "boost-iostreams",
+      "boost-filesystem",
+      "boost-test",
+      "boost-crc",
+      "boost-lexical-cast",
+      "boost-tokenizer",
+      "boost-math",
+      "fmt"
+    ]
+  }
