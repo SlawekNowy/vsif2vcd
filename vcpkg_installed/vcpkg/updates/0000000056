@@ -1,0 +1,9 @@
+Package: boost-function-types
+Version: 1.76.0
+Depends: boost-config, boost-core, boost-detail, boost-mpl, boost-preprocessor, boost-type-traits, boost-vcpkg-helpers
+Architecture: x64-linux
+Multi-Arch: same
+Abi: 91327746ba0c01c54d8a619753452aa9f970baf0b1e65a1fc7eeef6ff38b589e
+Description: Boost function_types module
+Type: Port
+Status: install ok half-installed

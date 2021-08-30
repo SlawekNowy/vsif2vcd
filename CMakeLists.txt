@@ -6,11 +6,11 @@ if(${CMAKE_VERSION} VERSION_LESS 3.12)
     cmake_policy(VERSION ${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION})
 endif()
 
-set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/externals/sanitizers-cmake/cmake" ${CMAKE_MODULE_PATH})
-find_package(Sanitizers)
-include(cmake/locate_vcpkg.cmake)
-include(cmake/asan.cmake)
-setup_vcpkg_before_project()
+#set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/externals/sanitizers-cmake/cmake" ${CMAKE_MODULE_PATH})
+#find_package(Sanitizers)
+#include(cmake/locate_vcpkg.cmake)
+#include(cmake/asan.cmake)
+#setup_vcpkg_before_project()
 
 #TODO: stop if we use vs2015 or older
 

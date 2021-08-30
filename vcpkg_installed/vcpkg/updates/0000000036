@@ -1,0 +1,9 @@
+Package: boost-system
+Version: 1.76.0
+Depends: boost-build, boost-config, boost-modular-build-helper, boost-vcpkg-helpers, boost-winapi
+Architecture: x64-linux
+Multi-Arch: same
+Abi: 6d78e9701875a16e43d47e5292e73de8fead03967daded320c61cb89e26fab19
+Description: Boost system module
+Type: Port
+Status: install ok half-installed

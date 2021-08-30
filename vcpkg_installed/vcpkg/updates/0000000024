@@ -1,0 +1,9 @@
+Package: boost-array
+Version: 1.76.0
+Depends: boost-assert, boost-config, boost-core, boost-detail, boost-static-assert, boost-throw-exception, boost-vcpkg-helpers
+Architecture: x64-linux
+Multi-Arch: same
+Abi: e17775817fa514f7fbb5b5acb9659db19ee4064ce2e334681bc5f49d1e452c88
+Description: Boost array module
+Type: Port
+Status: install ok half-installed

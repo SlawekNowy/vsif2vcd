@@ -1,0 +1,9 @@
+Package: boost-preprocessor
+Version: 1.76.0
+Depends: boost-vcpkg-helpers
+Architecture: x64-linux
+Multi-Arch: same
+Abi: eabe96ea6f8ff5af154afac627f22b063f24fbcbdd496c90bdfa9906db5ab3bd
+Description: Boost preprocessor module
+Type: Port
+Status: install ok half-installed

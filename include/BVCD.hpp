@@ -140,7 +140,7 @@ void serialize(S& s, Flex_Samples& sample);
 struct Flex_Tracks {
     std::string name;
     TrackFlags flags;
-    float minRange,maxRange;//(0.0,1.0)
+    float minRange=0.0,maxRange=1.0;//(0.0,1.0)
     std::vector<Flex_Samples> samples;
     std::vector<Flex_Samples> comboSamples;
 
@@ -158,7 +158,7 @@ struct VCD_EventFlex {
 template <typename S>
 void serialize(S& s, VCD_EventFlex& flex);
 
-struct VCD_RelTags {
+struct VCD_RelTags { //tags
     std::string name;
     float duration;
 
@@ -166,7 +166,7 @@ struct VCD_RelTags {
 };
 template <typename S>
 void serialize(S& s, VCD_RelTags& tags);
-struct VCD_RelTag {
+struct VCD_RelTag { //relativetag
     std::string name;
     std::string wavName;
 
@@ -358,11 +358,19 @@ void BVCD::serialize(S& s, BVCD::Flex_Samples& sample) {
 
     s.value1b(byteTmp);
     sample.value = byteTmp * BVCD::One255th;
-    uint8_t charTmp;
+    uint16_t shortTmp;
+    s.value2b(shortTmp);
+    //now split to two chars
+    uint8_t startCurve = (shortTmp >> 8) & 0xff;
+    uint8_t endcurve = (shortTmp) & 0xff;
+    sample.fromCurve = BVCD::Interpolators[startCurve];
+    sample.toCurve = BVCD::Interpolators[endcurve];
+    /*
     s.value1b(charTmp);
     sample.toCurve = BVCD::Interpolators[charTmp];
     s.value1b(charTmp);
     sample.fromCurve = BVCD::Interpolators[charTmp];
+    */
 }
 
 template <typename S>
@@ -374,7 +382,7 @@ void BVCD::serialize(S& s, BVCD::Flex_Tracks& track) {
     s.value1b(byteTmp);
     track.flags=(BVCD::TrackFlags)byteTmp;
     s.value4b(track.minRange);
-    s.value4b(track.minRange);
+    s.value4b(track.maxRange);
     //assert(track.minRange>=0&&track.maxRange<=1); //this assertion is ill-formed
     s.value2b(shortTmp);
     track.samples.resize(shortTmp);
@@ -466,11 +474,14 @@ s.object(e.ramp);
 //flags
 s.value1b(flagTmp);
 e.flags = (BVCD::VCD_Flags)flagTmp;
+//parse only if we're currently parsing gesture.
+if (e.eventType == BVCD::Event_Type::Event_Gesture){
 //distance to target
 float tmpFloat;
 s.value4b(tmpFloat);
 if(tmpFloat>0){
     e.distanceToTarget = tmpFloat;
+}
 }
 //s.value4b(e.distanceToTarget);
 //relative tags

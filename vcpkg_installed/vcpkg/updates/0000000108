@@ -1,0 +1,9 @@
+Package: boost-unordered
+Version: 1.76.0
+Depends: boost-assert, boost-config, boost-container, boost-container-hash, boost-core, boost-detail, boost-functional, boost-move, boost-predef, boost-preprocessor, boost-smart-ptr, boost-throw-exception, boost-tuple, boost-type-traits, boost-utility, boost-vcpkg-helpers
+Architecture: x64-linux
+Multi-Arch: same
+Abi: 2c1a161226290482a3e2fb7bc1e2f3b611dc6bf3cfaaadd28ee4565ad9255f70
+Description: Boost unordered module
+Type: Port
+Status: install ok half-installed

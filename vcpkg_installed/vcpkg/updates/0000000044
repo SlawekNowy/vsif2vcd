@@ -1,0 +1,9 @@
+Package: boost-container-hash
+Version: 1.76.0
+Depends: boost-assert, boost-config, boost-core, boost-detail, boost-integer, boost-static-assert, boost-type-traits, boost-vcpkg-helpers
+Architecture: x64-linux
+Multi-Arch: same
+Abi: 9981dd6c27c18344aa122dd4f0538a4b804a2a7a36483525d6845316909a4c6e
+Description: Boost container_hash module
+Type: Port
+Status: install ok half-installed

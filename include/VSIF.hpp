@@ -88,7 +88,7 @@ namespace VSIF {
 	};
 	inline std::string CStringPool::getStringByID(unsigned short ID)
 	{
-		return pool.at(ID);
+        return pool.at(ID); //THIS MIGHT CRASH!
 	}
 
 	inline unsigned short CStringPool::findOrAddString(std::string stringToPool)
@@ -167,7 +167,10 @@ namespace VSIF {
     void serialize(S& s, ValveScenesImageFile& vsif) {
 
         s.object(vsif.header);
-        assert(vsif.header.ID==Helper::FourCC("VSIF") && vsif.header.Version ==2);
+        char tmpString[4];
+        //tmpString ="VSIF"
+        memccpy(tmpString,"VSIF",sizeof(char),4);
+        assert(vsif.header.ID==Helper::FourCC(tmpString) && vsif.header.Version ==2);
         s.ext
         (
             vsif.stringPool,

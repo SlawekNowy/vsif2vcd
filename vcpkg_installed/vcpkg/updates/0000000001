@@ -1,0 +1,8 @@
+Package: bitsery
+Version: 5.2.1
+Architecture: x64-linux
+Multi-Arch: same
+Abi: af811ccf0fa4c430fc3b9e63f23b0f3c4bf4c71901a2931c975603fdd585c39f
+Description: Header only C++ binary serialization library
+Type: Port
+Status: install ok installed

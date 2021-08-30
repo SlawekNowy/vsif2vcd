@@ -1,0 +1,9 @@
+Package: boost-static-assert
+Version: 1.76.0
+Depends: boost-config, boost-detail, boost-vcpkg-helpers
+Architecture: x64-linux
+Multi-Arch: same
+Abi: 1c7e3874c3b88a2688ef5062f86c4315a47cde00724dc6ebe9977799663694b2
+Description: Boost static_assert module
+Type: Port
+Status: install ok half-installed

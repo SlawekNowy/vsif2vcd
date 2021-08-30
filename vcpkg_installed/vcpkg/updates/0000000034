@@ -1,0 +1,9 @@
+Package: boost-modular-build-helper
+Version: 1.76.0
+Port-Version: 1
+Depends: boost-build, boost-uninstall
+Architecture: x64-linux
+Multi-Arch: same
+Abi: cc6df25e48361876f3dec2c38f286077d418924a14c239ca0f07f0a35190c327
+Type: Port
+Status: install ok half-installed

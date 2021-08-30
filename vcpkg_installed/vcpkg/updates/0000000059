@@ -1,0 +1,9 @@
+Package: boost-fusion
+Version: 1.76.0
+Depends: boost-config, boost-container-hash, boost-core, boost-detail, boost-function-types, boost-mpl, boost-preprocessor, boost-static-assert, boost-tuple, boost-type-traits, boost-typeof, boost-utility, boost-vcpkg-helpers
+Architecture: x64-linux
+Multi-Arch: same
+Abi: 461982971e1743c7518a29acda6f878298a5d14435ce325c32fd7f4e86c578c8
+Description: Boost fusion module
+Type: Port
+Status: install ok installed

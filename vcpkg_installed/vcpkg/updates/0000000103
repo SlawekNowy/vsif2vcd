@@ -1,0 +1,9 @@
+Package: boost-lambda
+Version: 1.76.0
+Depends: boost-bind, boost-config, boost-core, boost-detail, boost-mpl, boost-preprocessor, boost-tuple, boost-type-traits, boost-utility, boost-vcpkg-helpers
+Architecture: x64-linux
+Multi-Arch: same
+Abi: a04db81ae17c55f27f0dad03d5f47907f2e2d125479ca335833210c1d7c98a16
+Description: Boost lambda module
+Type: Port
+Status: install ok installed

@@ -1,0 +1,9 @@
+Package: boost-algorithm
+Version: 1.76.0
+Depends: boost-array, boost-assert, boost-bind, boost-concept-check, boost-config, boost-core, boost-detail, boost-exception, boost-function, boost-iterator, boost-mpl, boost-range, boost-regex, boost-static-assert, boost-throw-exception, boost-tuple, boost-type-traits, boost-unordered, boost-utility, boost-vcpkg-helpers
+Architecture: x64-linux
+Multi-Arch: same
+Abi: a0ea596a80031d571641a6efa5c917bd05393cfb9a7d4d2db65b160695c25c12
+Description: Boost algorithm module
+Type: Port
+Status: install ok installed

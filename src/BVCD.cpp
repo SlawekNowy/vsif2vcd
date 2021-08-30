@@ -69,7 +69,8 @@ BVCD::VCD BVCD::getSceneFromBuffer(std::vector<char> buffer) {
         //using OutputAdapter = bitsery::OutputBufferAdapter<Buffer>;
         using InputAdapter = bitsery::InputBufferAdapter<Buffer>;
 
-        if (readMagic == Helper::FourCC("LZMA")) {
+        memccpy(magic,"VSIF",sizeof(char),4);
+        if (readMagic == Helper::FourCC(magic)) {
             BVCD::CompressedVCD vcdToDecompress;
             bitsery::quickDeserialization<InputAdapter, BVCD::CompressedVCD>(InputAdapter{ buffer.begin(),buffer.end() }, vcdToDecompress);
             //since we use streams we need to copy to one
@@ -107,7 +108,9 @@ BVCD::VCD BVCD::getSceneFromBuffer(std::vector<char> buffer) {
             return getSceneFromBuffer(decompressedBuffer);
 
             }
-        assert(BVCD::FourCC("bvcd"));
+
+        memccpy(magic,"VSIF",sizeof(char),4);
+        assert(BVCD::FourCC(magic));
         BVCD::VCD vcd;
         bitsery::quickDeserialization<InputAdapter, BVCD::VCD>(InputAdapter{ buffer.begin(),buffer.end() }, vcd);
 
@@ -183,23 +186,88 @@ void BVCD::VCD_Ramp::dumpText(std::string& stream,bool inEvent)
 
 void BVCD::VCD_AbsTags::dumpText(std::string& stream)
 {
+    //focus just on dumping; We already prepared the {}
+
+    stream += stringParser.format("\"{0}\" {1}\n",this->name,this->duration);
 
     return;
 }
 
 void BVCD::VCD_CC::dumpText(std::string& stream)
 {
+    stream+= stringParser.format("cctype ");
 
+    switch (this->type){
+    case VCD_CC_Type::master:
+        stream+=stringParser.format("\"cc_master\" ");
+        break;
+    case VCD_CC_Type::slave:
+
+        stream+=stringParser.format("\"cc_slave\" ");
+        break;
+    case VCD_CC_Type::disabled:
+
+        stream+=stringParser.format("\"cc_disabled\" ");
+        break;
+    }
+    stream += stringParser.format("\ncctoken \"{0}\"\n",this->cc_token);
+    if ((bool)(flags | VCD_CC_Flags::usingCombinedFile))
+        stream+=stringParser.format("cc_usingcombinedfile\n");
+    if ((bool)(flags | VCD_CC_Flags::combinedUsingGenderToken))
+        stream+=stringParser.format("cc_combinedusesgender\n");
+    if ((bool)(flags | VCD_CC_Flags::suppressingCaptionAttenuation))
+        stream+=stringParser.format("cc_noattentuate\n");
+    return;
 }
 
 void BVCD::Flex_Samples::dumpText(std::string& stream)
 {
-
+    stream += stringParser.format("{0} {1} curve_{2}_to_curve_{3}\n", time,value,fromCurve,toCurve);
     return;
 }
 
 void BVCD::Flex_Tracks::dumpText(std::string& stream)
 {
+    bool bIsCombo = (bool)(this->flags | TrackFlags::isCombo);
+    stream += stringParser.format("\"{0}\"",this->name);
+    if (!(bool)(this->flags | TrackFlags::isEnabled))
+        stream += " disabled";
+    if (bIsCombo)
+        stream += " combo";
+    if (minRange!=0.0 && maxRange!=1.0)
+        stream += stringParser.format(" range {0} {1}\n",minRange,maxRange);
+    stringParser.indent++;
+    stringParser.format("{{\n");
+
+    assert(this->samples.size()!=0);
+
+       for (auto sample=samples.begin();sample!=samples.end();sample++)
+           sample->dumpText(stream);
+
+
+
+    stringParser.indent--;
+     stream = stream.substr(0, stream.size()-1);
+    stream += stringParser.format("}}\n");
+
+
+    if (bIsCombo){
+
+    stringParser.indent++;
+    stringParser.format("{{\n");
+
+    assert(this->comboSamples.size()!=0);
+
+       for (auto sample=comboSamples.begin();sample!=comboSamples.end();sample++)
+           sample->dumpText(stream);
+
+
+
+    stringParser.indent--;
+     stream = stream.substr(0, stream.size()-1);
+    stream += stringParser.format("}}\n");
+    }
+
     return;
 }
 
@@ -221,19 +289,19 @@ void BVCD::VCD_EventFlex::dumpText(std::string& stream)
 
 void BVCD::VCD_RelTags::dumpText(std::string& stream)
 {
-
+    stream += stringParser.format("\"{0}\" {1}\n",this->name,this->duration);
     return;
 }
 
 void BVCD::VCD_RelTag::dumpText(std::string& stream)
 {
-
+    stream += stringParser.format("relativetag \"{0}\" \"{1}\"",this->name,this->wavName);
     return;
 }
 
 void BVCD::VCD_FlexTimingTags::dumpText(std::string& stream)
 {
-
+    stream += stringParser.format("\"{0}\" {1}\n",this->name,this->duration);
     return;
 }
 
@@ -325,7 +393,7 @@ void BVCD::VCD_Event::dumpText(std::string& stream)
     });
     if (shiftedTime.size()!=0)
     {
-        stream += stringParser.format("absolutetags\n");
+        stream += stringParser.format("absolutetags shifted_time\n");
 
         stringParser.indent++;
 
@@ -339,11 +407,11 @@ void BVCD::VCD_Event::dumpText(std::string& stream)
         stream +=stringParser.format("}}\n");
     }
     if (playbackTime.size()!=0)
-    {stream += stringParser.format("absolutetags\n");
+    {stream += stringParser.format("absolutetags playback_time\n");
 
         stringParser.indent++;
 
-         stream +=stringParser.format("{{\n");
+        stream +=stringParser.format("{{\n");
         //stream << "flextimingtags\n"<<"{{\n";
         for (auto tag=playbackTime.begin();tag!=playbackTime.end();tag++)
             tag->dumpText(stream);

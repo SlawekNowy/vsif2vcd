@@ -1,0 +1,9 @@
+Package: boost-filesystem
+Version: 1.76.0
+Depends: boost-assert, boost-build, boost-config, boost-core, boost-detail, boost-functional, boost-io, boost-iterator, boost-modular-build-helper, boost-predef, boost-smart-ptr, boost-system, boost-type-traits, boost-vcpkg-helpers, boost-winapi
+Architecture: x64-linux
+Multi-Arch: same
+Abi: eba71328b816b2230ce6a49191ba2fabd1b4edb1f6d52e49e3dfa809b44a5b96
+Description: Boost filesystem module
+Type: Port
+Status: install ok installed

@@ -1,0 +1,9 @@
+Package: boost-tuple
+Version: 1.76.0
+Depends: boost-config, boost-core, boost-static-assert, boost-type-traits, boost-utility, boost-vcpkg-helpers
+Architecture: x64-linux
+Multi-Arch: same
+Abi: 10a51a2e70d448e46d0349fb68137753bc833553da3c099c1131b0a52fd63b6c
+Description: Boost tuple module
+Type: Port
+Status: install ok half-installed

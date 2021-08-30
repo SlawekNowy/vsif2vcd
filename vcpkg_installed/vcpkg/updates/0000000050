@@ -1,0 +1,9 @@
+Package: boost-mpl
+Version: 1.76.0
+Depends: boost-config, boost-core, boost-detail, boost-predef, boost-preprocessor, boost-static-assert, boost-type-traits, boost-vcpkg-helpers
+Architecture: x64-linux
+Multi-Arch: same
+Abi: ed78638c8a81f1c51b90eb6d253ea55287480cb8953b80acb2d36b5a22de095c
+Description: Boost mpl module
+Type: Port
+Status: install ok half-installed
