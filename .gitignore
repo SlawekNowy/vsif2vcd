@@ -442,3 +442,4 @@ MigrationBackup/
 
 testBin/*
 out/*
+vcpkg-installed/*
