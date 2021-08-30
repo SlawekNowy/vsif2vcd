@@ -1,9 +1,0 @@
-Package: boost-conversion
-Version: 1.76.0
-Depends: boost-assert, boost-config, boost-core, boost-smart-ptr, boost-throw-exception, boost-type-traits, boost-typeof, boost-utility, boost-vcpkg-helpers
-Architecture: x64-linux
-Multi-Arch: same
-Abi: cf8778d87dc4a829fe0ff6a3bcf975afd19b440007616d637677b4f76f063914
-Description: Boost conversion module
-Type: Port
-Status: install ok installed

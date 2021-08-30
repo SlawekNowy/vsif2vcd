@@ -1,9 +1,0 @@
-Package: boost-integer
-Version: 1.76.0
-Depends: boost-assert, boost-config, boost-core, boost-detail, boost-static-assert, boost-throw-exception, boost-vcpkg-helpers
-Architecture: x64-linux
-Multi-Arch: same
-Abi: e8d63c6d67aa60992842f7cbe0764824d6341a2c7bd0e8ef0317c989c317b5e2
-Description: Boost integer module
-Type: Port
-Status: install ok installed

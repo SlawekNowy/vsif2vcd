@@ -1,9 +1,0 @@
-Package: boost-intrusive
-Version: 1.76.0
-Depends: boost-assert, boost-config, boost-container-hash, boost-core, boost-move, boost-static-assert, boost-vcpkg-helpers
-Architecture: x64-linux
-Multi-Arch: same
-Abi: 5d102b56efa7ab59895f0a32090e06c9424e56254e1ed64b38be3d704813996f
-Description: Boost intrusive module
-Type: Port
-Status: install ok installed

@@ -1,9 +1,0 @@
-Package: boost-test
-Version: 1.76.0
-Depends: boost-algorithm, boost-assert, boost-bind, boost-build, boost-config, boost-core, boost-detail, boost-exception, boost-function, boost-io, boost-iterator, boost-modular-build-helper, boost-mpl, boost-numeric-conversion, boost-optional, boost-preprocessor, boost-smart-ptr, boost-static-assert, boost-type-traits, boost-utility, boost-vcpkg-helpers
-Architecture: x64-linux
-Multi-Arch: same
-Abi: 34d4ee80f3ce5f648f8d0feedb8b1fd2abde425147f463ec6c2087cd90021091
-Description: Boost test module
-Type: Port
-Status: install ok installed

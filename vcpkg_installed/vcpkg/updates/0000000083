@@ -1,9 +1,0 @@
-Package: boost-regex
-Version: 1.76.0
-Depends: boost-assert, boost-build, boost-concept-check, boost-config, boost-container-hash, boost-core, boost-detail, boost-integer, boost-iterator, boost-modular-build-helper, boost-mpl, boost-predef, boost-smart-ptr, boost-static-assert, boost-throw-exception, boost-type-traits, boost-utility, boost-vcpkg-helpers
-Architecture: x64-linux
-Multi-Arch: same
-Abi: 0de9aaaa0a43291088163dc701dada0e4f47a416043e80722b7d5bdb53c2cf39
-Description: Boost regex module
-Type: Port
-Status: install ok installed

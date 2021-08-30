@@ -1,9 +1,0 @@
-Package: boost-utility
-Version: 1.76.0
-Depends: boost-config, boost-container-hash, boost-core, boost-detail, boost-io, boost-preprocessor, boost-throw-exception, boost-type-traits, boost-vcpkg-helpers
-Architecture: x64-linux
-Multi-Arch: same
-Abi: f264e65c8949a6ed9f76f22f582c04e34cc67f758550e4a51b335ca31b3730bf
-Description: Boost utility module
-Type: Port
-Status: install ok half-installed

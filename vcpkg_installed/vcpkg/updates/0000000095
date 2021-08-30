@@ -1,9 +1,0 @@
-Package: boost-iostreams
-Version: 1.76.0
-Depends: boost-assert, boost-build, boost-config, boost-core, boost-detail, boost-function, boost-integer, boost-modular-build-helper, boost-mpl, boost-numeric-conversion, boost-preprocessor, boost-range, boost-regex, boost-smart-ptr, boost-static-assert, boost-throw-exception, boost-type-traits, boost-utility, boost-vcpkg-helpers, bzip2, liblzma, zlib, zstd
-Architecture: x64-linux
-Multi-Arch: same
-Abi: 2980fce00cde985978c3bb911e433082fe093129ba66dd7211ebabf9abcac2a9
-Description: Boost iostreams module
-Type: Port
-Status: install ok installed

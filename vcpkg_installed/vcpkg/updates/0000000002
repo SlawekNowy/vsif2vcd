@@ -1,9 +1,0 @@
-Package: boost-uninstall
-Version: 1.75.0
-Port-Version: 1
-Architecture: x64-linux
-Multi-Arch: same
-Abi: 5fdf950d3c54f212b04ac5a409bc02ab008dcd85da1f4fc6ee4cb04a788e9c1b
-Description: boost uninstall port
-Type: Port
-Status: install ok half-installed

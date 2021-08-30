@@ -1,9 +1,0 @@
-Package: boost-concept-check
-Version: 1.76.0
-Depends: boost-config, boost-preprocessor, boost-static-assert, boost-type-traits, boost-vcpkg-helpers
-Architecture: x64-linux
-Multi-Arch: same
-Abi: bd0b90271ad6d80b578d52d5ca7d4cc1cc7f46e4972b70eedbfe4bb5751d445d
-Description: Boost concept_check module
-Type: Port
-Status: install ok half-installed

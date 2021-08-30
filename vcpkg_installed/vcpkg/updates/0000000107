@@ -1,9 +1,0 @@
-Package: boost-atomic
-Version: 1.76.0
-Depends: boost-align, boost-assert, boost-build, boost-config, boost-modular-build-helper, boost-predef, boost-preprocessor, boost-static-assert, boost-type-traits, boost-vcpkg-helpers, boost-winapi
-Architecture: x64-linux
-Multi-Arch: same
-Abi: 23c9743828a33fe77a7098e297c1840331ab23f1ae76b57e18e44fabdaabfd49
-Description: Boost atomic module
-Type: Port
-Status: install ok installed

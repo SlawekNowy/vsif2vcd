@@ -1,9 +1,0 @@
-Package: boost-core
-Version: 1.76.0
-Depends: boost-config, boost-static-assert, boost-vcpkg-helpers
-Architecture: x64-linux
-Multi-Arch: same
-Abi: 0ae5c6a39d688f08e74b89c78e39a7d5699acd40f61ef1cb6984ba06ef87517e
-Description: Boost core module
-Type: Port
-Status: install ok half-installed

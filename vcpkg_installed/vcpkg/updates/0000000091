@@ -1,9 +1,0 @@
-Package: boost-bind
-Version: 1.76.0
-Depends: boost-config, boost-core, boost-detail, boost-vcpkg-helpers
-Architecture: x64-linux
-Multi-Arch: same
-Abi: 3cf92eae4df0908fd5c1f6d7f6a289b22fbefb8b6896e6ab43cbb32cc4fb5751
-Description: Boost bind module
-Type: Port
-Status: install ok installed
