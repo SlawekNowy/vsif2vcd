@@ -474,14 +474,11 @@ s.object(e.ramp);
 //flags
 s.value1b(flagTmp);
 e.flags = (BVCD::VCD_Flags)flagTmp;
-//parse only if we're currently parsing gesture.
-if (e.eventType == BVCD::Event_Type::Event_Gesture){
 //distance to target
 float tmpFloat;
 s.value4b(tmpFloat);
 if(tmpFloat>0){
     e.distanceToTarget = tmpFloat;
-}
 }
 //s.value4b(e.distanceToTarget);
 //relative tags

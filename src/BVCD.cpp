@@ -69,7 +69,7 @@ BVCD::VCD BVCD::getSceneFromBuffer(std::vector<char> buffer) {
         //using OutputAdapter = bitsery::OutputBufferAdapter<Buffer>;
         using InputAdapter = bitsery::InputBufferAdapter<Buffer>;
 
-        memccpy(magic,"VSIF",sizeof(char),4);
+        memccpy(magic,"LZMA",sizeof(char),4);
         if (readMagic == Helper::FourCC(magic)) {
             BVCD::CompressedVCD vcdToDecompress;
             bitsery::quickDeserialization<InputAdapter, BVCD::CompressedVCD>(InputAdapter{ buffer.begin(),buffer.end() }, vcdToDecompress);
@@ -109,8 +109,8 @@ BVCD::VCD BVCD::getSceneFromBuffer(std::vector<char> buffer) {
 
             }
 
-        memccpy(magic,"VSIF",sizeof(char),4);
-        assert(BVCD::FourCC(magic));
+        memccpy(magic,"bvcd",sizeof(char),4);
+        assert(BVCD::FourCC(magic) == readMagic);
         BVCD::VCD vcd;
         bitsery::quickDeserialization<InputAdapter, BVCD::VCD>(InputAdapter{ buffer.begin(),buffer.end() }, vcd);
 
@@ -128,7 +128,7 @@ BOOST_AUTO_TEST_CASE(testBVCD) {
     VSIF::ValveScenesImageFile vsif =VSIF::ValveScenesImageFile("/home/slawomir/Dane/hl2_tmp/scenes/scenes.image");
     Helper::vsif =&vsif;
 
-    for (unsigned int i=0;i<vsif.header.ScenesCount;i++){
+    for (unsigned int i=0;i<Helper::vsif->header.ScenesCount;i++){
     VSIF::VSIF_Entry entry = Helper::vsif->entries[i];
     //[first,last) - we need [first,last] so effectively [first,last+sizeof(char))
     //TODO - can std::next return end iterator?
@@ -167,11 +167,12 @@ void BVCD::VCD_Sample::dumpText(std::string& stream)
 
 void BVCD::VCD_Ramp::dumpText(std::string& stream,bool inEvent)
 {
+    if(samples.size()==0) return;
      if (inEvent)
          stream += stringParser.format("event_ramp\n");
      else
          stream += stringParser.format("scene_ramp\n");
-    if(samples.size()==0) return;
+
     stringParser.indent++;
    stream += stringParser.format("{{\n");
 
@@ -211,11 +212,11 @@ void BVCD::VCD_CC::dumpText(std::string& stream)
         break;
     }
     stream += stringParser.format("\ncctoken \"{0}\"\n",this->cc_token);
-    if ((bool)(flags | VCD_CC_Flags::usingCombinedFile))
+    if ((bool)(flags & VCD_CC_Flags::usingCombinedFile))
         stream+=stringParser.format("cc_usingcombinedfile\n");
-    if ((bool)(flags | VCD_CC_Flags::combinedUsingGenderToken))
+    if ((bool)(flags & VCD_CC_Flags::combinedUsingGenderToken))
         stream+=stringParser.format("cc_combinedusesgender\n");
-    if ((bool)(flags | VCD_CC_Flags::suppressingCaptionAttenuation))
+    if ((bool)(flags & VCD_CC_Flags::suppressingCaptionAttenuation))
         stream+=stringParser.format("cc_noattentuate\n");
     return;
 }
@@ -228,9 +229,9 @@ void BVCD::Flex_Samples::dumpText(std::string& stream)
 
 void BVCD::Flex_Tracks::dumpText(std::string& stream)
 {
-    bool bIsCombo = (bool)(this->flags | TrackFlags::isCombo);
+    bool bIsCombo = (bool)(this->flags & TrackFlags::isCombo);
     stream += stringParser.format("\"{0}\"",this->name);
-    if (!(bool)(this->flags | TrackFlags::isEnabled))
+    if (!(bool)(this->flags & TrackFlags::isEnabled))
         stream += " disabled";
     if (bIsCombo)
         stream += " combo";
@@ -239,7 +240,7 @@ void BVCD::Flex_Tracks::dumpText(std::string& stream)
     stringParser.indent++;
     stringParser.format("{{\n");
 
-    assert(this->samples.size()!=0);
+    //assert(this->samples.size()!=0);
 
        for (auto sample=samples.begin();sample!=samples.end();sample++)
            sample->dumpText(stream);
@@ -256,7 +257,7 @@ void BVCD::Flex_Tracks::dumpText(std::string& stream)
     stringParser.indent++;
     stringParser.format("{{\n");
 
-    assert(this->comboSamples.size()!=0);
+    //assert(this->comboSamples.size()!=0);
 
        for (auto sample=comboSamples.begin();sample!=comboSamples.end();sample++)
            sample->dumpText(stream);
@@ -429,7 +430,8 @@ void BVCD::VCD_Event::dumpText(std::string& stream)
        // stream <<"sequenceduration "<< sequenceDuration <<"\n";
 
     //relative tag
-    relativeTag.dumpText(stream);
+    if (usingRelativetag)
+        relativeTag.dumpText(stream);
     //flexAnimation
     flex.dumpText(stream);
     if (eventType==Event_Type::Event_Loop)
@@ -437,6 +439,7 @@ void BVCD::VCD_Event::dumpText(std::string& stream)
         stream += stringParser.format("loopcount {0}\n",loopCount);
        // stream << "loopcount \""<<loopCount<<"\"\n";
     //CCs
+    stream +=stringParser.format("\n");
     if (eventType==Event_Type::Event_Speak)
     {
         closeCaptions.dumpText(stream);
