@@ -42,6 +42,8 @@ jobs:
       - name: dir
         run: find $RUNNER_WORKSPACE
         shell: bash
+      - name: Setup VSEnv (Windows)
+        uses: seanmiddleditch/gha-setup-vsdevenv@master
       - name: Restore artifacts, or setup vcpkg (do not install any package)
         uses: lukka/run-vcpkg@main
         id: runvcpkg
