@@ -65,8 +65,11 @@ add_executable (Vsif2vcd ${SOURCES} ${PRIVATE_INCLUDES})
 target_precompile_headers(Vsif2vcd PUBLIC "include/pch.hpp")
 
 
-add_subdirectory(thirdparty/liblzma)
-add_dependencies(Vsif2vcd lzma)
+add_subdirectory(thirdparty/valve-bsp-parser)
+
+
+add_dependencies(valve-bsp-parser lzma)
+add_dependencies(Vsif2vcd valve-bsp-parser lzma)
 set_property(TARGET Vsif2vcd PROPERTY CXX_STANDARD 17)
 target_link_libraries(Vsif2vcd PUBLIC Boost::iostreams Boost::filesystem Bitsery::bitsery lzma)
 
@@ -93,7 +96,7 @@ target_include_directories(Vsif2vcd PUBLIC
     "${PROJECT_SOURCE_DIR}/include/"
     "${PROJECT_SOURCE_DIR}/thirdparty/vdf_parser/include"
     "${PROJECT_SOURCE_DIR}/thirdparty/liblzma/include"
-    "${PROJECT_SOURCE_DIR}/thirdparty/ostream_indenter/include"
+    "${PROJECT_SOURCE_DIR}/thirdparty/valve-bsp-parser/include"
     "${PROJECT_BINARY_DIR}/include/"
     ${Bitsery_INCLUDE_DIR})
 
