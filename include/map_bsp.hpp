@@ -15,7 +15,7 @@ constexpr auto Map_MaxValue = 1024;
 		Map_Scene() {
 
 		}
-		Map_Scene(char* name) {
+        Map_Scene(const char* name) {
 
             strncpy(this->Name, name, Map_MaxName + 1);
             //this->Name = name;

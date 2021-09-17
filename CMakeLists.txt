@@ -1,6 +1,6 @@
 ﻿cmake_minimum_required(VERSION 3.15)
 
-
+include_guard(GLOBAL)
 
 if(${CMAKE_VERSION} VERSION_LESS 3.12)
     cmake_policy(VERSION ${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION})
@@ -71,7 +71,8 @@ add_subdirectory(thirdparty/valve-bsp-parser)
 add_dependencies(valve-bsp-parser lzma)
 add_dependencies(Vsif2vcd valve-bsp-parser lzma)
 set_property(TARGET Vsif2vcd PROPERTY CXX_STANDARD 17)
-target_link_libraries(Vsif2vcd PUBLIC Boost::iostreams Boost::filesystem Bitsery::bitsery lzma)
+target_link_libraries(valve-bsp-parser PRIVATE lzma)
+target_link_libraries(Vsif2vcd PUBLIC Boost::iostreams Boost::filesystem Bitsery::bitsery lzma valve-bsp-parser)
 
 target_link_libraries(Vsif2vcd PRIVATE fmt::fmt fmt::fmt-header-only)
 
@@ -140,8 +141,7 @@ target_include_directories(gameinfo PUBLIC
    "${PROJECT_SOURCE_DIR}/include/"
    "${PROJECT_SOURCE_DIR}/thirdparty/vdf_parser/include"
    "${PROJECT_SOURCE_DIR}/thirdparty/liblzma/include"
-
-   "${PROJECT_SOURCE_DIR}/thirdparty/ostream_indenter/include"
+   "${PROJECT_SOURCE_DIR}/thirdparty/valve-bsp-parser/include"
    "${PROJECT_BINARY_DIR}/include/"
    ${Bitsery_INCLUDE_DIR})
 
@@ -169,8 +169,7 @@ target_include_directories(VSIF PUBLIC
    "${PROJECT_SOURCE_DIR}/include/"
    "${PROJECT_SOURCE_DIR}/thirdparty/vdf_parser/include"
    "${PROJECT_SOURCE_DIR}/thirdparty/liblzma/include"
-
-   "${PROJECT_SOURCE_DIR}/thirdparty/ostream_indenter/include"
+   "${PROJECT_SOURCE_DIR}/thirdparty/valve-bsp-parser/include"
    "${PROJECT_BINARY_DIR}/include/"
    ${Bitsery_INCLUDE_DIR})
 
@@ -200,8 +199,7 @@ add_test(NAME VSIF
         "${PROJECT_SOURCE_DIR}/include/"
         "${PROJECT_SOURCE_DIR}/thirdparty/vdf_parser/include"
         "${PROJECT_SOURCE_DIR}/thirdparty/liblzma/include"
-
-        "${PROJECT_SOURCE_DIR}/thirdparty/ostream_indenter/include"
+        "${PROJECT_SOURCE_DIR}/thirdparty/valve-bsp-parser/include"
         "${PROJECT_BINARY_DIR}/include/"
         ${Bitsery_INCLUDE_DIR})
 
@@ -211,5 +209,32 @@ add_test(NAME VSIF
          RUNTIME_OUTPUT_DIRECTORY  ${CMAKE_CURRENT_SOURCE_DIR}/testBin)
      #Finally add it to test execution -
      #Notice the WORKING_DIRECTORY and COMMAND
-     add_test(NAME BVCD WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/testBin COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/testBin/BVCD)
+     add_test(NAME BVCD WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/testBin COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/testBin/BVCD)#Add compile target
+     add_executable(map_bsp "src/map_bsp.cpp" ${PRIVATE_INCLUDES})
+     #link to Boost libraries AND your targets and dependencies
+
+     target_link_libraries(map_bsp ${Boost_LIBRARIES} Bitsery::bitsery fmt::fmt fmt::fmt-header-only valve-bsp-parser)
+
+
+     #I like to move testing binaries into a testBin directory
+
+     target_include_directories(map_bsp PRIVATE fmt::fmt-header-only)
+
+     target_compile_definitions(map_bsp PRIVATE ENABLE_TESTING TESTING_BVCD)
+     target_include_directories(map_bsp PUBLIC
+         ${Boost_INCLUDE_DIR}
+        "${PROJECT_SOURCE_DIR}/include/"
+        "${PROJECT_SOURCE_DIR}/thirdparty/vdf_parser/include"
+        "${PROJECT_SOURCE_DIR}/thirdparty/liblzma/include"
+        "${PROJECT_SOURCE_DIR}/thirdparty/valve-bsp-parser/include"
+        "${PROJECT_BINARY_DIR}/include/"
+        ${Bitsery_INCLUDE_DIR})
+
+
+     set_property(TARGET map_bsp PROPERTY CXX_STANDARD 17)
+     set_target_properties(map_bsp PROPERTIES
+         RUNTIME_OUTPUT_DIRECTORY  ${CMAKE_CURRENT_SOURCE_DIR}/testBin)
+     #Finally add it to test execution -
+     #Notice the WORKING_DIRECTORY and COMMAND
+     add_test(NAME map_bsp WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/testBin COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/testBin/BVCD)
 
