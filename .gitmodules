@@ -6,4 +6,4 @@
 	url = https://github.com/Slaweknowy/valve-bsp-parser
 [submodule "thirdparty/liblzma"]
 	path = thirdparty/liblzma
-	url = https://github.com/Slaweknowy/liblzma
+	url = https://github.com/SlawekNowy/liblzma
