@@ -2,9 +2,8 @@
 #include <filesystem>
 
 
-
 std::vector<std::string> RRParser::entryPointsToParse = {"scripts/talker/response_rules.txt"} ;//path hardcoded. Why vector? we might have multiple files to parse;
-static void RRParser::initRules(std::string gameDir)
+void RRParser::initRules(std::string gameDir)
 {
     std::filesystem::create_directory(gameDir+"tmp_rr"); //tmp directory for script parsing.
 
@@ -13,13 +12,12 @@ static void RRParser::initRules(std::string gameDir)
         recursiveIncludePass(file);
     }
 }
-
-static void RRParser::dumpSceneNames()
+void RRParser::dumpSceneNames()
 {
 
 }
 
-static void recursiveIncludePass(std::ifstream &file)
+void RRParser::recursiveIncludePass(std::ifstream &file)
 {
     // get rid of the includes by creating a file without includes.
     //do so until we don't have any includes

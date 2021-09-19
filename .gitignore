@@ -443,3 +443,4 @@ MigrationBackup/
 testBin/*
 out/*
 vcpkg-installed/*
+build/*
