@@ -14,7 +14,9 @@
 
 
 #include "program.h"
+#include "response_system.h"
 #include <valve-bsp-parser/bsp_parser.hpp>
+#include <set>
 
 
 int BSPParser::ExtractNames(std::string GameDirectory)
@@ -22,7 +24,7 @@ int BSPParser::ExtractNames(std::string GameDirectory)
     std::ifstream maplistTxt(GameDirectory+"/maplist.txt"); //that might be insufficient...
     std::vector<std::string> maplist;
     std::string line;
-    while (std::getline(maplistTxt,line)) {
+    while (safeGetline(maplistTxt,line)) {
         maplist.emplace_back(line);
     }
 
@@ -39,20 +41,19 @@ int BSPParser::ExtractNames(std::string GameDirectory)
         std::vector<Map_Scene> scenes;
 
         for (auto entity = map.entities.begin();entity!=map.entities.end();++entity) {
-            if (entity.base()->keyvalues["classname"] !="logic_choreographed_scene")
-                continue;
-            else {
-                std::string sceneName = entity.base()->keyvalues["scene"];
+            if (entity.base()->keyvalues["classname"] =="logic_choreographed_scene"){
+                std::string sceneName = entity.base()->keyvalues["SceneFile"];
                 Map_Scene scene = *new Map_Scene(sceneName.c_str());
                 scenes.emplace_back(scene);
             }
-            if (entity.base()->keyvalues["classname"] != "env_speaker") //HL2: env_speaker uses its own script. Parse them separately if possible.
-                continue;
-            else {
+            if (entity.base()->keyvalues["classname"] == "env_speaker") {//HL2: env_speaker uses its own script. Parse them separately if possible.
                 //TODO: append value of rulescript to scripts to parse.
+                RRParser::entryPointsToParse.push_back(entity.base()->keyvalues["rulescript"]);
             }
+
         }
-        //Scenes.emplace(iter.base(),scenes);
+        //Scenes.insert(Scenes.end(),scenes.begin(),scenes.end());
+        Scenes.emplace(*iter.base(),scenes);
     }
 	return 0;
 }

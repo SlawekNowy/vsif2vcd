@@ -49,7 +49,7 @@ set(PRIVATE_INCLUDES
     "include/hardcoded_entries.h"
     "include/CRC.h"
     "include/pch.hpp"
-
+    "include/response_system.h"
     "include/split_serialization.h"
     "include/helper.hpp"
     )
@@ -57,8 +57,7 @@ set(SOURCES
     "src/Vsif2vcd_c++.cpp"
     "src/BVCD.cpp"
     "src/map_bsp.cpp"
-    "src/gameinfo.cpp"
-     
+    "src/gameinfo.cpp"   "src/response_system.cpp"
       "src/VSIF.cpp")
 # Dodaj źródło do pliku wykonywalnego tego projektu.
 add_executable (Vsif2vcd ${SOURCES} ${PRIVATE_INCLUDES})
@@ -68,10 +67,8 @@ target_precompile_headers(Vsif2vcd PUBLIC "include/pch.hpp")
 add_subdirectory(thirdparty/valve-bsp-parser)
 
 
-add_dependencies(valve-bsp-parser lzma)
 add_dependencies(Vsif2vcd valve-bsp-parser lzma)
 set_property(TARGET Vsif2vcd PROPERTY CXX_STANDARD 17)
-target_link_libraries(valve-bsp-parser PRIVATE lzma)
 target_link_libraries(Vsif2vcd PUBLIC Boost::iostreams Boost::filesystem Bitsery::bitsery lzma valve-bsp-parser)
 
 target_link_libraries(Vsif2vcd PRIVATE fmt::fmt fmt::fmt-header-only)
@@ -210,7 +207,7 @@ add_test(NAME VSIF
      #Finally add it to test execution -
      #Notice the WORKING_DIRECTORY and COMMAND
      add_test(NAME BVCD WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/testBin COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/testBin/BVCD)#Add compile target
-     add_executable(map_bsp "src/map_bsp.cpp" ${PRIVATE_INCLUDES})
+     add_executable(map_bsp "src/map_bsp.cpp" "src/response_system.cpp" ${PRIVATE_INCLUDES})
      #link to Boost libraries AND your targets and dependencies
 
      target_link_libraries(map_bsp ${Boost_LIBRARIES} Bitsery::bitsery fmt::fmt fmt::fmt-header-only valve-bsp-parser)

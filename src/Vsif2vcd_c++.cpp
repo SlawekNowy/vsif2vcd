@@ -2,6 +2,8 @@
 //
 #include "program.h"
 
+#include "VSIF.hpp"
+#include "response_system.h"
 
 #include "hardcoded_entries.h"
 
@@ -43,11 +45,15 @@ int Program::doStart(std::string gameDir) {
     gi = CGameInfo(gameDir);
 
 
+    //BSPParser and RRParser should be easy to run at the same time
     BSPParser::ExtractNames(gameDir);
-#if 0
-    RRParser::getSceneNames( gameDir);
+//#if 0
+    RRParser::initRules(gameDir);
+    RRParser::dumpSceneNames();
 
-#endif
+    //TODO: Wait for the threads
+
+//#endif
     appendHardCodedEntries();
     VSIF::ValveScenesImageFile vsif = VSIF::ValveScenesImageFile(gameDir + "/scenes/scenes.image");
     Helper::vsif = &vsif;

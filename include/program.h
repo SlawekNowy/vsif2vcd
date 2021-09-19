@@ -3,8 +3,6 @@
 #include "pch.hpp"
 #include "map_bsp.hpp"
 #include "gameinfo.hpp"
-#include "VSIF.hpp"
-
 using namespace FileSystem;
 
 
