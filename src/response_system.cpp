@@ -144,15 +144,20 @@
 
 
 std::vector<std::string> RRParser::entryPointsToParse = {"scripts/talker/response_rules.txt"} ;//path hardcoded. Why vector? we might have multiple files to parse;
-std::vector<RRParser::CResponseRulesScript> responseSystems;
+std::vector<RRParser::CResponseRulesScript> RRParser::responseSystems;
 void RRParser::initRules(std::string gameDir)
 {
-    std::filesystem::create_directory(gameDir+"tmp_rr"); //tmp directory for script parsing.
+    //std::filesystem::create_directory(gameDir+"tmp_rr"); //tmp directory for script parsing.
+
 
     for (auto entryPoint = entryPointsToParse.begin();entryPoint != entryPointsToParse.end();++entryPoint) {
-        std::ifstream file(entryPoint.base()->c_str());
+        std::string absoluteFile = gameDir+"/";
+        absoluteFile += *entryPoint.base();
+        std::ifstream file(absoluteFile.c_str());
         CResponseRulesScript script;
-        script.parseScript(file);
+        if (std::strcmp(entryPoint->c_str(),"scripts/talker/response_rules.txt")==0)
+            script.isGlobal=true;
+        script.parseScript(gameDir,file);
         responseSystems.push_back(script);
         file.close();
     }
@@ -168,44 +173,88 @@ void RRParser::dumpSceneNames()
 
 }
 
-void RRParser::CResponseRulesScript::stripQuotes(std::string &quoted)
+void RRParser::stripQuotes(std::string& quoted)
 {
-    if (quoted[0] == '\"' & quoted[quoted.length()]=='\"') {
-        quoted = quoted.substr(1,quoted.length()-1);
+    if (quoted[0] == '\"' & quoted[quoted.length()-1]=='\"') {
+        quoted = quoted.substr(1,quoted.length()-2);
     }
 
 }
 
-void RRParser::CResponseRulesScript::parseScript(std::ifstream &file)
+void RRParser::CResponseRulesScript::parseScript(std::string gamedir,std::ifstream &file)
 {
     using namespace boost; //for tokenizer
     for (std::string line;std::getline(file,line);) {
         //nuke the comments
         line = line.substr(0,line.find("//"));
-        char_separator<char> sep(" ");
+        char_separator<char> sep(" \r\t");
 
         tokenizer<char_separator<char>> tokens(line,sep);
         auto tok_it= tokens.begin();
 
         if(tok_it!=tokens.end()) {
-            if (tok_it.current_token().compare("#include")) {
+            if (tok_it.current_token().compare("#include")==0) {
                 //next token is the included file...
                 std::string includedFile = (++tok_it).current_token();
                 stripQuotes(includedFile);
+                includedFile = gamedir+"/scripts/"+includedFile;
                 if (std::find(includedFiles.begin(),includedFiles.end(),includedFile)!=includedFiles.end()) {
 
                     std::ifstream includedStream(includedFile);
-                    parseScript(includedStream);
+                    parseScript(gamedir,includedStream);
                     includedFiles.push_back(includedFile);
                     includedStream.close();
                 }
+                //that's the line!
 
             }
-            if (tok_it.current_token().compare("enumeration")) {
+            if (tok_it.current_token().compare("enumeration")==0) {
                 //next token is enum's name.
+                std::string enumName = (++tok_it).current_token();
+                stripQuotes(enumName);
+                CScriptEnumeration addedEnum(enumName);
+                addedEnum.parseEnum(file);
+                enums.push_back(addedEnum);
+
+                continue; //we're long past tokenized line (getline state is saved to the stream).
             }
+
+            //tok_it++; //TODO: Is this needed?
         }
 
+
     }
+
+}
+
+void RRParser::CScriptEnumeration::parseEnum(std::ifstream &file)
+{
+    using namespace boost; //tokenizer again :)
+
+    for (std::string line; std::getline(file,line);) {
+        line = line.substr(0,line.find("//"));
+        char_separator<char> sep(" \r\t");
+
+        tokenizer<char_separator<char>> tokens(line,sep);
+        // we should expect 2 tokens at most
+
+
+        std::vector<std::string> tokenList(tokens.begin(),tokens.end()); //we should have list of tokens here
+
+        if(tokenList[0]=="{")
+            continue; //start of the enum
+        if(tokenList[0]=="}")
+            break; //end of the enum
+
+        //We're in keyvalues now
+
+        std::string key = tokenList[0],value = tokenList[1];
+        stripQuotes(key);stripQuotes(value);
+        KV.emplace(key,value);
+
+
+    }
+
+    return;
 
 }

@@ -48,13 +48,25 @@ int BSPParser::ExtractNames(std::string GameDirectory)
             }
             if (entity.base()->keyvalues["classname"] == "env_speaker") {//HL2: env_speaker uses its own script. Parse them separately if possible.
                 //TODO: append value of rulescript to scripts to parse.
-                RRParser::entryPointsToParse.push_back(entity.base()->keyvalues["rulescript"]);
+                    RRParser::entryPointsToParse.push_back(entity.base()->keyvalues["rulescript"]);
+
+
             }
 
         }
         //Scenes.insert(Scenes.end(),scenes.begin(),scenes.end());
         Scenes.emplace(*iter.base(),scenes);
     }
+
+    std::sort(RRParser::entryPointsToParse.begin(),RRParser::entryPointsToParse.end());
+    RRParser::entryPointsToParse.erase(std::unique(RRParser::entryPointsToParse.begin(),RRParser::entryPointsToParse.end()),RRParser::entryPointsToParse.end());
+//move globalscript to front
+    auto globalScript = std::find_if(RRParser::entryPointsToParse.begin(),RRParser::entryPointsToParse.end(),
+                                     [](std::string& script) -> bool {
+                        return script == "scripts/talker/response_rules.txt";
+    });
+    std::rotate(RRParser::entryPointsToParse.begin(),globalScript,globalScript+1);
+    RRParser::entryPointsToParse.shrink_to_fit();
 	return 0;
 }
 
@@ -73,6 +85,7 @@ BOOST_AUTO_TEST_CASE(testVSIF) {
 
 	//VSIF::ValveScenesImageFile vsif("E:/hl2_tmp/scenes/scenes.image");
     BSPParser::ExtractNames("/home/slawomir/Dane/hl2_tmp");
+    RRParser::initRules("/home/slawomir/Dane/hl2_tmp");
 
 }
 #endif
