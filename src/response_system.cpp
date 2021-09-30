@@ -1,4 +1,4 @@
-
+﻿
 
 //std::vector<std::string> includedFiles;
 
@@ -181,6 +181,8 @@ void RRParser::stripQuotes(std::string& quoted)
 
 }
 
+
+
 void RRParser::CResponseRulesScript::parseScript(std::string gamedir,std::ifstream &file)
 {
     using namespace boost; //for tokenizer
@@ -217,6 +219,40 @@ void RRParser::CResponseRulesScript::parseScript(std::string gamedir,std::ifstre
                 enums.push_back(addedEnum);
 
                 continue; //we're long past tokenized line (getline state is saved to the stream).
+            }
+
+            if(tok_it.current_token().compare("response")==0) {
+                // quite a lot of parsing in a single line...
+                //back up line tokens just in case
+                std::vector<std::string> responseTokens(tokens.begin(),tokens.end());
+
+                // anyways next token is the groupname
+                std::string responseGName = (++tok_it).current_token();
+                stripQuotes(responseGName);
+                bool isOneLiner = false;
+                CScriptResponseGroup rGroup(responseGName);
+
+                //one member group is a oneliner, so check if we have pending tokens
+
+                if (std::next(tok_it) != tokens.end()) {
+                    isOneLiner = true;
+                }
+                if (isOneLiner) {
+                    //if so parse Response flags before response proper.
+                    //prepare flags partition
+
+                    std::vector<std::string> flagsStrings(responseTokens.begin()+2,responseTokens.end()-2);
+                    CScriptResponse response;
+                    response.parseFlags(flagsStrings);
+                    std::vector<std::string> typeStrings(responseTokens.end()-2,responseTokens.end()); // two last tokens.
+                    response.parseType(typeStrings);
+                    rGroup.responses.push_back(response);
+                } else {
+                    //we're in end of the line. Check for next Line until we hit { or root token. If root token was found step back one line
+                    //TODO: multiple lines and null response handling
+                    rGroup.parseResponseGroup(file);
+                }
+
             }
 
             //tok_it++; //TODO: Is this needed?
@@ -257,4 +293,87 @@ void RRParser::CScriptEnumeration::parseEnum(std::ifstream &file)
 
     return;
 
+}
+
+void RRParser::CScriptResponseGroup::parseResponseGroup(std::ifstream &file)
+{
+
+}
+
+void RRParser::CScriptResponse::parseFlags(std::vector<std::string> &flags)
+{
+    for (auto token=flags.begin();token!=flags.end();token++) {
+        stripQuotes(*token); //does this change element in place? if so are current iterators still valid?
+        //delay
+        if (token->compare("nodelay")==0) {
+            this->delayStart = this->delayEnd=0;
+        } else if (token->compare("defaultdelay")==0) {
+            this->delayStart = DEF_MIN_DELAY;this->delayEnd = DEF_MAX_DELAY;
+        } else if (token->compare("delay")==0) {
+            ++token;// next token is the range.
+            std::string range = *token.base();
+            stripQuotes(range);
+            std::string rangeBegin = range.substr(0,range.find(','));
+            std::string rangeEnd = range.substr(range.find(',')+1);
+            this->delayStart = std::stof(rangeBegin);this->delayEnd = std::stof(rangeEnd);
+
+        } else if (token->compare("speakonce")==0) {
+
+            this->speakOnce = true;
+        } else if (token->compare("noscene")==0) {
+            //TODO: check if scene is asked to bypass scene system. Meaning scene type with noscene flag
+            this->bypassScene = true;
+        } else if (token->compare("odds")==0) {
+            ++token;
+            std::string odds = *token.base();
+            stripQuotes(odds);
+            this->odds = std::stoi(odds);
+        } else if (token->compare("respeakdelay")==0) {
+            ++token;// next token is the range.
+            std::string range = *token.base();
+            stripQuotes(range);
+            std::string rangeBegin = range.substr(0,range.find(','));
+            std::string rangeEnd = range.substr(range.find(',')+1);
+            this->respeakDelayStart = std::stof(rangeBegin);this->respeakDelayEnd = std::stof(rangeEnd);
+
+        } else if (token->compare("soundlevel")==0) {
+            ++token;
+            std::string soundlvl = *token.base();
+            stripQuotes(soundlvl);
+            this->soundlevel = soundlvl;
+        }
+        // first check if element is forcibly shoved to head or tail.
+        else if (token->compare("displayfirst")==0) {
+            this->displayFirst = true;
+       } else if (token->compare("displaylast")==0) {
+            this->displayLast = true;
+       }
+        // weight
+        else if (token->compare("weight")==0) {
+            ++token;
+            std::string weight = *token.base();
+            stripQuotes(weight);
+            this->weight = std::stof(weight);
+        }
+    }
+
+}
+
+void RRParser::CScriptResponse::parseType(std::vector<std::string> &types)
+{
+    std::string type = types[0],argument = types[1];
+    stripQuotes(type);stripQuotes(argument);
+    this->typeParam=argument;
+
+    if (type=="speak") {
+        this->type = EResponseType::SPEAK;
+    }if (type=="sentence") {
+        this->type = EResponseType::SENTENCE;
+    }if (type=="scene") {
+        this->type = EResponseType::SCENE;
+    }if (type=="response") {
+        this->type = EResponseType::RESPONSE;
+    }if (type=="print") {
+        this->type = EResponseType::PRINT;
+    }
 }
