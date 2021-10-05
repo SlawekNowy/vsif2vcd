@@ -25,6 +25,9 @@ private:
 public:
     bool isGlobal = false; //true if it's a global talker script (CDefault), false otherwise (CInstanced).
     std::vector<CScriptEnumeration> enums;
+    std::vector<CScriptResponseGroup> responseGroups;
+    std::vector<CScriptCriterion> criteria;
+    std::vector<CScriptRule> rules;
 
     void parseScript(std::string gameDir,std::ifstream& file);
 
@@ -119,6 +122,41 @@ private:
         static constexpr float DEF_MIN_DELAY = 2.8;
         static constexpr float DEF_MAX_DELAY = 3.2;
 
+    };
+
+    class CScriptCriterion {
+    private:
+        std::string name;
+    public:
+        std::string matchKey;
+        std::string matchValue;
+        float weight = 1.0;
+        bool required=false;
+
+        CScriptCriterion() = default;
+
+        CScriptCriterion(std::string name) {
+            this->name = name;
+        }
+
+        void parseCriterion(std::vector<std::string>& flags);
+
+    };
+
+    class CScriptRule {
+    private:
+        std::string name;
+    public:
+        std::vector<std::string> referencedCriteria;
+        std::vector<std::string> referencedResponses;
+        bool triggerOnce = false;
+        std::vector<CScriptCriterion> anonymousCriteria;
+
+        CScriptRule(std::string name) {
+            this->name = name;
+        }
+
+        void parseRule(std::ifstream& file);
     };
 
 void dumpSceneNames(); // Iterate over scripts and extract scene filenames

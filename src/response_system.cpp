@@ -139,6 +139,8 @@
 //  responding entity.
 
 
+//TODO: does reference implementation perform sanity checks?
+
 #include "response_system.h"
 #include <filesystem>
 
@@ -186,10 +188,10 @@ void RRParser::stripQuotes(std::string& quoted)
 void RRParser::CResponseRulesScript::parseScript(std::string gamedir,std::ifstream &file)
 {
     using namespace boost; //for tokenizer
-    for (std::string line;std::getline(file,line);) {
+    for (std::string line;safeGetline(file,line);) {
         //nuke the comments
         line = line.substr(0,line.find("//"));
-        char_separator<char> sep(" \r\t");
+        char_separator<char> sep(" \t");
 
         tokenizer<char_separator<char>> tokens(line,sep);
         auto tok_it= tokens.begin();
@@ -247,12 +249,34 @@ void RRParser::CResponseRulesScript::parseScript(std::string gamedir,std::ifstre
                     std::vector<std::string> typeStrings(responseTokens.end()-2,responseTokens.end()); // two last tokens.
                     response.parseType(typeStrings);
                     rGroup.responses.push_back(response);
+                    continue; //parse new line.
                 } else {
                     //we're in end of the line. Check for next Line until we hit { or root token. If root token was found step back one line
                     //TODO: multiple lines and null response handling
                     rGroup.parseResponseGroup(file);
                 }
+                responseGroups.push_back(rGroup);
+            }
 
+            if(tok_it.current_token().compare("criterion")==0) {
+                //that's a one liner too.
+                //make vector of tokens then.
+                std::vector<std::string> criterionTokens(tokens.begin(),tokens.end());
+                // next token is the name;
+                std::string name = criterionTokens[1];
+                stripQuotes(name);
+                CScriptCriterion criterion(name);
+                auto criteronFlags(std::vector<std::string>(criterionTokens.begin()+2,criterionTokens.end()));
+                criterion.parseCriterion(criteronFlags);
+                criteria.push_back(criterion);
+                continue;
+            }
+
+            if(tok_it.current_token().compare("rule")==0) {
+                std::string ruleName = (++tok_it).current_token();
+                CScriptRule rule(ruleName);
+                rule.parseRule(file);
+                rules.push_back(rule);
             }
 
             //tok_it++; //TODO: Is this needed?
@@ -267,9 +291,9 @@ void RRParser::CScriptEnumeration::parseEnum(std::ifstream &file)
 {
     using namespace boost; //tokenizer again :)
 
-    for (std::string line; std::getline(file,line);) {
+    for (std::string line; safeGetline(file,line);) {
         line = line.substr(0,line.find("//"));
-        char_separator<char> sep(" \r\t");
+        char_separator<char> sep(" \t");
 
         tokenizer<char_separator<char>> tokens(line,sep);
         // we should expect 2 tokens at most
@@ -297,6 +321,65 @@ void RRParser::CScriptEnumeration::parseEnum(std::ifstream &file)
 
 void RRParser::CScriptResponseGroup::parseResponseGroup(std::ifstream &file)
 {
+    using namespace boost;
+    auto oldPointer = file.tellg();
+
+
+    bool foundBlock=false;
+    for(std::string line; safeGetline(file,line);) {
+        line = line.substr(0,line.find("//"));
+        char_separator<char> sep(" \t");
+
+        noRepeats = false; // this piece of code is here since default value of noRepeats is true.
+
+        tokenizer<char_separator<char>> tokens(line,sep);
+        // we should expect 2 tokens at most
+        std::vector<std::string> tokenList(tokens.begin(),tokens.end()); //we should have list of tokens here
+
+        if(!foundBlock & RRParser::CResponseRulesScript::isRootToken(tokenList[0])) {
+            file.seekg(oldPointer);
+            return; //Force back the pointer and relinquish our control.
+        }
+
+        if (tokenList[0]=="{") {
+            //that's our block! update the state.
+            foundBlock=true;
+        }
+
+        if (tokenList[0]=="}") {
+            //we are done.
+            break;
+
+        }
+
+        //group-wide flags
+
+        if(tokenList[0]=="permitrepeats"){
+            permitRepeats=true;
+        }
+
+        if (tokenList[0]=="norepeat"){
+            noRepeats=true;
+        }
+
+        if (tokenList[0]=="sequential") {
+            sequential=true;
+        }
+
+
+        if (tokenList.size()>1) {
+            CScriptResponse response;
+            std::vector<std::string> typeStrings(tokenList.begin(),tokenList.begin()+2);
+            std::vector<std::string> flagStrings(tokenList.begin()+2,tokenList.end());
+            response.parseType(typeStrings);
+            response.parseFlags(flagStrings);
+            responses.push_back(response);
+        }
+        if (!foundBlock){
+            oldPointer = file.tellg();//keep searching
+        }
+
+    }
 
 }
 
@@ -311,7 +394,7 @@ void RRParser::CScriptResponse::parseFlags(std::vector<std::string> &flags)
             this->delayStart = DEF_MIN_DELAY;this->delayEnd = DEF_MAX_DELAY;
         } else if (token->compare("delay")==0) {
             ++token;// next token is the range.
-            std::string range = *token.base();
+            std::string range = *token;
             stripQuotes(range);
             std::string rangeBegin = range.substr(0,range.find(','));
             std::string rangeEnd = range.substr(range.find(',')+1);
@@ -325,12 +408,12 @@ void RRParser::CScriptResponse::parseFlags(std::vector<std::string> &flags)
             this->bypassScene = true;
         } else if (token->compare("odds")==0) {
             ++token;
-            std::string odds = *token.base();
+            std::string odds = *token;
             stripQuotes(odds);
             this->odds = std::stoi(odds);
         } else if (token->compare("respeakdelay")==0) {
             ++token;// next token is the range.
-            std::string range = *token.base();
+            std::string range = *token;
             stripQuotes(range);
             std::string rangeBegin = range.substr(0,range.find(','));
             std::string rangeEnd = range.substr(range.find(',')+1);
@@ -338,11 +421,11 @@ void RRParser::CScriptResponse::parseFlags(std::vector<std::string> &flags)
 
         } else if (token->compare("soundlevel")==0) {
             ++token;
-            std::string soundlvl = *token.base();
+            std::string soundlvl = *token;
             stripQuotes(soundlvl);
             this->soundlevel = soundlvl;
         }
-        // first check if element is forcibly shoved to head or tail.
+        // first check if element is forcibly shoved to head or tail. Those flags ignore weight.
         else if (token->compare("displayfirst")==0) {
             this->displayFirst = true;
        } else if (token->compare("displaylast")==0) {
@@ -351,7 +434,7 @@ void RRParser::CScriptResponse::parseFlags(std::vector<std::string> &flags)
         // weight
         else if (token->compare("weight")==0) {
             ++token;
-            std::string weight = *token.base();
+            std::string weight = *token;
             stripQuotes(weight);
             this->weight = std::stof(weight);
         }
@@ -375,5 +458,72 @@ void RRParser::CScriptResponse::parseType(std::vector<std::string> &types)
         this->type = EResponseType::RESPONSE;
     }if (type=="print") {
         this->type = EResponseType::PRINT;
+    }
+}
+
+void RRParser::CScriptRule::parseRule(std::ifstream &file)
+{
+    using namespace boost; //tokenizer again :)
+
+    for (std::string line; safeGetline(file,line);) {
+        line = line.substr(0,line.find("//"));
+        char_separator<char> sep(" \t");
+
+        tokenizer<char_separator<char>> tokens(line,sep);
+
+
+        std::vector<std::string> tokenList(tokens.begin(),tokens.end()); //we should have list of tokens here
+
+        if(tokenList[0]=="{")
+            continue; //start of the rule
+        if(tokenList[0]=="}")
+            break; //end of the rule
+
+        //We're in rule definiton now
+
+        if(tokenList[0]=="criteria") {
+            for (auto token=tokenList.begin()+1;token!=tokenList.end();++token) {
+                std::string name = *(token);
+                stripQuotes(name);
+                referencedCriteria.push_back(name);
+            }
+
+        } else if(tokenList[0]=="response") {
+            for (auto token=tokenList.begin()+1;token!=tokenList.end();++token) {
+                std::string name = *(token);
+                stripQuotes(name);
+                referencedResponses.push_back(name);
+            }
+        } else if(tokenList[0]=="matchonce") {
+            triggerOnce=true;
+        } else {
+            CScriptCriterion criterion;
+            criterion.parseCriterion(tokenList);
+            anonymousCriteria.push_back(criterion);
+        }
+
+
+    }
+
+    return;
+}
+
+void RRParser::CScriptCriterion::parseCriterion(std::vector<std::string> &flags)
+{
+    // matchKey and Match value in that order.
+
+    std::string matchKey = flags[0],matchValue = flags[1];
+    stripQuotes(matchKey);stripQuotes(matchValue);
+    this->matchKey=matchKey;this->matchValue=matchValue;
+    std::vector optionals(flags.begin()+2,flags.end());
+    for(auto token = optionals.begin();token!=optionals.end();token++) {
+        std::string flag = *token;
+        stripQuotes(flag);
+        if (flag.compare("weight")==0) {
+            this->weight = std::stof(*(++token));
+        }
+        if (flag.compare("required")==0) {
+            this->required=true;
+        }
     }
 }
