@@ -14,6 +14,7 @@
 
 #include <typeinfo>
 #include "gameinfo.hpp"
+#include <filesystem>
 #include <boost/lexical_cast.hpp>
 
 
@@ -120,13 +121,14 @@ void FileSystem::CGameInfo::resolveLoadDir()
 	//TODO this might not have ending slash
 	for (auto iterator = searchPaths.begin(); iterator != searchPaths.end(); ++iterator) {
 		if ((iterator->second.find(BASEGAME_DIR_TMPL) != std::string::npos)) {
-			replace(iterator->second, BASEGAME_DIR_TMPL, baseDir+"/");
+            replace(iterator->second, BASEGAME_DIR_TMPL, baseDir+"/");
 		}else if ((iterator->second.find(MODDIR_TMPL) != std::string::npos)) {
-			replace(iterator->second, MODDIR_TMPL, modDir+"/");
+            replace(iterator->second, MODDIR_TMPL, modDir+"/");
 		}
 		else {
             //assume we're loading from |all_source_engine_paths|
-            iterator->second = baseDir + iterator->second;
+            //TODO: Linux's version of portal2 has bogus detection of custom sourcemods. This is diffrent than behavior in windows and must be reported to Valve.
+            iterator->second = baseDir+"/" + iterator->second;
 		}
 	}
 }
@@ -136,11 +138,80 @@ bool FileSystem::CGameInfo::replace(std::string& str, const std::string& from, c
 	if (start_pos == std::string::npos)
 		return false;
 	str.replace(start_pos, from.length(), to);
-	return true;
+    return true;
 }
 
-void FileSystem::CGameInfo::prepareTmpDirectory()
+FileSystem::CGameInfo::CGameInfo(std::string modDir)
 {
+            std::ifstream txtGI_str;
+            this->modDir = modDir;
+            txtGI_str.open(modDir+"/gameinfo.txt");
+            memGI = tyti::vdf::read< gameInfoKV>(txtGI_str);
+            txtGI_str.close();
+
+            //memGI = tyti::vdf::read< tyti::vdf::multikey_object>(txtGI_str);
+            txtGI_str.close();
+            initGamepaths();
+            resolveBaseDir();
+            resolveLoadDir();
+}
+
+FileSystem::CGameInfo::~CGameInfo()
+{
+
+};
+
+bool FileSystem::CGameInfo::prepareTmpDirectory()
+{
+    /*
+        What we need:
+        - maps/(x).bsp
+        - scenes/scenes.image
+        - scripts/talker/(all)
+    */
+
+    std::string error;
+    for (auto iter = filesAndTargets.rbegin();iter!=filesAndTargets.rend();iter++) {
+        std::vector<IFile*> files;
+        std::vector<IFile*> filesChunk;
+
+        files.reserve(65536);
+        filesChunk = iter.base()->second->Find("maps/");
+        files.insert(files.end(),filesChunk.begin(),filesChunk.end());
+        filesChunk = iter.base()->second->Find("scenes/scenes.image");
+        files.insert(files.end(),filesChunk.begin(),filesChunk.end());
+        filesChunk = iter.base()->second->Find("scripts/talker/");
+        files.insert(files.end(),filesChunk.begin(),filesChunk.end());
+        files.shrink_to_fit();
+
+
+        filesChunk.clear();
+        for (IFile* filePtr:files) {
+            filePtr->extract(baseDir+"/tmp/",error);
+        }
+
+
+    }
+}
+
+void FileSystem::CGameInfo::initializeFileSystem()
+{
+    //this->resolveBaseDir();
+    //this->resolveLoadDir();
+
+    for (auto searchPaths_iter=searchPaths.begin();searchPaths_iter!=searchPaths.end();searchPaths_iter++){
+        if ( ((int)(searchPaths_iter.base()->first) & (int)FileSystem::PathID::GAME ) |
+             ((int)(searchPaths_iter.base()->first) & (int)FileSystem::PathID::MOD)) {
+
+            std::string packFile = searchPaths_iter.base()->second;
+
+            //TODO: IMountPath, IDir,IFileEntry
+            if (packFile.find("custom")==std::string::npos) {
+                IMountPath* mountPath = IMountPath::Mount(packFile);
+                filesAndTargets.push_back(std::make_pair(packFile,mountPath));
+            }
+        }
+    }
 }
 
 void FileSystem::CGameInfo::resolveBaseDir()
@@ -173,7 +244,7 @@ void FileSystem::CGameInfo::resolveBaseDir()
     strcat(steamPath,getenv("HOME"));
     strcat(steamPath,tmp);
     //char* steamPath = getenv("HOME") + "/.steam/root";
-    steamDir = boost::filesystem::canonical(steamPath).native();
+    steamDir = std::filesystem::canonical(steamPath).native();
     delete[] steamPath;
 #elif __APPLE__ && __MACH__
 	// TODO
@@ -187,18 +258,14 @@ void FileSystem::CGameInfo::resolveBaseDir()
 	auto libraryFoldersVDF = tyti::vdf::read< tyti::vdf::multikey_object>(VDF);
 	VDF.close();
 
-	steamLibDirs.reserve(libraryFoldersVDF.attribs.size() - 2);
-	for (auto iterator = libraryFoldersVDF.attribs.begin(); iterator != libraryFoldersVDF.attribs.end(); ++iterator) {
-		std::pair<std::string, std::string> pair = *iterator;
-		try {
-            boost::lexical_cast<int>(pair.first);
-			steamLibDirs.push_back(pair.second);
-		}
-		catch (boost::bad_lexical_cast) {
-			continue;//discard rest
-		}
+    steamLibDirs.reserve(libraryFoldersVDF.childs.size()+1);
+    for (auto iterator = libraryFoldersVDF.childs.begin(); iterator != libraryFoldersVDF.childs.end(); ++iterator) {
+        std::string path = iterator->second.get()->attribs.find("path")->second;
+        steamLibDirs.emplace_back(path);
 	}
-
+    sort( steamLibDirs.begin(), steamLibDirs.end() );
+    steamLibDirs.erase( unique( steamLibDirs.begin(), steamLibDirs.end() ), steamLibDirs.end() );
+    steamLibDirs.shrink_to_fit();
 	this->baseDir = getPathFromAppID(this->appID,steamLibDirs);
 
 }
@@ -213,9 +280,9 @@ FileSystem::PathID FileSystem::CGameInfo::resolvePathIDs(std::string input) {
 	for (tokenizer::iterator tok_iter = tokens.begin();
 		tok_iter != tokens.end(); ++tok_iter) {
 		if (*tok_iter == "game" || *tok_iter == "vpk")
-			out |= FileSystem::PathID::GAME;
-		else if (*tok_iter == "game_write")
-			out |= FileSystem::PathID::GAME_WRITE;
+            out |= FileSystem::PathID::GAME;
+        else if (*tok_iter == "game_write")
+            out |= FileSystem::PathID::GAME_WRITE;
 		else if (*tok_iter == "gamebin")
 			out |= FileSystem::PathID::GAMEBIN;
 		else if (*tok_iter == "mod")
@@ -238,7 +305,7 @@ std::string FileSystem::CGameInfo::getPathFromAppID(int appID, std::vector<std::
 	//The game cannot be installed in more than one location.
 	for (auto iterator = steamLibDirs.begin(); iterator != steamLibDirs.end(); ++iterator) {
 		std::string gamePath = *iterator;
-		if (!boost::filesystem::exists(gamePath + "/steamapps/" + "appmanifest_" + std::to_string(appID) + ".acf"))
+        if (!std::filesystem::exists(gamePath + "/steamapps/" + "appmanifest_" + std::to_string(appID) + ".acf"))
 			continue;
 		std::ifstream VDF;
 		VDF.open(gamePath + "/steamapps/" + "appmanifest_" + std::to_string(appID) + ".acf");
@@ -258,7 +325,9 @@ BOOST_AUTO_TEST_CASE(testGI) {
 #ifdef _WIN32
 	FileSystem::CGameInfo gameInfo("E:/source-sdk-2013/mp/game/mod_hl2mp");
 #else
-    FileSystem::CGameInfo gameInfo("/home/slawomir/Dane/source-sdk-2013/mp/game/mod_hl2mp/");
+    FileSystem::CGameInfo gameInfo("/home/slawomir/Dane/SteamLibrary/steamapps/common/Half-Life 2/hl2");
+
+    gameInfo.initializeFileSystem();
 #endif
 }
 #endif

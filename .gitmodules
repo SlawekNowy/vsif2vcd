@@ -7,3 +7,6 @@
 [submodule "thirdparty/liblzma"]
 	path = thirdparty/liblzma
 	url = https://github.com/SlawekNowy/liblzma
+[submodule "thirdparty/hllib"]
+	path = thirdparty/hllib
+	url = https://github.com/SlawekNowy/HLLib

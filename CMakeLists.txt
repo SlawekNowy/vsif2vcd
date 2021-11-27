@@ -2,10 +2,6 @@
 
 include_guard(GLOBAL)
 
-if(${CMAKE_VERSION} VERSION_LESS 3.12)
-    cmake_policy(VERSION ${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION})
-endif()
-
 #set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/externals/sanitizers-cmake/cmake" ${CMAKE_MODULE_PATH})
 #find_package(Sanitizers)
 #include(cmake/locate_vcpkg.cmake)
@@ -14,9 +10,10 @@ endif()
 
 #TODO: stop if we use vs2015 or older
 
-project(Vsif2Vcd VERSION 0.1.0.0
+project(Vsif2Vcd VERSION 0.7.8.0
                   DESCRIPTION "Cross-platform decompiler for scenes.image file."
                   LANGUAGES CXX)
+
                   
 configure_file (
     "${PROJECT_SOURCE_DIR}/include/version.hpp.in"
@@ -52,24 +49,32 @@ set(PRIVATE_INCLUDES
     "include/response_system.h"
     "include/split_serialization.h"
     "include/helper.hpp"
+
+    include/filesystem/ifile.h
+    include/filesystem/imountpath.h
     )
 set(SOURCES 
     "src/Vsif2vcd_c++.cpp"
     "src/BVCD.cpp"
     "src/map_bsp.cpp"
     "src/gameinfo.cpp"   "src/response_system.cpp"
-      "src/VSIF.cpp")
+      "src/VSIF.cpp"
+      src/filesystem_internal/cvpkmountpath.h src/filesystem_internal/cvpkinfile.h src/filesystem_internal/cvpkinfile.cpp src/filesystem_internal/cvpkmountpath.cpp
+      src/filesystem_internal/cloosemountpath.h src/filesystem_internal/cloosemountpath.cpp src/filesystem_internal/cloosefile.h src/filesystem_internal/cloosefile.cpp
+        src/filesystem_internal/imountpath_internal.cpp
+      )
 # Dodaj źródło do pliku wykonywalnego tego projektu.
 add_executable (Vsif2vcd ${SOURCES} ${PRIVATE_INCLUDES})
 target_precompile_headers(Vsif2vcd PUBLIC "include/pch.hpp")
 
 
+add_subdirectory(thirdparty/hllib/HLLib)
 add_subdirectory(thirdparty/valve-bsp-parser)
 
 
-add_dependencies(Vsif2vcd valve-bsp-parser lzma)
+add_dependencies(Vsif2vcd valve-bsp-parser lzma hllib)
 set_property(TARGET Vsif2vcd PROPERTY CXX_STANDARD 17)
-target_link_libraries(Vsif2vcd PUBLIC Boost::iostreams Boost::filesystem Bitsery::bitsery lzma valve-bsp-parser)
+target_link_libraries(Vsif2vcd PUBLIC Boost::iostreams Boost::filesystem Bitsery::bitsery lzma valve-bsp-parser hllib)
 
 target_link_libraries(Vsif2vcd PRIVATE fmt::fmt fmt::fmt-header-only)
 
@@ -94,6 +99,8 @@ target_include_directories(Vsif2vcd PUBLIC
     "${PROJECT_SOURCE_DIR}/include/"
     "${PROJECT_SOURCE_DIR}/thirdparty/vdf_parser/include"
     "${PROJECT_SOURCE_DIR}/thirdparty/liblzma/include"
+
+    "${PROJECT_SOURCE_DIR}/thirdparty/hllib/HLLib"
     "${PROJECT_SOURCE_DIR}/thirdparty/valve-bsp-parser/include"
     "${PROJECT_BINARY_DIR}/include/"
     ${Bitsery_INCLUDE_DIR})
@@ -125,9 +132,12 @@ set(TEST_SRCS
 
 
 #Add compile target
-add_executable(gameinfo "src/gameinfo.cpp" ${PRIVATE_INCLUDES})
+add_executable(gameinfo "src/gameinfo.cpp"
+    src/filesystem_internal/cvpkmountpath.h src/filesystem_internal/cvpkinfile.h src/filesystem_internal/cvpkinfile.cpp src/filesystem_internal/cvpkmountpath.cpp
+    src/filesystem_internal/cloosemountpath.h src/filesystem_internal/cloosemountpath.cpp src/filesystem_internal/cloosefile.h src/filesystem_internal/cloosefile.cpp
+    src/filesystem_internal/imountpath_internal.cpp ${PRIVATE_INCLUDES})
 #link to Boost libraries AND your targets and dependencies
-target_link_libraries(gameinfo ${Boost_LIBRARIES} Bitsery::bitsery lzma)
+target_link_libraries(gameinfo ${Boost_LIBRARIES} Bitsery::bitsery lzma hllib)
 
 
 #I like to move testing binaries into a testBin directory
@@ -139,6 +149,7 @@ target_include_directories(gameinfo PUBLIC
    "${PROJECT_SOURCE_DIR}/thirdparty/vdf_parser/include"
    "${PROJECT_SOURCE_DIR}/thirdparty/liblzma/include"
    "${PROJECT_SOURCE_DIR}/thirdparty/valve-bsp-parser/include"
+   "${PROJECT_SOURCE_DIR}/thirdparty/hllib/HLLib"
    "${PROJECT_BINARY_DIR}/include/"
    ${Bitsery_INCLUDE_DIR})
 

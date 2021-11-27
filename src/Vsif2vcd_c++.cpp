@@ -6,6 +6,7 @@
 #include "response_system.h"
 
 #include "hardcoded_entries.h"
+#include <filesystem>
 
 
 using namespace std;
@@ -13,6 +14,7 @@ using namespace std;
 
 
 int main(int argc, char* argv[]){
+    //TODO: PROFILE!
 	int ExitCode;
 	puts("VSIF2VCD version 2.0 (23 Apr 2012)");
 	if (argc < 2|| argc > 2)
@@ -28,14 +30,14 @@ int main(int argc, char* argv[]){
 
 
 
-std::vector<BSPParser::Map_Scene> Program::scenesPerMap;
+
 
 CGameInfo Program::gi;
 std::map<std::string,std::vector<BSPParser::Map_Scene>> BSPParser::Scenes;
 
 //VSIF::ValveScenesImageFile* Helper::vsif;
-using boost::filesystem::path;
-using boost::filesystem::canonical;
+using std::filesystem::path;
+using std::filesystem::canonical;
 int Program::doStart(std::string gameDir) {
 	path gameDirPath(gameDir);
 	auto absGameDir = canonical(gameDirPath);

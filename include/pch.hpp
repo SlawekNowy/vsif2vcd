@@ -7,7 +7,7 @@
 //From boost we need lzma, filesys, and serialization
 // response_rules parser needs tokenizer
 //in C++11 Boost::threads is now in std
-#include <boost/filesystem.hpp>
+#include <filesystem>
 #include <boost/tokenizer.hpp>
 #include <boost/crc.hpp>
 

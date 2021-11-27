@@ -142,6 +142,7 @@
 //TODO: does reference implementation perform sanity checks?
 
 #include "response_system.h"
+#include "map_bsp.hpp"
 #include <filesystem>
 
 
@@ -172,6 +173,20 @@ void RRParser::initRules(std::string gameDir)
 }
 void RRParser::dumpSceneNames()
 {
+    std::vector<BSPParser::Map_Scene> scenes;
+    scenes.reserve(65535);
+    for (const auto& rrSys: responseSystems) {
+        for (const auto& rGroup: rrSys.responseGroups) {
+            for (const auto& response: rGroup.responses) {
+                if (response.type == RRParser::EResponseType::SCENE) {
+                    BSPParser::Map_Scene scene(response.typeParam.c_str());
+                    scenes.emplace_back(scene);
+                }
+            }
+        }
+    }
+    scenes.shrink_to_fit();
+    BSPParser::Scenes.emplace("responseSystem",scenes);
 
 }
 

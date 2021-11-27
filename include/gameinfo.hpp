@@ -16,6 +16,10 @@
 #include "gameinfoKV.hpp"
 #include "pch.hpp"
 #include <unordered_map>
+
+
+#include <filesystem/imountpath.h>
+
 //this is first-in set for file seek
 //TODO: |gameinfo_path| and |all_source_engine_paths|
 
@@ -50,6 +54,7 @@ namespace FileSystem {
 
 		std::string modDir;
 		gameInfoKV memGI; //this var holds memory representation of gameinfo.txt
+        std::vector<std::pair<std::string,IMountPath*>> filesAndTargets;
 		
 
 
@@ -63,22 +68,11 @@ namespace FileSystem {
 	public:
 		int appID=0;
 		CGameInfo() {};
-		CGameInfo(std::string modDir) {
-			std::ifstream txtGI_str;
-			this->modDir = modDir;
-			txtGI_str.open(modDir+"/gameinfo.txt");
-			memGI = tyti::vdf::read< gameInfoKV>(txtGI_str);
-			txtGI_str.close();
-			
-			//memGI = tyti::vdf::read< tyti::vdf::multikey_object>(txtGI_str);
-			txtGI_str.close();
-			initGamepaths();
-			resolveBaseDir();
-			resolveLoadDir();
-		};
-		~CGameInfo() {
-		};
-		void prepareTmpDirectory();
+        CGameInfo(std::string modDir); /* */
+        ~CGameInfo(); /* {
+        }; */
+        bool prepareTmpDirectory();
+        void initializeFileSystem();
 
 		
 	private:
