@@ -14,6 +14,8 @@
 
 
 #include "VSIF.hpp"
+#include "BVCD.hpp"
+
 
 
 
@@ -27,3 +29,25 @@ BOOST_AUTO_TEST_CASE(testVSIF) {
 #endif
 
 
+#if !defined(ENABLE_TESTING)
+void VSIF::ValveScenesImageFile::fillWithVCDS()
+{
+
+    vcds.resize(header.ScenesCount);
+    for (unsigned int i=0;i<Helper::vsif->header.ScenesCount;i++){
+        VSIF::VSIF_Entry entry = Helper::vsif->entries[i];
+        //[first,last) - we need [first,last] so effectively [first,last+sizeof(char))
+        //TODO - can std::next return end iterator?
+        uint32_t startPos = entry.Offset-Helper::vsif->dataPos;
+
+        std::vector<char> bvcd(std::next(Helper::vsif->sceneBuffer.begin(),startPos),
+                           std::next(Helper::vsif->sceneBuffer.begin(),startPos+entry.Size));
+
+
+        BVCD::VCD vcdMem = BVCD::getSceneFromBuffer(bvcd);
+        BVCD::VCD* vcdMemPtr = &vcdMem;
+        vcds.push_back(vcdMemPtr);
+
+    }
+}
+#endif

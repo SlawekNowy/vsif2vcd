@@ -11,7 +11,7 @@
 
 #include <sstream>
 
-VSIF::ValveScenesImageFile* Helper::vsif;
+extern  VSIF::ValveScenesImageFile* Helper::vsif;
 
 
 

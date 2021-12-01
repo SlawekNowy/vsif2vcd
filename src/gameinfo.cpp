@@ -161,7 +161,7 @@ FileSystem::CGameInfo::~CGameInfo()
 
 };
 
-bool FileSystem::CGameInfo::prepareTmpDirectory()
+bool FileSystem::CGameInfo::prepareTmpDirectory(std::string& tmpDir)
 {
     /*
         What we need:
@@ -191,6 +191,8 @@ bool FileSystem::CGameInfo::prepareTmpDirectory()
         for (IFile* filePtr:files) {
             result &= filePtr->extract(baseDir+"/tmp/",error);
         }
+
+        tmpDir=baseDir+"/tmp/";
 
 
     }
@@ -333,7 +335,8 @@ BOOST_AUTO_TEST_CASE(testGI) {
 
 
     gameInfo.initializeFileSystem();
-    gameInfo.prepareTmpDirectory();
+    std::string tmpDir;
+    gameInfo.prepareTmpDirectory(tmpDir);
 }
 #endif
 

@@ -123,7 +123,8 @@ BVCD::VCD BVCD::getSceneFromBuffer(std::vector<char> buffer) {
 
 #ifdef ENABLE_TESTING
 
-//VSIF::ValveScenesImageFile* Helper::vsif;
+
+VSIF::ValveScenesImageFile* Helper::vsif;
 BOOST_AUTO_TEST_CASE(testBVCD) {
     VSIF::ValveScenesImageFile vsif =VSIF::ValveScenesImageFile("/home/slawomir/Dane/SteamLibrary/steamapps/common/Half-Life 2/tmp/scenes/scenes.image");
     Helper::vsif =&vsif;

@@ -129,30 +129,33 @@ namespace VSIF {
 		std::vector<char> sceneBuffer;
 
         std::vector<BVCD::VCD*> vcds;
+    private:
+        void fillWithVCDS();
+    public:
 	
 		ValveScenesImageFile() {
 			//ValveScenesImageFile("scenes.image");
-		}
-		ValveScenesImageFile(std::string filePath) {
+        }
+        ValveScenesImageFile(std::string filePath) {
 
 
-			using Buffer = std::vector<char>;
-			using OutputAdapter = bitsery::OutputBufferAdapter<Buffer>;
-			using InputAdapter = bitsery::InputBufferAdapter<Buffer>;
-			std::ifstream fileStream = std::ifstream(filePath, std::ios::in | std::ios::binary);
-			fileStream.seekg(0, std::ios_base::end);
-			size = fileStream.tellg();
+            using Buffer = std::vector<char>;
+            using OutputAdapter = bitsery::OutputBufferAdapter<Buffer>;
+            using InputAdapter = bitsery::InputBufferAdapter<Buffer>;
+            std::ifstream fileStream = std::ifstream(filePath, std::ios::in | std::ios::binary);
+            fileStream.seekg(0, std::ios_base::end);
+            size = fileStream.tellg();
 
-			fileStream.seekg(0, std::ios_base::beg);
-			Buffer fileBuf(std::istreambuf_iterator<char>(fileStream), {});
-			/*
-			fileBuf.reserve(size);
-			fileStream.read(fileBuf.data(), size);
-			assert(fileBuf.size() != 0);
-			*/
-			bitsery::quickDeserialization<InputAdapter, ValveScenesImageFile>(InputAdapter{ fileBuf.begin(),fileBuf.end() }, *this);
+            fileStream.seekg(0, std::ios_base::beg);
+            Buffer fileBuf(std::istreambuf_iterator<char>(fileStream), {});
+            /*
+            fileBuf.reserve(size);
+            fileStream.read(fileBuf.data(), size);
+            assert(fileBuf.size() != 0);
+            */
+            bitsery::quickDeserialization<InputAdapter, ValveScenesImageFile>(InputAdapter{ fileBuf.begin(),fileBuf.end() }, *this);
 #ifndef ENABLE_TESTING
-            vcds.resize(header.ScenesCount);
+            fillWithVCDS();
 #endif
 			
 			

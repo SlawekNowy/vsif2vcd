@@ -54,3 +54,4 @@ constexpr auto Map_MaxValue = 1024;
 	int ExtractNames(std::string GameDirectory);
 
 }
+

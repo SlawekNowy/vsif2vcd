@@ -77,6 +77,8 @@ int BSPParser::ExtractNames(std::string GameDirectory)
 
 
 
+
+
 #ifdef ENABLE_TESTING
 
 std::map<std::string,std::vector<BSPParser::Map_Scene>> BSPParser::Scenes;

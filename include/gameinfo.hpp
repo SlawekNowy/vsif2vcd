@@ -71,7 +71,7 @@ namespace FileSystem {
         CGameInfo(std::string modDir); /* */
         ~CGameInfo(); /* {
         }; */
-        bool prepareTmpDirectory();
+        bool prepareTmpDirectory(std::string&);
         void initializeFileSystem();
 
 		
