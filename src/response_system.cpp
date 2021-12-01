@@ -351,50 +351,57 @@ void RRParser::CScriptResponseGroup::parseResponseGroup(std::ifstream &file)
         // we should expect 2 tokens at most
         std::vector<std::string> tokenList(tokens.begin(),tokens.end()); //we should have list of tokens here
 
-        if(!foundBlock & RRParser::CResponseRulesScript::isRootToken(tokenList[0])) {
-            file.seekg(oldPointer);
-            return; //Force back the pointer and relinquish our control.
+
+
+        if (tokenList.size()>0) {
+            if(!foundBlock & RRParser::CResponseRulesScript::isRootToken(tokenList[0])) {
+                file.seekg(oldPointer);
+                return; //Force back the pointer and relinquish our control.
+            }
+            if (tokenList[0]=="{") {
+                //that's our block! update the state.
+                foundBlock=true;
+            }
+
+            if (tokenList[0]=="}") {
+                //we are done.
+                break;
+
+            }
+
+            //group-wide flags
+
+            if(tokenList[0]=="permitrepeats"){
+                permitRepeats=true;
+            }
+
+            if (tokenList[0]=="norepeat"){
+                noRepeats=true;
+            }
+
+            if (tokenList[0]=="sequential") {
+                sequential=true;
+            }
+
+
+            if (tokenList.size()>1) {
+                CScriptResponse response;
+                std::vector<std::string> typeStrings(tokenList.begin(),tokenList.begin()+2);
+                std::vector<std::string> flagStrings(tokenList.begin()+2,tokenList.end());
+                response.parseType(typeStrings);
+                response.parseFlags(flagStrings);
+                responses.push_back(response);
+            }
+            if (!foundBlock){
+                oldPointer = file.tellg();//keep searching
+            }
+
+        }
         }
 
-        if (tokenList[0]=="{") {
-            //that's our block! update the state.
-            foundBlock=true;
-        }
-
-        if (tokenList[0]=="}") {
-            //we are done.
-            break;
-
-        }
-
-        //group-wide flags
-
-        if(tokenList[0]=="permitrepeats"){
-            permitRepeats=true;
-        }
-
-        if (tokenList[0]=="norepeat"){
-            noRepeats=true;
-        }
-
-        if (tokenList[0]=="sequential") {
-            sequential=true;
         }
 
 
-        if (tokenList.size()>1) {
-            CScriptResponse response;
-            std::vector<std::string> typeStrings(tokenList.begin(),tokenList.begin()+2);
-            std::vector<std::string> flagStrings(tokenList.begin()+2,tokenList.end());
-            response.parseType(typeStrings);
-            response.parseFlags(flagStrings);
-            responses.push_back(response);
-        }
-        if (!foundBlock){
-            oldPointer = file.tellg();//keep searching
-        }
-
-    }
 
 }
 
