@@ -27,6 +27,8 @@ std::vector<IFile *> CVPKMountPath::Find(std::string substr)
     pRoot->Sort(); //by default this searches alphabetically and recursively
 
 
+
+
     HLLib::CDirectoryItem* pSubstrPos = pRoot->GetRelativeItem(substr.c_str());
 
     std::vector<IFile*> files;

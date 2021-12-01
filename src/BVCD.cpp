@@ -125,7 +125,7 @@ BVCD::VCD BVCD::getSceneFromBuffer(std::vector<char> buffer) {
 
 //VSIF::ValveScenesImageFile* Helper::vsif;
 BOOST_AUTO_TEST_CASE(testBVCD) {
-    VSIF::ValveScenesImageFile vsif =VSIF::ValveScenesImageFile("/home/slawomir/Dane/hl2_tmp/scenes/scenes.image");
+    VSIF::ValveScenesImageFile vsif =VSIF::ValveScenesImageFile("/home/slawomir/Dane/SteamLibrary/steamapps/common/Half-Life 2/tmp/scenes/scenes.image");
     Helper::vsif =&vsif;
 
     for (unsigned int i=0;i<Helper::vsif->header.ScenesCount;i++){
@@ -142,7 +142,7 @@ BOOST_AUTO_TEST_CASE(testBVCD) {
 
     std::string vcdText = vcdMem.dumpText();
     std::ofstream vcdFileOut;
-    boost::filesystem::create_directories("temp/");
+    std::filesystem::create_directories("temp/");
     std::string fileToOpen = "temp/"+std::to_string(vcdMem.CRC)+".vcd";
     vcdFileOut.open(fileToOpen);
 vcdFileOut << vcdText;

@@ -4,8 +4,8 @@
 
 CLooseFile::CLooseFile(std::string basePath, std::string relPath)
 {
-    this->basePath = basePath;this->relPath=relPath;
-    filePathHandle = *new std::filesystem::path(basePath+relPath);
+    this->basePath = basePath+"/";this->relPath=relPath;
+    filePathHandle = *new std::filesystem::path(this->basePath+relPath);
 
 }
 
@@ -14,7 +14,10 @@ bool CLooseFile::extract(std::string whereTo, std::string &errorStr)
     bool bResult = true;
     std::filesystem::path destPath(whereTo+relPath);
     try {
-        std::filesystem::copy_file(filePathHandle, destPath); // throws: files do not exist
+        std::filesystem::path destDir = destPath;
+        destDir= destDir.remove_filename();
+        std::filesystem::create_directories(destDir);
+        std::filesystem::copy_file(filePathHandle, destPath,std::filesystem::copy_options::overwrite_existing); // throws: files do not exist
     }
     catch(std::filesystem::filesystem_error const& ex) {
 

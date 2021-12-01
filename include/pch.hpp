@@ -3,6 +3,7 @@
 
 #pragma once
 #include <iostream>
+#include <fstream>
 
 //From boost we need lzma, filesys, and serialization
 // response_rules parser needs tokenizer

@@ -170,28 +170,31 @@ bool FileSystem::CGameInfo::prepareTmpDirectory()
         - scripts/talker/(all)
     */
 
+    bool result = true;
     std::string error;
-    for (auto iter = filesAndTargets.rbegin();iter!=filesAndTargets.rend();iter++) {
+
+    for (int element = filesAndTargets.size()-1;element>=0;element--){
         std::vector<IFile*> files;
         std::vector<IFile*> filesChunk;
 
         files.reserve(65536);
-        filesChunk = iter.base()->second->Find("maps/");
+        filesChunk = filesAndTargets[element].second->Find("maps/");
         files.insert(files.end(),filesChunk.begin(),filesChunk.end());
-        filesChunk = iter.base()->second->Find("scenes/scenes.image");
+        filesChunk = filesAndTargets[element].second->Find("scenes/scenes.image");
         files.insert(files.end(),filesChunk.begin(),filesChunk.end());
-        filesChunk = iter.base()->second->Find("scripts/talker/");
+        filesChunk = filesAndTargets[element].second->Find("scripts/talker/");
         files.insert(files.end(),filesChunk.begin(),filesChunk.end());
         files.shrink_to_fit();
 
 
         filesChunk.clear();
         for (IFile* filePtr:files) {
-            filePtr->extract(baseDir+"/tmp/",error);
+            result &= filePtr->extract(baseDir+"/tmp/",error);
         }
 
 
     }
+    return result;
 }
 
 void FileSystem::CGameInfo::initializeFileSystem()
@@ -326,9 +329,11 @@ BOOST_AUTO_TEST_CASE(testGI) {
 	FileSystem::CGameInfo gameInfo("E:/source-sdk-2013/mp/game/mod_hl2mp");
 #else
     FileSystem::CGameInfo gameInfo("/home/slawomir/Dane/SteamLibrary/steamapps/common/Half-Life 2/hl2");
+#endif
+
 
     gameInfo.initializeFileSystem();
-#endif
+    gameInfo.prepareTmpDirectory();
 }
 #endif
 

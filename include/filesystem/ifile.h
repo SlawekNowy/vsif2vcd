@@ -9,7 +9,6 @@ class IFile {
 protected:
     std::string basePath;
     std::string relPath;
-    bool bInitialized = false;
 public:
     virtual bool extract(std::string whereTo,std::string& errorStr)=0; //this extracts or copies the file.
 
