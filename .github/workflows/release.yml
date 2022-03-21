@@ -2,11 +2,11 @@
 # Copyright (c) 2020-2021 Luca Cappa
 # Released under the term specified in file LICENSE.txt
 # SPDX short identifier: MIT
-name: release-test
-on:
+name: release-beta
+on: 
   push:
-    tag:
-      '*'
+    tags:
+    - '*'
 
 
 jobs:
