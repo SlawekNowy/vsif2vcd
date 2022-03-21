@@ -8,7 +8,7 @@ constexpr auto Map_MaxKey = 64;
 constexpr auto Map_MaxValue = 1024;
 	 struct Map_Scene {
 		unsigned int CRC;
-		char Name[Map_MaxValue + 1];
+        std::string Name;
 
 
 
@@ -17,8 +17,10 @@ constexpr auto Map_MaxValue = 1024;
 		}
         Map_Scene(const char* name) {
 
-            strncpy(this->Name, name, Map_MaxName + 1);
-            //this->Name = name;
+            //strncpy(this->Name, name, Map_MaxName + 1);
+            this->Name = name;
+            Helper::ReplaceAll(this->Name,"\\","/");
+            boost::algorithm::to_lower(this->Name);
             recalculateCRC(normalizeString());
 
 		}

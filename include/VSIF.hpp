@@ -128,8 +128,7 @@ namespace VSIF {
 		//Cannot make a vector of structs since that data might be compressed
 		std::vector<char> sceneBuffer;
 
-        std::vector<BVCD::VCD*> vcds;
-    private:
+        std::vector<BVCD::VCD> vcds;
         void fillWithVCDS();
     public:
 	
@@ -154,9 +153,7 @@ namespace VSIF {
             assert(fileBuf.size() != 0);
             */
             bitsery::quickDeserialization<InputAdapter, ValveScenesImageFile>(InputAdapter{ fileBuf.begin(),fileBuf.end() }, *this);
-#ifndef ENABLE_TESTING
-            fillWithVCDS();
-#endif
+
 			
 			
 			

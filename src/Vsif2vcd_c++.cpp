@@ -55,6 +55,9 @@
         gi.initializeFileSystem();
         std::string tmpDir;
         gi.prepareTmpDirectory(tmpDir);
+        VSIF::ValveScenesImageFile vsif = VSIF::ValveScenesImageFile(tmpDir + "/scenes/scenes.image");
+        Helper::vsif = &vsif;
+        Helper::vsif->fillWithVCDS();
 
 
         //BSPParser and RRParser should be easy to run at the same time
@@ -67,10 +70,9 @@
 
     //#endif
         appendHardCodedEntries();
-        VSIF::ValveScenesImageFile vsif = VSIF::ValveScenesImageFile(tmpDir + "/scenes/scenes.image");
-        Helper::vsif = &vsif;
 
-        std::list<BSPParser::Map_Scene> sceneSoup(4096);
+
+        std::vector<BSPParser::Map_Scene> sceneSoup;
 
         for (auto& pair:BSPParser::Scenes) {
 
@@ -79,7 +81,7 @@
 
         for (int i=0;i<Helper::vsif->vcds.size();i++) {
             VSIF::VSIF_Entry entry = Helper::vsif->entries[i];
-            std::string strDump = Helper::vsif->vcds[i]->dumpText();
+            std::string strDump = Helper::vsif->vcds[i].dumpText();
             // now find the path this crc is refering to.
             auto strEntryIter = std::find_if(sceneSoup.begin(),sceneSoup.end(),[&entry](const BSPParser::Map_Scene& element){
                 return entry.CRC==element.CRC;

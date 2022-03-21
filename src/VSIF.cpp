@@ -33,21 +33,23 @@ BOOST_AUTO_TEST_CASE(testVSIF) {
 void VSIF::ValveScenesImageFile::fillWithVCDS()
 {
 
-    vcds.resize(header.ScenesCount);
-    for (unsigned int i=0;i<Helper::vsif->header.ScenesCount;i++){
-        VSIF::VSIF_Entry entry = Helper::vsif->entries[i];
+    vcds.reserve(header.ScenesCount);
+    for (unsigned int i=0;i<header.ScenesCount;i++){
+        VSIF::VSIF_Entry entry = entries[i];
         //[first,last) - we need [first,last] so effectively [first,last+sizeof(char))
         //TODO - can std::next return end iterator?
-        uint32_t startPos = entry.Offset-Helper::vsif->dataPos;
+        uint32_t startPos = entry.Offset-dataPos;
 
-        std::vector<char> bvcd(std::next(Helper::vsif->sceneBuffer.begin(),startPos),
-                           std::next(Helper::vsif->sceneBuffer.begin(),startPos+entry.Size));
+        std::vector<char> bvcd(std::next(sceneBuffer.begin(),startPos),
+                           std::next(sceneBuffer.begin(),startPos+entry.Size));
 
 
         BVCD::VCD vcdMem = BVCD::getSceneFromBuffer(bvcd);
-        BVCD::VCD* vcdMemPtr = &vcdMem;
-        vcds.push_back(vcdMemPtr);
+        //BVCD::VCD* vcdMemPtr = &vcdMem;
+        vcds.push_back(vcdMem);
 
     }
 }
 #endif
+
+

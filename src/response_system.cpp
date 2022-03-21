@@ -179,8 +179,21 @@ void RRParser::dumpSceneNames()
         for (const auto& rGroup: rrSys.responseGroups) {
             for (const auto& response: rGroup.responses) {
                 if (response.type == RRParser::EResponseType::SCENE) {
-                    BSPParser::Map_Scene scene(response.typeParam.c_str());
-                    scenes.emplace_back(scene);
+                    std::string responseVCD = response.typeParam;
+                    if (responseVCD.find("$gender")!=std::string::npos) {
+                        std::string maleVCD,femaleVCD;
+                        maleVCD = femaleVCD = responseVCD;
+                        Helper::ReplaceAll(maleVCD,"$gender","male");
+                        Helper::ReplaceAll(femaleVCD,"$gender","female");
+                        BSPParser::Map_Scene maleScene(maleVCD.c_str()),femaleScene(femaleVCD.c_str());
+                        scenes.emplace_back(maleScene);
+                        scenes.emplace_back(femaleScene);
+                    } else {
+
+
+                        BSPParser::Map_Scene scene(responseVCD.c_str());
+                        scenes.emplace_back(scene);
+                    }
                 }
             }
         }
@@ -217,7 +230,7 @@ void RRParser::CResponseRulesScript::parseScript(std::string gamedir,std::ifstre
                 std::string includedFile = (++tok_it).current_token();
                 stripQuotes(includedFile);
                 includedFile = gamedir+"/scripts/"+includedFile;
-                if (std::find(includedFiles.begin(),includedFiles.end(),includedFile)!=includedFiles.end()) {
+                if (std::find(includedFiles.begin(),includedFiles.end(),includedFile)==includedFiles.end()) {
 
                     std::ifstream includedStream(includedFile);
                     parseScript(gamedir,includedStream);
@@ -398,12 +411,12 @@ void RRParser::CScriptResponseGroup::parseResponseGroup(std::ifstream &file)
 
         }
         }
-
-        }
-
-
-
 }
+
+
+
+
+
 
 void RRParser::CScriptResponse::parseFlags(std::vector<std::string> &flags)
 {
@@ -496,32 +509,35 @@ void RRParser::CScriptRule::parseRule(std::ifstream &file)
 
         std::vector<std::string> tokenList(tokens.begin(),tokens.end()); //we should have list of tokens here
 
-        if(tokenList[0]=="{")
-            continue; //start of the rule
-        if(tokenList[0]=="}")
-            break; //end of the rule
+        if (tokenList.size()>0) {
+            if(tokenList[0]=="{")
+                continue; //start of the rule
+            if(tokenList[0]=="}")
+                break; //end of the rule
 
-        //We're in rule definiton now
+            //We're in rule definiton now
 
-        if(tokenList[0]=="criteria") {
-            for (auto token=tokenList.begin()+1;token!=tokenList.end();++token) {
-                std::string name = *(token);
-                stripQuotes(name);
-                referencedCriteria.push_back(name);
+            if(tokenList[0]=="criteria") {
+                for (auto token=tokenList.begin()+1;token!=tokenList.end();++token) {
+                    std::string name = *(token);
+                    stripQuotes(name);
+                    referencedCriteria.push_back(name);
+                }
+
+            } else if(tokenList[0]=="response") {
+                for (auto token=tokenList.begin()+1;token!=tokenList.end();++token) {
+                    std::string name = *(token);
+                    stripQuotes(name);
+                    referencedResponses.push_back(name);
+                }
+            } else if(tokenList[0]=="matchonce") {
+                triggerOnce=true;
+            } else {
+                CScriptCriterion criterion;
+                criterion.parseCriterion(tokenList);
+                anonymousCriteria.push_back(criterion);
             }
 
-        } else if(tokenList[0]=="response") {
-            for (auto token=tokenList.begin()+1;token!=tokenList.end();++token) {
-                std::string name = *(token);
-                stripQuotes(name);
-                referencedResponses.push_back(name);
-            }
-        } else if(tokenList[0]=="matchonce") {
-            triggerOnce=true;
-        } else {
-            CScriptCriterion criterion;
-            criterion.parseCriterion(tokenList);
-            anonymousCriteria.push_back(criterion);
         }
 
 
