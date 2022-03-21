@@ -75,3 +75,4 @@ jobs:
         run: cmake --build '${{ env.buildDir }}' --config ${{env.BUILD_TYPE}}
 
         #TODO: Publish
+        #executable will vary. acknowledge that.
