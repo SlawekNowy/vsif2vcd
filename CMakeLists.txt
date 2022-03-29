@@ -14,6 +14,7 @@ project(Vsif2Vcd VERSION 0.7.8.0
                   DESCRIPTION "Cross-platform decompiler for scenes.image file."
                   LANGUAGES CXX)
 
+
                   
 configure_file (
     "${PROJECT_SOURCE_DIR}/include/version.hpp.in"
@@ -66,6 +67,12 @@ set(SOURCES
       src/filesystem_internal/cloosemountpath.h src/filesystem_internal/cloosemountpath.cpp src/filesystem_internal/cloosefile.h src/filesystem_internal/cloosefile.cpp
         src/filesystem_internal/imountpath_internal.cpp
       )
+
+if(WIN32)
+    set(PRIVATE_INCLUDES ${PRIVATE_INCLUDES}
+        "include/win/winver.h"
+    )
+endif()
 # Dodaj źródło do pliku wykonywalnego tego projektu.
 add_executable (Vsif2vcd ${SOURCES} ${PRIVATE_INCLUDES})
 target_precompile_headers(Vsif2vcd PUBLIC "include/pch.hpp")

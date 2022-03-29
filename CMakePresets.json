@@ -47,6 +47,6 @@
       "description": "Docelowy systemu Windows (32-bitowy) ze środowiskiem programistycznym programu Visual Studio. (RelWithDebInfo)",
       "inherits": "x86-debug-ci",
       "cacheVariables": { "CMAKE_BUILD_TYPE": "Release" }
-    },
+    }
   ]
 }
