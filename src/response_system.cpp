@@ -144,6 +144,9 @@
 #include "response_system.h"
 #include "map_bsp.hpp"
 #include <filesystem>
+#include <vector>
+
+#include <iterator>
 
 
 std::vector<std::string> RRParser::entryPointsToParse = {"scripts/talker/response_rules.txt"} ;//path hardcoded. Why vector? we might have multiple files to parse;
@@ -155,7 +158,7 @@ void RRParser::initRules(std::string gameDir)
 
     for (auto entryPoint = entryPointsToParse.begin();entryPoint != entryPointsToParse.end();++entryPoint) {
         std::string absoluteFile = gameDir+"/";
-        absoluteFile += *entryPoint.base();
+        absoluteFile += *entryPoint;
         std::ifstream file(absoluteFile.c_str());
         CResponseRulesScript script;
         if (std::strcmp(entryPoint->c_str(),"scripts/talker/response_rules.txt")==0)
@@ -205,7 +208,7 @@ void RRParser::dumpSceneNames()
 
 void RRParser::stripQuotes(std::string& quoted)
 {
-    if (quoted[0] == '\"' & quoted[quoted.length()-1]=='\"') {
+    if (quoted[0] == '\"' && quoted[quoted.length()-1]=='\"') {
         quoted = quoted.substr(1,quoted.length()-2);
     }
 
@@ -367,7 +370,7 @@ void RRParser::CScriptResponseGroup::parseResponseGroup(std::ifstream &file)
 
 
         if (tokenList.size()>0) {
-            if(!foundBlock & RRParser::CResponseRulesScript::isRootToken(tokenList[0])) {
+            if(!foundBlock && RRParser::CResponseRulesScript::isRootToken(tokenList[0])) {
                 file.seekg(oldPointer);
                 return; //Force back the pointer and relinquish our control.
             }

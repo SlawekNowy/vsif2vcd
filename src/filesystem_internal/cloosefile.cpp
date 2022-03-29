@@ -1,5 +1,5 @@
 #include "cloosefile.h"
-
+#include <sstream>
 
 
 CLooseFile::CLooseFile(std::string basePath, std::string relPath)

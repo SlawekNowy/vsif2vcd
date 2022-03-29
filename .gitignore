@@ -444,3 +444,5 @@ testBin/*
 out/*
 vcpkg_installed/*
 build/*
+
+CMakeUserPresets.json

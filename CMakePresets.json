@@ -1,0 +1,52 @@
+﻿{
+  "version": 3,
+  "configurePresets": [
+    {
+      "name": "abstract-base-ci",
+      "description": "System Windows ze środowiskiem programistycznym programu Visual Studio jako element docelowy.",
+      "hidden": true,
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/out/build/${presetName}",
+      "installDir": "${sourceDir}/out/install/${presetName}",
+	  "cacheVariables": {
+		  "CMAKE_TOOLCHAIN_FILE":"${sourceDir}/vcpkg/scripts/buildsystems/vcpkg.cmake"
+	  }
+    },
+    {
+      "name": "x64-debug-ci",
+      "displayName": "x64 Debug",
+      "description": "Docelowy system Windows (64-bitowy) ze środowiskiem programistycznym programu Visual Studio. (Debug)",
+      "inherits": "abstract-base-ci",
+      "architecture": {
+        "value": "x64",
+        "strategy": "external"
+      },
+      "cacheVariables": { "CMAKE_BUILD_TYPE": "Debug" }
+    },
+    {
+      "name": "x64-release-ci",
+      "displayName": "x64 Release",
+      "description": "Docelowy system Windows (64-bitowy) ze środowiskiem programistycznym programu Visual Studio. (RelWithDebInfo)",
+      "inherits": "x64-debug-ci",
+      "cacheVariables": { "CMAKE_BUILD_TYPE": "Release" }
+    },
+    {
+      "name": "x86-debug-ci",
+      "displayName": "x86 Debug",
+      "description": "Docelowy system Windows (32-bitowy) ze środowiskiem programistycznym programu Visual Studio. (Debug)",
+      "inherits": "abstract-base-ci",
+      "architecture": {
+        "value": "x86",
+        "strategy": "external"
+      },
+      "cacheVariables": { "CMAKE_BUILD_TYPE": "Debug" }
+    },
+    {
+      "name": "x86-release-ci",
+      "displayName": "x86 Release",
+      "description": "Docelowy systemu Windows (32-bitowy) ze środowiskiem programistycznym programu Visual Studio. (RelWithDebInfo)",
+      "inherits": "x86-debug-ci",
+      "cacheVariables": { "CMAKE_BUILD_TYPE": "Release" }
+    },
+  ]
+}

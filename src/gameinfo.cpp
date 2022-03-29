@@ -16,6 +16,9 @@
 #include "gameinfo.hpp"
 #include <filesystem>
 #include <boost/lexical_cast.hpp>
+#include <vector>
+
+#include <iterator>
 
 
 
@@ -205,10 +208,10 @@ void FileSystem::CGameInfo::initializeFileSystem()
     //this->resolveLoadDir();
 
     for (auto searchPaths_iter=searchPaths.begin();searchPaths_iter!=searchPaths.end();searchPaths_iter++){
-        if ( ((int)(searchPaths_iter.base()->first) & (int)FileSystem::PathID::GAME ) |
-             ((int)(searchPaths_iter.base()->first) & (int)FileSystem::PathID::MOD)) {
+        if ( ((int)(searchPaths_iter->first) & (int)FileSystem::PathID::GAME ) |
+             ((int)(searchPaths_iter->first) & (int)FileSystem::PathID::MOD)) {
 
-            std::string packFile = searchPaths_iter.base()->second;
+            std::string packFile = searchPaths_iter->second;
 
             //TODO: IMountPath, IDir,IFileEntry
             if (packFile.find("custom")==std::string::npos) {
