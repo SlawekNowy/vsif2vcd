@@ -1,52 +1,95 @@
-﻿{
+{
   "version": 3,
+  "cmakeMinimumRequired": {
+    "major": 3,
+    "minor": 21,
+    "patch": 0
+  },
   "configurePresets": [
     {
-      "name": "abstract-base-ci",
-      "description": "System Windows ze środowiskiem programistycznym programu Visual Studio jako element docelowy.",
-      "hidden": true,
+      "name": "ninja",
+      "displayName": "Ninja Configure Settings",
+      "description": "Sets build and install directories",
+      "binaryDir": "${sourceDir}/builds/${presetName}",
+      "generator": "Ninja"
+    },
+    {
+      "name": "ninja-toolchain",
+      "displayName": "Ninja Configure Settings with toolchain",
+      "description": "Sets build and install directories",
+      "binaryDir": "${sourceDir}/builds/${presetName}-toolchain",
       "generator": "Ninja",
-      "binaryDir": "${sourceDir}/out/build/${presetName}",
-      "installDir": "${sourceDir}/out/install/${presetName}",
-	  "cacheVariables": {
-		  "CMAKE_TOOLCHAIN_FILE":"${sourceDir}/vcpkg/scripts/buildsystems/vcpkg.cmake"
-	  }
+      "toolchainFile": "$env{TOOLCHAINFILE}"
     },
     {
-      "name": "x64-debug-ci",
-      "displayName": "x64 Debug",
-      "description": "Docelowy system Windows (64-bitowy) ze środowiskiem programistycznym programu Visual Studio. (Debug)",
-      "inherits": "abstract-base-ci",
+      "name": "ninja-multi-vcpkg",
+      "displayName": "Ninja Multi-Config Configure Settings",
+      "description": "Configure with vcpkg toolchain",
+      "binaryDir": "${sourceDir}/builds/${presetName}",
+      "generator": "Ninja Multi-Config",
+      "cacheVariables": {
+        "CMAKE_TOOLCHAIN_FILE": {
+          "type": "FILEPATH",
+          "value": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake"
+        }
+      }
+    },
+    {
+      "name": "msbuild-vcpkg",
+      "displayName": "MSBuild (vcpkg toolchain) Configure Settings",
+      "description": "Configure with VS generators and with vcpkg toolchain",
+      "binaryDir": "${sourceDir}/builds/${presetName}",
+      "generator": "Visual Studio 17 2022",
       "architecture": {
-        "value": "x64",
-        "strategy": "external"
+        "strategy": "set",
+        "value": "x64"
       },
-      "cacheVariables": { "CMAKE_BUILD_TYPE": "Debug" }
+      "cacheVariables": {
+        "CMAKE_TOOLCHAIN_FILE": {
+          "type": "FILEPATH",
+          "value": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake"
+        }
+      }
+    }
+  ],
+  "buildPresets": [
+    {
+      "name": "ninja",
+      "configurePreset": "ninja",
+      "displayName": "Build with Ninja",
+      "description": "Build with Ninja"
     },
     {
-      "name": "x64-release-ci",
-      "displayName": "x64 Release",
-      "description": "Docelowy system Windows (64-bitowy) ze środowiskiem programistycznym programu Visual Studio. (RelWithDebInfo)",
-      "inherits": "x64-debug-ci",
-      "cacheVariables": { "CMAKE_BUILD_TYPE": "Release" }
+      "name": "ninja-multi-vcpkg",
+      "configurePreset": "ninja-multi-vcpkg",
+      "displayName": "Build ninja-multi-vcpkg",
+      "description": "Build ninja-multi-vcpkg Configurations"
     },
     {
-      "name": "x86-debug-ci",
-      "displayName": "x86 Debug",
-      "description": "Docelowy system Windows (32-bitowy) ze środowiskiem programistycznym programu Visual Studio. (Debug)",
-      "inherits": "abstract-base-ci",
-      "architecture": {
-        "value": "x86",
-        "strategy": "external"
-      },
-      "cacheVariables": { "CMAKE_BUILD_TYPE": "Debug" }
+      "name": "ninja-toolchain",
+      "configurePreset": "ninja-toolchain",
+      "displayName": "Build ninja-toolchain",
+      "description": "Build ninja with a toolchain"
     },
     {
-      "name": "x86-release-ci",
-      "displayName": "x86 Release",
-      "description": "Docelowy systemu Windows (32-bitowy) ze środowiskiem programistycznym programu Visual Studio. (RelWithDebInfo)",
-      "inherits": "x86-debug-ci",
-      "cacheVariables": { "CMAKE_BUILD_TYPE": "Release" }
+      "name": "msbuild-vcpkg",
+      "configurePreset": "msbuild-vcpkg",
+      "displayName": "Build MSBuild",
+      "description": "Build with MSBuild (VS)"
+    }
+  ],
+  "testPresets": [
+    {
+      "name": "ninja",
+      "configurePreset": "ninja"
+    },
+    {
+      "name": "ninja-multi-vcpkg",
+      "configurePreset": "ninja-multi-vcpkg"
+    },
+    {
+      "name": "default-vs",
+      "configurePreset": "msbuild-vcpkg"
     }
   ]
 }
