@@ -67,6 +67,7 @@ jobs:
           buildDirectory: '${{ env.buildDir }}'
           cmakeAppendedArgs: '"-GNinja Multi-Config" -DVCPKG_TARGET_TRIPLET=${{ matrix.triplet}} '
           buildWithCMake: true
+          configurePreset: 'x64-release-ci'
       - name: Build
       # Build your program with the given configuration
         run: cmake --build '${{ env.buildDir }}' --config ${{env.BUILD_TYPE}}
