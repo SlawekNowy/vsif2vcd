@@ -10,9 +10,11 @@ include_guard(GLOBAL)
 
 #TODO: stop if we use vs2015 or older
 
-project(Vsif2Vcd VERSION 0.7.8.0
+project(Vsif2Vcd VERSION 1.0.1.0
                   DESCRIPTION "Cross-platform decompiler for scenes.image file."
                   LANGUAGES CXX)
+
+
 
 
                   
@@ -31,6 +33,9 @@ find_package(fmt CONFIG REQUIRED)
 
 
 find_package (Bitsery CONFIG REQUIRED)
+
+find_package(spdlog CONFIG REQUIRED)
+#target_link_libraries(main PRIVATE spdlog::spdlog spdlog::spdlog_header_only)
 
 
 
@@ -84,9 +89,9 @@ add_subdirectory(thirdparty/valve-bsp-parser)
 
 add_dependencies(Vsif2vcd valve-bsp-parser lzma hllib)
 set_property(TARGET Vsif2vcd PROPERTY CXX_STANDARD 17)
-target_link_libraries(Vsif2vcd PUBLIC Boost::iostreams Boost::filesystem Bitsery::bitsery lzma valve-bsp-parser hllib)
+target_link_libraries(Vsif2vcd PUBLIC Boost::iostreams Boost::filesystem Bitsery::bitsery lzma valve-bsp-parser hllib spdlog::spdlog spdlog::spdlog_header_only)
 
-target_link_libraries(Vsif2vcd PRIVATE fmt::fmt fmt::fmt-header-only)
+target_link_libraries(Vsif2vcd PRIVATE fmt::fmt fmt::fmt-header-only )
 
 find_path(BOOST_CRC_INCLUDE_DIRS "boost/crc.hpp")
 target_include_directories(Vsif2vcd PRIVATE ${BOOST_CRC_INCLUDE_DIRS})
@@ -147,7 +152,7 @@ add_executable(gameinfo "src/gameinfo.cpp"
     src/filesystem_internal/cloosemountpath.h src/filesystem_internal/cloosemountpath.cpp src/filesystem_internal/cloosefile.h src/filesystem_internal/cloosefile.cpp
     src/filesystem_internal/imountpath_internal.cpp ${PRIVATE_INCLUDES})
 #link to Boost libraries AND your targets and dependencies
-target_link_libraries(gameinfo ${Boost_LIBRARIES} Bitsery::bitsery lzma hllib)
+target_link_libraries(gameinfo ${Boost_LIBRARIES} Bitsery::bitsery lzma hllib spdlog::spdlog spdlog::spdlog_header_only)
 
 
 #I like to move testing binaries into a testBin directory
@@ -176,7 +181,7 @@ COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/testBin/gameinfo)
 #Add compile target
 add_executable(VSIF src/VSIF.cpp ${PRIVATE_INCLUDES})
 #link to Boost libraries AND your targets and dependencies
-target_link_libraries(VSIF ${Boost_LIBRARIES} Bitsery::bitsery lzma)
+target_link_libraries(VSIF ${Boost_LIBRARIES} Bitsery::bitsery lzma spdlog::spdlog spdlog::spdlog_header_only)
 
 
 #I like to move testing binaries into a testBin directory
@@ -204,7 +209,7 @@ add_test(NAME VSIF
      #Add compile target
      add_executable(BVCD "src/BVCD.cpp" src/VSIF.cpp ${PRIVATE_INCLUDES})
      #link to Boost libraries AND your targets and dependencies
-     target_link_libraries(BVCD ${Boost_LIBRARIES} Bitsery::bitsery lzma fmt::fmt fmt::fmt-header-only)
+     target_link_libraries(BVCD ${Boost_LIBRARIES} Bitsery::bitsery lzma fmt::fmt fmt::fmt-header-only spdlog::spdlog spdlog::spdlog_header_only)
 
 
      #I like to move testing binaries into a testBin directory
@@ -231,7 +236,7 @@ add_test(NAME VSIF
      add_executable(map_bsp "src/map_bsp.cpp" "src/response_system.cpp" ${PRIVATE_INCLUDES})
      #link to Boost libraries AND your targets and dependencies
 
-     target_link_libraries(map_bsp ${Boost_LIBRARIES} Bitsery::bitsery fmt::fmt fmt::fmt-header-only valve-bsp-parser)
+     target_link_libraries(map_bsp ${Boost_LIBRARIES} Bitsery::bitsery fmt::fmt fmt::fmt-header-only valve-bsp-parser spdlog::spdlog spdlog::spdlog_header_only)
 
 
      #I like to move testing binaries into a testBin directory

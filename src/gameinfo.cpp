@@ -21,6 +21,10 @@
 #include <iterator>
 
 
+#include <spdlog/spdlog.h>
+#include <spdlog/sinks/stdout_sinks.h>
+
+
 
 
 #ifdef _WIN32
@@ -148,6 +152,7 @@ FileSystem::CGameInfo::CGameInfo(std::string modDir)
 {
             std::ifstream txtGI_str;
             this->modDir = modDir;
+			SPDLOG_INFO("Loading file {0}", modDir+"/gameinfo.txt");
             txtGI_str.open(modDir+"/gameinfo.txt");
             memGI = tyti::vdf::read< gameInfoKV>(txtGI_str);
             txtGI_str.close();
@@ -157,6 +162,7 @@ FileSystem::CGameInfo::CGameInfo(std::string modDir)
             initGamepaths();
             resolveBaseDir();
             resolveLoadDir();
+			SPDLOG_INFO("GameInfo file fully loaded.");
 }
 
 FileSystem::CGameInfo::~CGameInfo()
@@ -175,6 +181,9 @@ bool FileSystem::CGameInfo::prepareTmpDirectory(std::string& tmpDir)
 
     bool result = true;
     std::string error;
+// TODO: Remove duplicates
+	tmpDir = baseDir + "/tmp/";
+	SPDLOG_INFO("Output dir is now : {0}", tmpDir);
 
     for (int element = filesAndTargets.size()-1;element>=0;element--){
         std::vector<IFile*> files;
@@ -192,10 +201,10 @@ bool FileSystem::CGameInfo::prepareTmpDirectory(std::string& tmpDir)
 
         filesChunk.clear();
         for (IFile* filePtr:files) {
+			SPDLOG_INFO("Now extracting {0} to {1}",filePtr->relPath,tmpDir);
             result &= filePtr->extract(baseDir+"/tmp/",error);
         }
 
-        tmpDir=baseDir+"/tmp/";
 
 
     }
@@ -218,6 +227,7 @@ void FileSystem::CGameInfo::initializeFileSystem()
                 IMountPath* mountPath = IMountPath::Mount(packFile);
                 filesAndTargets.push_back(std::make_pair(packFile,mountPath));
             }
+
         }
     }
 }
@@ -275,6 +285,7 @@ void FileSystem::CGameInfo::resolveBaseDir()
     steamLibDirs.erase( unique( steamLibDirs.begin(), steamLibDirs.end() ), steamLibDirs.end() );
     steamLibDirs.shrink_to_fit();
 	this->baseDir = getPathFromAppID(this->appID,steamLibDirs);
+	SPDLOG_INFO("Found basedir at {0}", this->baseDir);
 
 }
 

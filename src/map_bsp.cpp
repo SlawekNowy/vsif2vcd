@@ -16,6 +16,9 @@
 #include "program.h"
 #include "response_system.h"
 #include <valve-bsp-parser/bsp_parser.hpp>
+
+#include <spdlog/spdlog.h>
+#include <spdlog/sinks/stdout_sinks.h>
 #include <set>
 #include <vector>
 #include <iterator>
@@ -23,7 +26,8 @@
 
 int BSPParser::ExtractNames(std::string GameDirectory)
 {
-    //std::ifstream maplistTxt(GameDirectory+"/maplist.txt"); //that might be insufficient...
+    //std::ifstream maplistTxt(GameDirectory+"/maplist.txt");
+    //Iterating for every file in the map dir. This is deliberate, as there may be maps not listed in maplist.txt
     std::vector<std::string> maplist;
     std::filesystem::path mapPath(GameDirectory+"/maps/");
 
@@ -40,12 +44,15 @@ int BSPParser::ExtractNames(std::string GameDirectory)
     }
     */
 
+    
+
+    using namespace rn;
+    bsp_parser map;
     //TODO: check if we dont miss anything...
 
     for (auto iter = maplist.begin();iter!=maplist.end();++iter) {
         //load map.
-        using namespace rn;
-        bsp_parser map;
+
         if (map.load_map(GameDirectory+"/maps/",*iter)) {
             //Map is fully loaded. Check for logic_choreographed_scene
 
@@ -67,12 +74,15 @@ int BSPParser::ExtractNames(std::string GameDirectory)
             }
             //Scenes.insert(Scenes.end(),scenes.begin(),scenes.end());
             Scenes.emplace(*iter,scenes);
-
+            SPDLOG_INFO("Found {0} scene filenames in {1}!", scenes.size(), *iter);
+            map.unload_map();
+            
     };
 
 
 
     }
+    
 
     std::sort(RRParser::entryPointsToParse.begin(),RRParser::entryPointsToParse.end());
     RRParser::entryPointsToParse.erase(std::unique(RRParser::entryPointsToParse.begin(),RRParser::entryPointsToParse.end()),RRParser::entryPointsToParse.end());
@@ -82,6 +92,7 @@ int BSPParser::ExtractNames(std::string GameDirectory)
                         return script == "scripts/talker/response_rules.txt";
     });
     std::rotate(RRParser::entryPointsToParse.begin(),globalScript,globalScript+1);
+    SPDLOG_INFO("Added additional {0} entrypoints for Response Rules.", RRParser::entryPointsToParse.size() - 1);
     RRParser::entryPointsToParse.shrink_to_fit();
 	return 0;
 }

@@ -146,6 +146,9 @@
 #include <filesystem>
 #include <vector>
 
+
+#include <spdlog/spdlog.h>
+#include <spdlog/sinks/stdout_sinks.h>
 #include <iterator>
 
 
@@ -155,7 +158,6 @@ void RRParser::initRules(std::string gameDir)
 {
     //std::filesystem::create_directory(gameDir+"tmp_rr"); //tmp directory for script parsing.
 
-
     for (auto entryPoint = entryPointsToParse.begin();entryPoint != entryPointsToParse.end();++entryPoint) {
         std::string absoluteFile = gameDir+"/";
         absoluteFile += *entryPoint;
@@ -163,8 +165,10 @@ void RRParser::initRules(std::string gameDir)
         CResponseRulesScript script;
         if (std::strcmp(entryPoint->c_str(),"scripts/talker/response_rules.txt")==0)
             script.isGlobal=true;
+        SPDLOG_INFO("Currently parsing: {0}", *entryPoint);
         script.parseScript(gameDir,file);
         responseSystems.push_back(script);
+        SPDLOG_INFO("Succesfully parsed {0}", *entryPoint);
         file.close();
     }
 
@@ -202,6 +206,7 @@ void RRParser::dumpSceneNames()
         }
     }
     scenes.shrink_to_fit();
+    SPDLOG_INFO("Found {0} scene file names from Response System!", scenes.size());
     BSPParser::Scenes.emplace("responseSystem",scenes);
 
 }

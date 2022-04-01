@@ -3,6 +3,9 @@
 //#include "BVCD.hpp"
 #include "helper.hpp"
 
+#include <spdlog/spdlog.h>
+#include <spdlog/sinks/stdout_sinks.h>
+
 
 namespace BVCD{
  class VCD;
@@ -152,8 +155,9 @@ namespace VSIF {
             fileStream.read(fileBuf.data(), size);
             assert(fileBuf.size() != 0);
             */
+            SPDLOG_INFO("Loading file header of {0}", filePath);
             bitsery::quickDeserialization<InputAdapter, ValveScenesImageFile>(InputAdapter{ fileBuf.begin(),fileBuf.end() }, *this);
-
+            SPDLOG_INFO("File header loaded. Found {0} scenes.", this->entries.size());
 			
 			
 			

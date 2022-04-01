@@ -45,6 +45,7 @@ void VSIF::ValveScenesImageFile::fillWithVCDS()
 
 
         BVCD::VCD vcdMem = BVCD::getSceneFromBuffer(bvcd);
+        SPDLOG_INFO("Got VCD with CRC {0:#08X} from filebuffer size {1} B.", entry.CRC,entry.Size);
         //BVCD::VCD* vcdMemPtr = &vcdMem;
         vcds.push_back(vcdMem);
 

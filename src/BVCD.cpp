@@ -19,6 +19,9 @@
 
 #include <iomanip>
 
+#include <spdlog/spdlog.h>
+#include <spdlog/sinks/stdout_sinks.h>
+
 #include <fmt/core.h>
 //#include <indent_facet.hpp>
 
