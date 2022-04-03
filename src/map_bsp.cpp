@@ -61,7 +61,7 @@ int BSPParser::ExtractNames(std::string GameDirectory)
             for (auto entity = map.entities.begin();entity!=map.entities.end();++entity) {
                 if (entity->keyvalues["classname"] =="logic_choreographed_scene"){
                     std::string sceneName = entity->keyvalues["SceneFile"];
-                    Map_Scene scene = *new Map_Scene(sceneName.c_str());
+                    Map_Scene scene = Map_Scene(sceneName.c_str());
                     scenes.emplace_back(scene);
                 }
                 if (entity->keyvalues["classname"] == "env_speaker") {//HL2: env_speaker uses its own script. Parse them separately if possible.
