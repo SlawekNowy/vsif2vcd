@@ -446,3 +446,6 @@ vcpkg_installed/*
 build/*
 
 CMakeUserPresets.json
+
+builds/*
+dist/*
