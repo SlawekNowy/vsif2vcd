@@ -186,8 +186,8 @@ bool FileSystem::CGameInfo::prepareTmpDirectory(std::string& tmpDir)
 	SPDLOG_INFO("Output dir is now : {0}", tmpDir);
 
     for (int element = filesAndTargets.size()-1;element>=0;element--){
-        std::vector<IFile*> files;
-        std::vector<IFile*> filesChunk;
+        std::vector<std::shared_ptr<IFile>> files;
+        std::vector<std::shared_ptr<IFile>> filesChunk;
 
         files.reserve(65536);
         filesChunk = filesAndTargets[element].second->Find("maps/");
@@ -200,9 +200,9 @@ bool FileSystem::CGameInfo::prepareTmpDirectory(std::string& tmpDir)
 
 
         filesChunk.clear();
-        for (IFile* filePtr:files) {
-			SPDLOG_INFO("Now extracting {0} to {1}",filePtr->relPath,tmpDir);
-            result &= filePtr->extract(baseDir+"/tmp/",error);
+        for (auto filePtr=files.begin();filePtr!=files.end();filePtr++) {
+            SPDLOG_INFO("Now extracting {0} to {1}",filePtr->get()->relPath,tmpDir);
+            result &= filePtr->get()->extract(baseDir+"/tmp/",error);
         }
 
 
@@ -224,8 +224,8 @@ void FileSystem::CGameInfo::initializeFileSystem()
 
             //TODO: IMountPath, IDir,IFileEntry
             if (packFile.find("custom")==std::string::npos) {
-                IMountPath* mountPath = IMountPath::Mount(packFile);
-                filesAndTargets.push_back(std::make_pair(packFile,mountPath));
+                std::shared_ptr<IMountPath> mountPath = IMountPath::Mount(packFile);
+                filesAndTargets.push_back(std::make_pair(packFile,std::move(mountPath)));
             }
 
         }

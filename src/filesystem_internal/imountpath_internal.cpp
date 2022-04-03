@@ -7,7 +7,7 @@
 #include <filesystem>
 
 
-IMountPath* IMountPath::Mount(std::string path) {
+std::shared_ptr<IMountPath> IMountPath::Mount(std::string path) {
 
 
 
@@ -18,7 +18,7 @@ IMountPath* IMountPath::Mount(std::string path) {
                path.append("_dir.vpk");
            }
 
-            return new CVPKMountPath(path);
+            return std::shared_ptr<CVPKMountPath>(new CVPKMountPath(path));
            /*assert(std::filesystem::exists(path));
            opaquePtr = (void*)package;
            */
@@ -26,7 +26,7 @@ IMountPath* IMountPath::Mount(std::string path) {
         //this is a dir
         std::filesystem::path loosePath(path);
         assert(std::filesystem::is_directory(loosePath));
-        return new CLooseMountPath(path);
+        return std::shared_ptr<CLooseMountPath>(new CLooseMountPath(path));
     }
 
 

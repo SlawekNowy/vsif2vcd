@@ -2,6 +2,7 @@
 #define IMOUNTPATH_H
 #include <string>
 #include <vector>
+#include <memory>
 #include "ifile.h"
 
 
@@ -12,8 +13,8 @@ public:
     //virtual bool Mount(std::string path) =0;
     // return file pointers which names match
 
-    static IMountPath* Mount(std::string path);
-    virtual std::vector<IFile*> Find(std::string substr) =0;
+    static std::shared_ptr<IMountPath> Mount(std::string path);
+    virtual std::vector<std::shared_ptr<IFile>> Find(std::string substr) =0;
 protected:
     std::string filePath;
 

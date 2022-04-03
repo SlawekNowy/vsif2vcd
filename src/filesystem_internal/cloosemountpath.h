@@ -10,7 +10,7 @@ public:
 
     CLooseMountPath(std::string path);
 
-    std::vector<IFile*> Find(std::string substr) override;
+    std::vector<std::shared_ptr<IFile>> Find(std::string substr) override;
 
 private:
     std::filesystem::directory_entry dirHandle;

@@ -19,7 +19,7 @@ CVPKMountPath::~CVPKMountPath() {
     hlShutdown();
 }
 
-std::vector<IFile *> CVPKMountPath::Find(std::string substr)
+std::vector<std::shared_ptr<IFile>> CVPKMountPath::Find(std::string substr)
 {
 
     HLLib::CDirectoryFolder* pRoot = packageHandler->GetRoot();
@@ -31,14 +31,14 @@ std::vector<IFile *> CVPKMountPath::Find(std::string substr)
 
     HLLib::CDirectoryItem* pSubstrPos = pRoot->GetRelativeItem(substr.c_str());
 
-    std::vector<IFile*> files;
+    std::vector<std::shared_ptr<IFile>> files;
     if (pSubstrPos!=nullptr) {
             char* pathStr = new char[65536];
             std::memset(pathStr,0,65536);
             pSubstrPos->GetPath(pathStr,65536);
-            IFile* singleFileOrFolder = new CVPKInFile(filePath,pathStr,pSubstrPos);
+            std::shared_ptr<IFile> singleFileOrFolder = std::make_shared<CVPKInFile>(CVPKInFile(filePath,pathStr,pSubstrPos));
             delete[] pathStr;
-            files.push_back(singleFileOrFolder);
+            files.push_back(singleFileOrFolder); // this will MOVE the pointer to vector
     }
 
 

@@ -54,7 +54,7 @@ namespace FileSystem {
 
 		std::string modDir;
 		gameInfoKV memGI; //this var holds memory representation of gameinfo.txt
-        std::vector<std::pair<std::string,IMountPath*>> filesAndTargets;
+        std::vector<std::pair<std::string,std::shared_ptr<IMountPath>>> filesAndTargets;
 		
 
 

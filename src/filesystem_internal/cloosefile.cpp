@@ -5,7 +5,7 @@
 CLooseFile::CLooseFile(std::string basePath, std::string relPath)
 {
     this->basePath = basePath+"/";this->relPath=relPath;
-    filePathHandle = *new std::filesystem::path(this->basePath+relPath);
+    filePathHandle = std::filesystem::path(this->basePath+relPath);
 
 }
 
