@@ -1,0 +1,18 @@
+prefix=${pcfiledir}/../..
+#
+# Author: Lasse Collin
+#
+# This file has been put into the public domain.
+# You can do whatever you want with this file.
+#
+
+exec_prefix=${prefix}
+libdir=${prefix}/lib
+includedir=${prefix}/include
+
+Name: liblzma
+Description: General purpose data compression library
+URL: https://tukaani.org/xz/
+Version: 5.2.5
+Libs: -L"${libdir}" -llzma -pthread 
+Cflags: -I"${includedir}"

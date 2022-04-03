@@ -40,7 +40,7 @@ find_package(spdlog CONFIG REQUIRED)
 
 
 
-
+include(GNUInstallDirs)
 
 
 set(PRIVATE_INCLUDES
@@ -119,6 +119,8 @@ target_include_directories(Vsif2vcd PUBLIC
     "${PROJECT_SOURCE_DIR}/thirdparty/valve-bsp-parser/include"
     "${PROJECT_BINARY_DIR}/include/"
     ${Bitsery_INCLUDE_DIR})
+
+install(TARGETS Vsif2vcd RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 
 
 

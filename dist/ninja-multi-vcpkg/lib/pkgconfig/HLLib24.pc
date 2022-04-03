@@ -1,0 +1,11 @@
+prefix=/home/slawomir/Dane/vsif2vcd/dist/ninja-multi-vcpkg
+exec_prefix=${prefix}
+libdir=${exec_prefix}/lib
+includedir=${prefix}/include/HLLib24
+
+Name: HLLib
+Description: Half-Life package format library (supports BSP, GCF, NCF, PAK, VPK, WAD, XZP and uncompressed ZIP)
+Version: 2.4.5
+URL: http://nemesis.thewavelength.net/index.php?p=35
+Libs: -L${libdir} -lhllib
+Cflags: -I${includedir} 
