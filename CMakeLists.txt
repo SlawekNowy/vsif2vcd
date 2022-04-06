@@ -109,6 +109,8 @@ target_include_directories(Vsif2vcd PRIVATE ${BOOST_ALGORITHM_INCLUDE_DIRS})
 
 
 
+
+
 target_include_directories(Vsif2vcd PUBLIC 
      ${Boost_INCLUDE_DIR} 
     "${PROJECT_SOURCE_DIR}/include/"
@@ -121,6 +123,7 @@ target_include_directories(Vsif2vcd PUBLIC
     ${Bitsery_INCLUDE_DIR})
 
 install(TARGETS Vsif2vcd RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
+
 
 
 
@@ -173,6 +176,7 @@ target_include_directories(gameinfo PUBLIC
 set_property(TARGET gameinfo PROPERTY CXX_STANDARD 17)
 set_target_properties(gameinfo PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY  ${CMAKE_CURRENT_SOURCE_DIR}/testBin)
+    set_target_properties(gameinfo PROPERTIES EXCLUDE_FROM_ALL TRUE)
 #Finally add it to test execution -
 #Notice the WORKING_DIRECTORY and COMMAND
 add_test(NAME gameinfo
@@ -185,6 +189,7 @@ add_executable(VSIF src/VSIF.cpp ${PRIVATE_INCLUDES})
 #link to Boost libraries AND your targets and dependencies
 target_link_libraries(VSIF ${Boost_LIBRARIES} Bitsery::bitsery lzma spdlog::spdlog spdlog::spdlog_header_only)
 
+    set_target_properties(VSIF PROPERTIES EXCLUDE_FROM_ALL TRUE)
 
 #I like to move testing binaries into a testBin directory
 
@@ -215,7 +220,8 @@ add_test(NAME VSIF
 
 
      #I like to move testing binaries into a testBin directory
-
+     
+    set_target_properties(BVCD PROPERTIES EXCLUDE_FROM_ALL TRUE)
      target_include_directories(BVCD PRIVATE fmt::fmt-header-only)
 
      target_compile_definitions(BVCD PRIVATE ENABLE_TESTING TESTING_BVCD)
@@ -244,7 +250,8 @@ add_test(NAME VSIF
      #I like to move testing binaries into a testBin directory
 
      target_include_directories(map_bsp PRIVATE fmt::fmt-header-only)
-
+     
+    set_target_properties(map_bsp PROPERTIES EXCLUDE_FROM_ALL TRUE)
      target_compile_definitions(map_bsp PRIVATE ENABLE_TESTING TESTING_BVCD)
      target_include_directories(map_bsp PUBLIC
          ${Boost_INCLUDE_DIR}

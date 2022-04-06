@@ -29,10 +29,14 @@
       "installDir": "${sourceDir}/dist/${presetName}",
       "generator": "Ninja Multi-Config",
       "cacheVariables": {
+
+
+        "X_VCPKG_APPLOCAL_DEPS_INSTALL": "ON",
         "CMAKE_TOOLCHAIN_FILE": {
           "type": "FILEPATH",
           "value": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake"
         }
+
       }
     },
     {
@@ -46,7 +50,9 @@
         "value": "x64"
       },
       "cacheVariables": {
+        "X_VCPKG_APPLOCAL_DEPS_INSTALL": "ON",
         "CMAKE_TOOLCHAIN_FILE": {
+
           "type": "FILEPATH",
           "value": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake"
         }
