@@ -54,13 +54,16 @@ namespace FileSystem {
 
 		std::string modDir;
 		gameInfoKV memGI; //this var holds memory representation of gameinfo.txt
+		bool isSDK2013Game; //This controls the path loading of gameinfo. If true this behaves explicitly. Otherwise implicit behavior is assumed.
+		//FIXME: Handle older SDKs if anyone wants that.
         std::vector<std::pair<std::string,std::shared_ptr<IMountPath>>> filesAndTargets;
 		
 
 
 		
 		void initGamepaths();
-		void resolveLoadDir();
+		void resolveLoadDirs();
+		void resolveLoadDir(std::pair<FileSystem::PathID,std::string>& entry);
 
 		void resolveBaseDir();
 		bool replace(std::string& str, const std::string& from, const std::string& to);
@@ -69,13 +72,15 @@ namespace FileSystem {
 		int appID=0;
 		CGameInfo() {};
         CGameInfo(std::string modDir); /* */
-        ~CGameInfo(); /* {
-        }; */
+
         bool prepareTmpDirectory(std::string&);
         void initializeFileSystem();
 
-		
+
+
 	private:
+		void loadPAKs(std::string atPath);
+	void getSteamAppID();
 		PathID resolvePathIDs(std::string input);
 		std::string getPathFromAppID(int appID, std::vector<std::string> steamLibDirs);
 	};

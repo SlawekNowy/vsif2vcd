@@ -6,7 +6,6 @@
 #include <HLLib.h>
 #include "cvpkinfile.h"
 
-
 CVPKMountPath::CVPKMountPath(std::string path)
 {
     hlInitialize();
@@ -28,7 +27,7 @@ std::vector<std::shared_ptr<IFile>> CVPKMountPath::Find(std::string substr)
 
 
 
-
+    //TODO: Refactor this to support wild cards.
     HLLib::CDirectoryItem* pSubstrPos = pRoot->GetRelativeItem(substr.c_str());
 
     std::vector<std::shared_ptr<IFile>> files;
@@ -62,4 +61,40 @@ std::vector<std::shared_ptr<IFile>> CVPKMountPath::Find(std::string substr)
     return files;
 
 
+}
+
+static void DoList(std::vector<std::string>& files,HLLib::CDirectoryFolder* pDir)
+{
+  pDir->Sort();
+  auto itemCount = pDir->GetCount();
+  for (int i=0;i<=itemCount;i++)
+    {
+      auto item = pDir->GetItem(i);
+      auto type = item->GetType();
+      switch (type){
+        case HL_ITEM_FOLDER:
+          {
+            auto castedItem = dynamic_cast<HLLib::CDirectoryFolder*>(item);
+            DoList(files,castedItem);
+            break;
+          }
+        case HL_ITEM_FILE:
+          {
+
+            auto castedItem = dynamic_cast<HLLib::CDirectoryFile*>(item);
+            char path[256];
+            castedItem->GetPath(path,256);
+            files.emplace_back(path);
+            break;
+          }
+        }
+    }
+
+
+}
+void CVPKMountPath::ListFiles(std::vector<std::string> &files)
+{
+
+  HLLib::CDirectoryFolder* pDir = packageHandler->GetRoot();
+    DoList(files,pDir);
 }

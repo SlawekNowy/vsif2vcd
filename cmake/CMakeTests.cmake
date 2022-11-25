@@ -2,7 +2,7 @@
         #Setup CMake to run tests
 enable_testing()
 #Prep ourselves for compiling boost
-find_package(Boost COMPONENTS unit_test_framework iostreams filesystem REQUIRED)
+find_package(Boost COMPONENTS unit_test_framework iostreams REQUIRED)
 
 find_package (Bitsery CONFIG REQUIRED)
 #I like to keep test files in a separate source directory called test
@@ -43,6 +43,7 @@ target_include_directories(gameinfo PUBLIC
    "${PROJECT_SOURCE_DIR}/thirdparty/hllib/HLLib"
    "${PROJECT_BINARY_DIR}/include/"
    ${Bitsery_INCLUDE_DIR})
+
 
 set_property(TARGET gameinfo PROPERTY CXX_STANDARD 17)
 set_target_properties(gameinfo PROPERTIES

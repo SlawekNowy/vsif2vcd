@@ -30,3 +30,4 @@ bool  CVPKInFile::extract(std::string whereTo, std::string &errorStr)
     }
     return success;
 }
+

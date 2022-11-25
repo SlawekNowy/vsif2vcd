@@ -13,6 +13,10 @@
     #include "hardcoded_entries.h"
 
 
+#include "fcaseopen.h"
+
+
+
 
 
     using namespace std;
@@ -26,7 +30,7 @@
 
         if (argc < 2|| argc > 2)
         {
-            cerr << "By http://steamcommunity.com/id/SiPlus\nUsage: VSIF2VCD [game directory]\n";
+            cerr << "By http://steamcommunity.com/id/SiPlus and github.com/slaweknowy \nUsage: VSIF2VCD [game directory]\n";
             return 1;
         }
         spdlog::set_pattern("[%L] %!: %v");
@@ -55,18 +59,48 @@
         using std::filesystem::path;
         using std::filesystem::canonical;
         path gameDirPath(gameDir);
-        auto absGameDir = canonical(gameDirPath);
-        SPDLOG_INFO("Full gameDirPath is {}", absGameDir.string());
+
+        try {
+
+          auto absGameDir = canonical(gameDirPath);
+          if(!std::filesystem::is_directory(absGameDir))
+            {
+              SPDLOG_ERROR("Expected directory!");
+              return 1;
+            }
+          SPDLOG_INFO("Full gameDirPath is {}", absGameDir.string());
+        } catch (const std::exception& ex) {
+          SPDLOG_CRITICAL("Unable to resolve path {0}: {1}",gameDir,ex.what());
+          return 1;
+        }
         
 
         //TODO: Response rules parsing.
         //Also static names of scenes added by source code itself
+        try{
         gi = CGameInfo(gameDir);
+
         gi.initializeFileSystem();
+        } catch (std::filesystem::filesystem_error &fserror) {
+          SPDLOG_CRITICAL("Initialization failed. Check supplied game installation.");
+          return 2;
+        } catch (std::exception& ex) {
+          SPDLOG_CRITICAL("Initalization failed: {0}",ex.what());
+          return 3;
+        }
+
         std::string tmpDir;
         gi.prepareTmpDirectory(tmpDir);
+        try {
         VSIF::ValveScenesImageFile vsif = VSIF::ValveScenesImageFile(tmpDir + "/scenes/scenes.image");
+
         Helper::vsif = &vsif;
+        } catch (std::filesystem::filesystem_error &fserror) {
+          //We're likely not needed...
+          SPDLOG_INFO("Decompilation likely not needed! Check the directory at {0}",tmpDir);
+          return 0;
+        }
+
         Helper::vsif->fillWithVCDS();
 
         SPDLOG_INFO("Now extracting scene names from maps.");
@@ -104,8 +138,19 @@
                 SPDLOG_INFO("CRC ({1:#08X}) hit! Path is {0}",strEntryIter->Name,entry.CRC);
                 std::string targetFile = strEntryIter->Name;
                 targetPathStr = tmpDir+targetFile;
+
+                //Now check if this is already unpacked.
+                FILE* fileTest;
+                fileTest = fcaseopen(targetPathStr.c_str(),"r");
+                if(fileTest)
+                  {
+                    SPDLOG_INFO("Path {0} already found! Skipping...",targetFile);
+                    fclose(fileTest);
+                    continue;
+                  }
+                 fclose(fileTest);
             } else {
-                SPDLOG_INFO("CRC ({0:#08X}) miss!");
+                SPDLOG_INFO("CRC ({0:#08X}) miss!",entry.CRC);
                 std::string targetFile = "/_failed/"+std::to_string(entry.CRC)+".vcd";
                 targetPathStr = tmpDir+targetFile;
             }

@@ -14,10 +14,14 @@ public:
 
 
 
-    ~CVPKMountPath();
+    virtual ~CVPKMountPath();
 private:
     HLLib::CPackage* packageHandler;
 
+
+    // IMountPath interface
+public:
+    void ListFiles(std::vector<std::string> &files) override;
 };
 
 #endif // CVPKMOUNTPATH_H

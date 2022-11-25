@@ -5,7 +5,7 @@
     "dependencies": [
       "bitsery",
       "boost-iostreams",
-      "boost-filesystem",
+      "boost-algorithm",
       "boost-test",
       "boost-crc",
       "boost-lexical-cast",

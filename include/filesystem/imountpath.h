@@ -15,6 +15,9 @@ public:
 
     static std::shared_ptr<IMountPath> Mount(std::string path);
     virtual std::vector<std::shared_ptr<IFile>> Find(std::string substr) =0;
+    virtual void ListFiles(std::vector<std::string>& files) =0;
+
+    std::vector<std::string> fileList;
 protected:
     std::string filePath;
 

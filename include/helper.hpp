@@ -59,4 +59,47 @@ namespace Helper {
             }
         }
     }
+    static inline bool compareChar(char & c1, char & c2)
+    {
+        if (c1 == c2)
+            return true;
+        else if (std::toupper(c1) == std::toupper(c2))
+            return true;
+        return false;
+    }
+    /*
+     * Case Insensitive String Comparision
+     */
+    static inline bool caseInSensStringCompare(std::string & str1, std::string &str2)
+    {
+        return ( (str1.size() == str2.size() ) &&
+                 std::equal(str1.begin(), str1.end(), str2.begin(), &compareChar) );
+    }
+
+    static inline bool matchWildCard(char const *needle, char const *haystack) {
+        for (; *needle != '\0'; ++needle) {
+            switch (*needle) {
+            case '?':
+                if (*haystack == '\0')
+                    return false;
+                ++haystack;
+                break;
+            case '*': {
+                if (needle[1] == '\0')
+                    return true;
+                size_t max = strlen(haystack);
+                for (size_t i = 0; i < max; i++)
+                    if (matchWildCard(needle + 1, haystack + i))
+                        return true;
+                return false;
+            }
+            default:
+                if (*haystack != *needle)
+                    return false;
+                ++haystack;
+            }
+        }
+        return *haystack == '\0';
+    };
+
 };

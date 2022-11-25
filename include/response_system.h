@@ -64,7 +64,7 @@ public:
 
         //flags are per response in response group, however in one element group are located *before* responsetype,
         // but in multi element group they are located after it.
-        //in reference implementaion, code's parsing flags is repeated beacude of this.
+        //in reference implementaion, code's parsing flags is repeated beacuse of this.
 
        private:
         std::string name;

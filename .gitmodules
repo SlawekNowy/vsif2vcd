@@ -7,3 +7,6 @@
 [submodule "thirdparty/hllib"]
 	path = thirdparty/hllib
 	url = https://github.com/SlawekNowy/HLLib
+[submodule "thirdparty/fcaseopen"]
+	path = thirdparty/fcaseopen
+	url = https://github.com/SlawekNowy/fcaseopen

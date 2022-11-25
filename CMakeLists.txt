@@ -2,12 +2,14 @@
 
 include_guard(GLOBAL)
 
+
 #set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/externals/sanitizers-cmake/cmake" ${CMAKE_MODULE_PATH})
 #find_package(Sanitizers)
-#include(cmake/locate_vcpkg.cmake)
+if(NOT "$ENV{CI}")
+include(cmake/locate_vcpkg.cmake)
 #include(cmake/asan.cmake)
-#setup_vcpkg_before_project()
-
+setup_vcpkg_before_project()
+endif()
 #TODO: stop if we use vs2015 or older
 
 project(Vsif2Vcd VERSION 1.0.1.0
@@ -24,7 +26,7 @@ configure_file (
 )
 
 find_package(Boost REQUIRED
-    COMPONENTS iostreams filesystem)
+    COMPONENTS iostreams)
 
 
 
@@ -85,11 +87,12 @@ target_precompile_headers(Vsif2vcd PUBLIC "include/pch.hpp")
 
 add_subdirectory(thirdparty/hllib/HLLib)
 add_subdirectory(thirdparty/valve-bsp-parser)
+add_subdirectory(thirdparty/fcaseopen)
 
 
 add_dependencies(Vsif2vcd valve-bsp-parser lzma hllib)
 set_property(TARGET Vsif2vcd PROPERTY CXX_STANDARD 17)
-target_link_libraries(Vsif2vcd PUBLIC Boost::iostreams Boost::filesystem Bitsery::bitsery lzma valve-bsp-parser hllib spdlog::spdlog spdlog::spdlog_header_only)
+target_link_libraries(Vsif2vcd PUBLIC Boost::iostreams Bitsery::bitsery lzma valve-bsp-parser hllib spdlog::spdlog spdlog::spdlog_header_only fcaseopen)
 
 target_link_libraries(Vsif2vcd PRIVATE fmt::fmt fmt::fmt-header-only )
 
@@ -97,6 +100,7 @@ find_path(BOOST_CRC_INCLUDE_DIRS "boost/crc.hpp")
 target_include_directories(Vsif2vcd PRIVATE ${BOOST_CRC_INCLUDE_DIRS})
 
 target_include_directories(Vsif2vcd PRIVATE fmt::fmt-header-only)
+target_include_directories(Vsif2vcd PRIVATE fcaseopen)
 
 find_path(BOOST_LEXICAL_CAST_INCLUDE_DIRS "boost/detail/basic_pointerbuf.hpp")
 target_include_directories(Vsif2vcd PRIVATE ${BOOST_LEXICAL_CAST_INCLUDE_DIRS})
