@@ -5,6 +5,7 @@
 
 #include <HLLib.h>
 #include "cvpkinfile.h"
+#include <wildcard.h>
 
 CVPKMountPath::CVPKMountPath(std::string path)
 {

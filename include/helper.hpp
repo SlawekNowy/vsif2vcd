@@ -15,6 +15,20 @@ namespace Helper {
     extern VSIF::ValveScenesImageFile* vsif;
 
 
+
+
+
+    //https://stackoverflow.com/a/53268928
+
+
+    //FIXME:Constrain this somehow. Ideally via c++20's concepts.
+    template <typename Cont, typename Pred>
+    Cont filter(const Cont &container, Pred predicate) {
+        Cont result;
+        std::copy_if(container.begin(), container.end(), std::back_inserter(result), predicate);
+        return result;
+    }
+
     static inline void ReplaceAll(std::string &str, const std::string& from, const std::string& to) {
         size_t start_pos = 0;
         while((start_pos = str.find(from, start_pos)) != std::string::npos) {
@@ -76,30 +90,6 @@ namespace Helper {
                  std::equal(str1.begin(), str1.end(), str2.begin(), &compareChar) );
     }
 
-    static inline bool matchWildCard(char const *needle, char const *haystack) {
-        for (; *needle != '\0'; ++needle) {
-            switch (*needle) {
-            case '?':
-                if (*haystack == '\0')
-                    return false;
-                ++haystack;
-                break;
-            case '*': {
-                if (needle[1] == '\0')
-                    return true;
-                size_t max = strlen(haystack);
-                for (size_t i = 0; i < max; i++)
-                    if (matchWildCard(needle + 1, haystack + i))
-                        return true;
-                return false;
-            }
-            default:
-                if (*haystack != *needle)
-                    return false;
-                ++haystack;
-            }
-        }
-        return *haystack == '\0';
-    };
+
 
 };

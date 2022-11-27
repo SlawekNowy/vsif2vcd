@@ -2,6 +2,9 @@
 #include "cloosefile.h"
 #include <cassert>
 
+
+#include <wildcard.h>
+
 CLooseMountPath::CLooseMountPath(std::string path)
 {
     this->dirHandle = std::filesystem::directory_entry{path};

@@ -10,3 +10,6 @@
 [submodule "thirdparty/fcaseopen"]
 	path = thirdparty/fcaseopen
 	url = https://github.com/SlawekNowy/fcaseopen
+[submodule "thirdparty/wildcard"]
+	path = thirdparty/wildcard
+	url = https://github.com/SlawekNowy/wildest-card

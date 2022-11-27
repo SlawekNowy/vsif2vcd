@@ -200,7 +200,7 @@ void FileSystem::CGameInfo::initGamepaths()
 	    //part 1: discovery - how many dlcs to mount?
 	      int dlcCount =0;
 	      for (int i=1;i<=99;i++) {
-		  std::string dlcDir=fmt::format("{0}_dlc{1}",fileSys::path(modDir).filename().native(),i);
+		  std::string dlcDir=fmt::format("{0}_dlc{1}",fileSys::path(modDir).filename().generic_string(),i);
 		  if(fileSys::exists(baseDir+"/"+dlcDir)
 		     &&fileSys::is_directory(baseDir+"/"+dlcDir))
 		    {
@@ -378,6 +378,7 @@ void FileSystem::CGameInfo::initializeFileSystem()
             //TODO: IMountPath, IDir,IFileEntry
             if (packFile.find("custom")==std::string::npos) {
                 std::shared_ptr<IMountPath> mountPath = IMountPath::Mount(packFile);
+                mountPath->ListFiles(mountPath->fileList);
                 filesAndTargets.push_back(std::make_pair(packFile,std::move(mountPath)));
             }
 
@@ -417,7 +418,7 @@ void FileSystem::CGameInfo::resolveBaseDir()
     strcat(steamPath,getenv("HOME"));
     strcat(steamPath,tmp);
     //char* steamPath = getenv("HOME") + "/.steam/root";
-    steamDir = std::filesystem::canonical(steamPath).native();
+    steamDir = std::filesystem::canonical(steamPath).generic_string();
     delete[] steamPath;
 #elif __APPLE__ && __MACH__
 	// TODO

@@ -88,11 +88,12 @@ target_precompile_headers(Vsif2vcd PUBLIC "include/pch.hpp")
 add_subdirectory(thirdparty/hllib/HLLib)
 add_subdirectory(thirdparty/valve-bsp-parser)
 add_subdirectory(thirdparty/fcaseopen)
+add_subdirectory(thirdparty/wildcard)
 
 
 add_dependencies(Vsif2vcd valve-bsp-parser lzma hllib)
 set_property(TARGET Vsif2vcd PROPERTY CXX_STANDARD 17)
-target_link_libraries(Vsif2vcd PUBLIC Boost::iostreams Bitsery::bitsery lzma valve-bsp-parser hllib spdlog::spdlog spdlog::spdlog_header_only fcaseopen)
+target_link_libraries(Vsif2vcd PUBLIC Boost::iostreams Bitsery::bitsery lzma valve-bsp-parser hllib spdlog::spdlog spdlog::spdlog_header_only fcaseopen wildest_card)
 
 target_link_libraries(Vsif2vcd PRIVATE fmt::fmt fmt::fmt-header-only )
 
@@ -101,6 +102,7 @@ target_include_directories(Vsif2vcd PRIVATE ${BOOST_CRC_INCLUDE_DIRS})
 
 target_include_directories(Vsif2vcd PRIVATE fmt::fmt-header-only)
 target_include_directories(Vsif2vcd PRIVATE fcaseopen)
+target_include_directories(Vsif2vcd PRIVATE wildest_card)
 
 find_path(BOOST_LEXICAL_CAST_INCLUDE_DIRS "boost/detail/basic_pointerbuf.hpp")
 target_include_directories(Vsif2vcd PRIVATE ${BOOST_LEXICAL_CAST_INCLUDE_DIRS})
