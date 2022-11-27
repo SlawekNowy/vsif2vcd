@@ -39,7 +39,7 @@ void CLooseMountPath::ListFiles(std::vector<std::string> &files)
   using std::filesystem::is_directory;
   for (recursive_directory_iterator i(filePath), end; i != end; ++i)
       if (!is_directory(i->path()))
-        files.emplace_back(i->path().filename());
+        files.emplace_back(i->path().filename().generic_string());
 }
 
 

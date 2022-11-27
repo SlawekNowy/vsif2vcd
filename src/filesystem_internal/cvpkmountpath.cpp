@@ -84,7 +84,7 @@ static void DoList(std::vector<std::string>& files,HLLib::CDirectoryFolder* pDir
 
             auto castedItem = dynamic_cast<HLLib::CDirectoryFile*>(item);
             char path[256];
-            castedItem->GetPath(path,256);
+            castedItem->GetPath(path,256); //Does this include "root/"?
             files.emplace_back(path);
             break;
           }
