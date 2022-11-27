@@ -211,7 +211,7 @@ void FileSystem::CGameInfo::initGamepaths()
 	    //part 2: preparation. Mount them in reverse order
 	      while (dlcCount>0){
 
-		  std::string baseGameDir=fileSys::path(modDir).filename().native();
+		  std::string baseGameDir=fileSys::path(modDir).filename().generic_string();
 		  searchPaths.emplace_back(PathID::GAME,fmt::format("{0}_dlc{1}",baseGameDir,dlcCount));
 
 		  loadPAKs(fmt::format("{0}_dlc{1}",baseGameDir,dlcCount));
@@ -287,13 +287,13 @@ FileSystem::CGameInfo::CGameInfo(std::string modDir)
               }
             if(!isSDK2013Game) {
                   auto modDir = this->modDir + "/";
-                  modDir = std::filesystem::canonical(modDir);
+                  modDir = std::filesystem::canonical(modDir).generic_string();
                   assert(std::filesystem::is_directory(modDir));
-                  auto modName = std::filesystem::path(modDir).filename().native();
+                  auto modName = std::filesystem::path(modDir).filename().generic_string();
                   if(modName.find("_dlc")!=std::string::npos) {
 
                       SPDLOG_INFO("Detected DLC to the game! Removing now to be readded later.");
-                      if(this->baseDir != std::filesystem::path(modDir).parent_path().native()) {
+                      if(this->baseDir != std::filesystem::path(modDir).parent_path().generic_string()) {
                           //sanity check failed. bail.
 
                           throw std::logic_error("DLC not in the same directory as the base game!");
@@ -302,7 +302,7 @@ FileSystem::CGameInfo::CGameInfo(std::string modDir)
                       //strip it. We're adding this later. The check is here, beacuse we need to reload gameinfo.
                       modName.substr(0,modName.find("_dlc"));
                       memGI = gameInfoKV{}; //reinit
-                      modDir = std::filesystem::path(modDir).parent_path().native()+"/"+modName;
+                      modDir = std::filesystem::path(modDir).parent_path().generic_string()+"/"+modName;
 
                       modDir = std::filesystem::canonical(modDir);
                       this->modDir = modDir;
