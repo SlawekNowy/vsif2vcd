@@ -5,7 +5,7 @@
 CVPKInFile::CVPKInFile(std::string basePath,std::string relPath,HLLib::CDirectoryItem* fileHandle)
 {
     this->basePath = basePath;
-    this->relPath = relPath.substr(5);
+    this->relPath = relPath;
     this->fileHandle = fileHandle;
 
 

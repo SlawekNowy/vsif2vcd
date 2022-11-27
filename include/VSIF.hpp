@@ -135,34 +135,16 @@ namespace VSIF {
         void fillWithVCDS();
     public:
 	
-		ValveScenesImageFile() {
-			//ValveScenesImageFile("scenes.image");
-        }
-        ValveScenesImageFile(std::string filePath) {
+	static bool Open(std::string filePath,ValveScenesImageFile& out,bool& error);
 
 
-            using Buffer = std::vector<char>;
-            using OutputAdapter = bitsery::OutputBufferAdapter<Buffer>;
-            using InputAdapter = bitsery::InputBufferAdapter<Buffer>;
-            std::ifstream fileStream = std::ifstream(filePath, std::ios::in | std::ios::binary);
-            fileStream.seekg(0, std::ios_base::end);
-            size = fileStream.tellg();
+	public:
+	ValveScenesImageFile(){
 
-            fileStream.seekg(0, std::ios_base::beg);
-            Buffer fileBuf(std::istreambuf_iterator<char>(fileStream), {});
-            /*
-            fileBuf.reserve(size);
-            fileStream.read(fileBuf.data(), size);
-            assert(fileBuf.size() != 0);
-            */
-            SPDLOG_INFO("Loading file header of {0}", filePath);
-            bitsery::quickDeserialization<InputAdapter, ValveScenesImageFile>(InputAdapter{ fileBuf.begin(),fileBuf.end() }, *this);
-            SPDLOG_INFO("File header loaded. Found {0} scenes.", this->entries.size());
-			
-			
-			
+	}
 
-		};
+
+
 	};
 
 
@@ -174,7 +156,7 @@ namespace VSIF {
         char tmpString[4];
         //tmpString ="VSIF"
         memccpy(tmpString,"VSIF",sizeof(char),4);
-        assert(vsif.header.ID==Helper::FourCC(tmpString) && vsif.header.Version ==2);
+        //assert(vsif.header.ID==Helper::FourCC(tmpString) && vsif.header.Version ==2);
         s.ext
         (
             vsif.stringPool,

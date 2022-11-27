@@ -91,15 +91,22 @@
 
         std::string tmpDir;
         gi.prepareTmpDirectory(tmpDir);
-        try {
-        VSIF::ValveScenesImageFile vsif = VSIF::ValveScenesImageFile(tmpDir + "/scenes/scenes.image");
-
-        Helper::vsif = &vsif;
-        } catch (std::filesystem::filesystem_error &fserror) {
+        VSIF::ValveScenesImageFile vsif; //= VSIF::ValveScenesImageFile(tmpDir + "/scenes/scenes.image");
+        bool error;
+        if(!VSIF::ValveScenesImageFile::Open(tmpDir + "/scenes/scenes.image",vsif,error)){
           //We're likely not needed...
-          SPDLOG_INFO("Decompilation likely not needed! Check the directory at {0}",tmpDir);
+            if(!error){
+
+                SPDLOG_INFO("Decompilation likely not needed! Check the directory at {0}",tmpDir);
+              } else {
+                SPDLOG_INFO("HINT: Decompilation may be not needed after all... check the directory at {} to check if that is the case.",tmpDir);
+              }
           return 0;
         }
+        Helper::vsif = &vsif;
+        //} catch (std::filesystem::filesystem_error &fserror) {
+
+        //}
 
         Helper::vsif->fillWithVCDS();
 

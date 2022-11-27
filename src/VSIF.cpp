@@ -54,3 +54,48 @@ void VSIF::ValveScenesImageFile::fillWithVCDS()
 #endif
 
 
+static bool is_empty(std::ifstream& pFile)
+{
+    return pFile.peek() == std::ifstream::traits_type::eof();
+}
+
+
+bool VSIF::ValveScenesImageFile::Open(std::string filePath,ValveScenesImageFile& out,bool& error)
+{
+    error = false;
+    using Buffer = std::vector<char>;
+    using OutputAdapter = bitsery::OutputBufferAdapter<Buffer>;
+    using InputAdapter = bitsery::InputBufferAdapter<Buffer>;
+    std::ifstream fileStream = std::ifstream(filePath, std::ios::in | std::ios::binary);
+
+    if (!fileStream || is_empty(fileStream))
+    {
+        return false;
+    }
+fileStream.seekg(0, std::ios_base::end);
+    out.size = fileStream.tellg();
+
+    fileStream.seekg(0, std::ios_base::beg);
+
+    Buffer fileBuf(std::istreambuf_iterator<char>(fileStream), {});
+    /*
+    fileBuf.reserve(size);
+    fileStream.read(fileBuf.data(), size);
+    assert(fileBuf.size() != 0);
+    */
+    SPDLOG_INFO("Loading file header of {0}", filePath);
+
+    bitsery::quickDeserialization<InputAdapter, VSIF_Header>(InputAdapter{ fileBuf.begin(),fileBuf.end() }, out.header);
+
+    if(out.header.Version!=2){
+        error=true;
+        SPDLOG_ERROR("This utitility supports version 2 of VSIF file, got version {0}",out.header.Version);
+        return false;
+      }
+
+
+    fileStream.seekg(0, std::ios_base::beg);
+    bitsery::quickDeserialization<InputAdapter, ValveScenesImageFile>(InputAdapter{ fileBuf.begin(),fileBuf.end() }, out);
+    //SPDLOG_INFO("File header loaded. Found {0} scenes.", out.entries.size());
+    return true;
+}

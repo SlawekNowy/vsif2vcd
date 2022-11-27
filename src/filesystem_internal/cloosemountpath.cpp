@@ -17,8 +17,19 @@ std::vector<std::shared_ptr<IFile>> CLooseMountPath::Find(std::string substr)
 {
     using namespace std::filesystem;
     const path rootPath = dirHandle.path();
+    std::vector<std::string> matchingPaths;
+    matchingPaths = filter(this->fileList,[substr](std::string path){
+        return wildcard(substr.c_str(),path.c_str());
+});
     std::vector<std::shared_ptr<IFile>> results;
 
+
+    for( const auto& path:matchingPaths){
+        std::shared_ptr<IFile> fileHandle = std::make_shared<CLooseFile>(CLooseFile(this->filePath,path));
+        results.push_back(std::move(fileHandle));
+      }
+    //results(this->fileList,[](){});
+    /*
     for (const auto& file:recursive_directory_iterator{rootPath}) {
         if (file.is_regular_file()&&file.path().generic_string().find(substr)!=std::string::npos) {
             std::filesystem::path relPath;
@@ -27,6 +38,7 @@ std::vector<std::shared_ptr<IFile>> CLooseMountPath::Find(std::string substr)
             results.push_back(fileHandle);
         }
     }
+    */
 
     return results;
 
@@ -39,7 +51,7 @@ void CLooseMountPath::ListFiles(std::vector<std::string> &files)
   using std::filesystem::is_directory;
   for (recursive_directory_iterator i(filePath), end; i != end; ++i)
       if (!is_directory(i->path()))
-        files.emplace_back(i->path().filename().generic_string());
+        files.emplace_back(std::filesystem::relative(i->path(),this->filePath).generic_string());
 }
 
 

@@ -179,7 +179,7 @@ void FileSystem::CGameInfo::initGamepaths()
 	auto searchPaths_raw = *(std::find_if(fsNode->childs.begin(), fsNode->childs.end(), CompareFirst<std::string, std::shared_ptr<gameInfoKV>>("SearchPaths"))->second);
 
 
-	//The priority dlc pack order (from leaked code...:( ):
+	//The priority dlc pack order (what can be inferred from filesystem_stdio.so, and Jabroni Brawl: Episode 3's gameinfo):
 	// - update (and its paks (up to 99))
 	// - game_dlcXX - where XX goes from 1 to 99 (and its paks up to 99)
 	// - game and its paks (up to 99)
@@ -343,16 +343,48 @@ bool FileSystem::CGameInfo::prepareTmpDirectory(std::string& tmpDir)
         std::vector<std::shared_ptr<IFile>> filesChunk;
 
         files.reserve(65536);
-        filesChunk = filesAndTargets[element].second->Find("maps/");
+        filesChunk = filesAndTargets[element].second->Find("maps/*.bsp");
+        //HACK: filter out workshop entries.
+        //if(!filesChunk.empty())
+        //  {
+
+            filesChunk.erase(std::remove_if(filesChunk.begin(),filesChunk.end(),[](std::shared_ptr<IFile> element){
+
+                               return element->relPath.find("workshop/")!=std::string::npos;
+                             }),filesChunk.end());
+         // }
+
+
         files.insert(files.end(),filesChunk.begin(),filesChunk.end());
-        filesChunk = filesAndTargets[element].second->Find("scenes/");
+        filesChunk.clear();
+        filesChunk = filesAndTargets[element].second->Find("maps/*.lmp");
+        //HACK: filter out workshop entries.
+
+
+            filesChunk.erase(std::remove_if(filesChunk.begin(),filesChunk.end(),[](std::shared_ptr<IFile> element){
+
+                               return element->relPath.find("workshop/")!=std::string::npos;
+                             }),filesChunk.end());
+
         files.insert(files.end(),filesChunk.begin(),filesChunk.end());
-        filesChunk = filesAndTargets[element].second->Find("scripts/talker/");
+        filesChunk = filesAndTargets[element].second->Find("scenes/scenes.image");
+
+        //filesChunk.clear();
         files.insert(files.end(),filesChunk.begin(),filesChunk.end());
+
+        //filesChunk.clear();
+        filesChunk = filesAndTargets[element].second->Find("scenes/*.vcd");
+
+        files.insert(files.end(),filesChunk.begin(),filesChunk.end());
+
+        //filesChunk.clear();
+        filesChunk = filesAndTargets[element].second->Find("scripts/talker/*");
+        files.insert(files.end(),filesChunk.begin(),filesChunk.end());
+
+        //filesChunk.clear();
         files.shrink_to_fit();
 
 
-        filesChunk.clear();
         for (auto filePtr=files.begin();filePtr!=files.end();filePtr++) {
             SPDLOG_INFO("Now extracting {0} to {1}",filePtr->get()->relPath,tmpDir);
             result &= filePtr->get()->extract(baseDir+"/tmp/",error);

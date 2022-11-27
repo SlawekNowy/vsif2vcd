@@ -26,8 +26,22 @@ std::vector<std::shared_ptr<IFile>> CVPKMountPath::Find(std::string substr)
 
     pRoot->Sort(); //by default this searches alphabetically and recursively
 
+    std::vector<std::string> matchingPaths;
+    matchingPaths = filter(this->fileList,[substr](std::string path){
+        return wildcard(substr.c_str(),path.c_str());
+});
+    std::vector<std::shared_ptr<IFile>> results;
 
 
+    for( const auto& path:matchingPaths){
+
+        HLLib::CDirectoryItem* pSubstrPos = pRoot->GetRelativeItem(path.c_str());
+        std::shared_ptr<IFile> fileHandle = std::make_shared<CVPKInFile>(CVPKInFile(this->filePath,path,pSubstrPos));
+        results.push_back(std::move(fileHandle));
+      }
+
+
+/*
     //TODO: Refactor this to support wild cards.
     HLLib::CDirectoryItem* pSubstrPos = pRoot->GetRelativeItem(substr.c_str());
 
@@ -40,6 +54,7 @@ std::vector<std::shared_ptr<IFile>> CVPKMountPath::Find(std::string substr)
             delete[] pathStr;
             files.push_back(singleFileOrFolder); // this will MOVE the pointer to vector
     }
+    */
 
 
 
@@ -59,7 +74,7 @@ std::vector<std::shared_ptr<IFile>> CVPKMountPath::Find(std::string substr)
 
 
 
-    return files;
+    return results;
 
 
 }
@@ -68,7 +83,7 @@ static void DoList(std::vector<std::string>& files,HLLib::CDirectoryFolder* pDir
 {
   pDir->Sort();
   auto itemCount = pDir->GetCount();
-  for (int i=0;i<=itemCount;i++)
+  for (int i=0;i<itemCount;i++)
     {
       auto item = pDir->GetItem(i);
       auto type = item->GetType();
@@ -85,7 +100,9 @@ static void DoList(std::vector<std::string>& files,HLLib::CDirectoryFolder* pDir
             auto castedItem = dynamic_cast<HLLib::CDirectoryFile*>(item);
             char path[256];
             castedItem->GetPath(path,256); //Does this include "root/"?
-            files.emplace_back(path);
+            std::string strPath{path};
+            strPath = strPath.substr(5);
+            files.emplace_back(strPath);
             break;
           }
         }
