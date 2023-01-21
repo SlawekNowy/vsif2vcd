@@ -27,18 +27,22 @@
         //TODO: PROFILE!
         int ExitCode;
         puts("VSIF2VCD version 2.0 (23 Apr 2012)");
-
-        if (argc < 2|| argc > 2)
+        puts("By http://steamcommunity.com/id/SiPlus and github.com/slaweknowy");
+        string gameDir;
+        if (argc < 2)
         {
-            cerr << "By http://steamcommunity.com/id/SiPlus and github.com/slaweknowy \nUsage: VSIF2VCD [game directory]\n";
-            return 1;
+            puts("Input game directory:");
+            getline(cin, gameDir);
+        }
+        else {
+            gameDir = argv[1];
         }
         spdlog::set_pattern("[%L] %!: %v");
 
         auto console = spdlog::stdout_logger_mt("console");
         spdlog::set_default_logger(console);
         //puts("Initializing LZMA uncompression module");
-        ExitCode = Program::doStart(argv[1]);
+        ExitCode = Program::doStart(gameDir);
         return ExitCode;
     }
 
