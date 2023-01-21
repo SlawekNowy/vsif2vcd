@@ -226,7 +226,8 @@ void FileSystem::CGameInfo::initGamepaths()
 		auto pair = std::make_pair(pPathID,path.second);
 
 		resolveLoadDir(pair);
-		pair.second = std::filesystem::canonical(pair.second).generic_string();
+		pair.second = std::filesystem::weakly_canonical(pair.second).generic_string();
+
 		searchPaths.insert(searchPaths.end(),pair);
 
 		if(!isSDK2013Game)
