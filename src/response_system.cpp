@@ -557,10 +557,19 @@ void RRParser::CScriptRule::parseRule(std::ifstream &file)
 void RRParser::CScriptCriterion::parseCriterion(std::vector<std::string> &flags)
 {
     // matchKey and Match value in that order.
-
-    std::string matchKey = flags[0],matchValue = flags[1];
+    if (flags.size() < 1) {
+        return;
+    }
+    std::string matchKey = flags[0];
+    std::string matchValue = "";
+    if (flags.size() > 1) {
+         matchValue = flags[1];
+    }
     stripQuotes(matchKey);stripQuotes(matchValue);
     this->matchKey=matchKey;this->matchValue=matchValue;
+    if (flags.size() < 2) {
+        return;
+    }
     std::vector optionals(flags.begin()+2,flags.end());
     for(auto token = optionals.begin();token!=optionals.end();token++) {
         std::string flag = *token;
