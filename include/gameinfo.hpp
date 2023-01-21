@@ -33,7 +33,7 @@
 #define BASEGAME_DIR_TMPL "|all_source_engine_paths|"
 #define MODDIR_TMPL "|gameinfo_path|"
 namespace FileSystem {
-	enum class PathID : unsigned char
+	enum class PathID : unsigned short
 	{
 		GAME = 1 << 0,
 		GAME_WRITE = 1 << 1,
@@ -43,6 +43,7 @@ namespace FileSystem {
 		DEFAULT_WRITE_PATH = 1 << 5,
 		PLATFORM = 1 << 6, //Skip this
 		DOWNLOAD = 1 << 7, //download dir for multiplayer
+		CUSTOM = 1 << 8,	// custom dir for client mods
 
 	};
 

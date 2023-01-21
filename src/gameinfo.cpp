@@ -403,18 +403,23 @@ void FileSystem::CGameInfo::initializeFileSystem()
     //this->resolveLoadDir();
 
     for (auto searchPaths_iter=searchPaths.begin();searchPaths_iter!=searchPaths.end();searchPaths_iter++){
+		if (((int)(searchPaths_iter->first) & (int)FileSystem::PathID::CUSTOM)) {
+			// skip custom folder for now
+			continue;
+		}
+		if (((int)(searchPaths_iter->first) & (int)FileSystem::PathID::DOWNLOAD)) {
+			// skip download folder for now
+			continue;
+		}
         if ( ((int)(searchPaths_iter->first) & (int)FileSystem::PathID::GAME ) |
              ((int)(searchPaths_iter->first) & (int)FileSystem::PathID::MOD)) {
 
             std::string packFile = searchPaths_iter->second;
 
             //TODO: IMountPath, IDir,IFileEntry
-            if (packFile.find("custom")==std::string::npos) {
-                std::shared_ptr<IMountPath> mountPath = IMountPath::Mount(packFile);
-                mountPath->ListFiles(mountPath->fileList);
-                filesAndTargets.push_back(std::make_pair(packFile,std::move(mountPath)));
-            }
-
+            std::shared_ptr<IMountPath> mountPath = IMountPath::Mount(packFile);
+            mountPath->ListFiles(mountPath->fileList);
+            filesAndTargets.push_back(std::make_pair(packFile,std::move(mountPath)));
         }
       }
 }
@@ -488,21 +493,22 @@ FileSystem::PathID FileSystem::CGameInfo::resolvePathIDs(std::string input) {
 	for (tokenizer::iterator tok_iter = tokens.begin();
 		tok_iter != tokens.end(); ++tok_iter) {
 	    auto token = *tok_iter;
-		if (iequals(token,"game") || iequals(token,"vpk"))
-            out |= FileSystem::PathID::GAME;
-        else if (iequals(token,"game_write"))
-            out |= FileSystem::PathID::GAME_WRITE;
-                else if (iequals(token,"gamebin"))
+		if (iequals(token, "game") || iequals(token, "vpk"))
+			out |= FileSystem::PathID::GAME;
+		else if (iequals(token, "game_write"))
+			out |= FileSystem::PathID::GAME_WRITE;
+		else if (iequals(token, "gamebin"))
 			out |= FileSystem::PathID::GAMEBIN;
-		else if (iequals(token,"mod"))
+		else if (iequals(token, "mod"))
 			out |= FileSystem::PathID::MOD;
-		else if (iequals(token,"mod_write"))
+		else if (iequals(token, "mod_write"))
 			out |= FileSystem::PathID::MOD_WRITE;
-		else if (iequals(token,"platform"))
+		else if (iequals(token, "platform"))
 			out |= FileSystem::PathID::PLATFORM;
-		else if (iequals(token,"download"))
+		else if (iequals(token, "download"))
 			out |= FileSystem::PathID::DOWNLOAD;
-
+		else if (iequals(token, "custom_mod"))
+			out |= FileSystem::PathID::CUSTOM;
 	}
 
 	return out;
