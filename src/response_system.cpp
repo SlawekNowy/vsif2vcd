@@ -237,7 +237,7 @@ void RRParser::CResponseRulesScript::parseScript(std::string gamedir,std::ifstre
                 //next token is the included file...
                 std::string includedFile = (++tok_it).current_token();
                 stripQuotes(includedFile);
-                includedFile = gamedir+"/scripts/"+includedFile;
+                includedFile = gamedir+"scripts/"+includedFile;
                 if (std::find(includedFiles.begin(),includedFiles.end(),includedFile)==includedFiles.end()) {
 
                     std::ifstream includedStream(includedFile);
