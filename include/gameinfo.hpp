@@ -56,6 +56,7 @@ namespace FileSystem {
 		std::string modDir;
 		gameInfoKV memGI; //this var holds memory representation of gameinfo.txt
 		bool isSDK2013Game; //This controls the path loading of gameinfo. If true this behaves explicitly. Otherwise implicit behavior is assumed.
+		bool hasSingleplayer; // game is either singleplayer_only or has no type (implying SP+MP). games that do not have singleplayer will not have scenes inside map files.
 		//FIXME: Handle older SDKs if anyone wants that.
         std::vector<std::pair<std::string,std::shared_ptr<IMountPath>>> filesAndTargets;
 		
