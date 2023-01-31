@@ -299,7 +299,7 @@ FileSystem::CGameInfo::CGameInfo(std::string modDir)
 				throw std::logic_error("DLC not in the same directory as the base game!");
 			}
 			//strip it. We're adding this later. The check is here, because we need to reload gameinfo.
-			modName.substr(0, modName.find("_dlc"));
+			modName = modName.substr(0, modName.find("_dlc"));
 			memGI = gameInfoKV{}; //reinit
 			modDir = std::filesystem::path(modDir).parent_path().generic_string() + "/" + modName;
 
