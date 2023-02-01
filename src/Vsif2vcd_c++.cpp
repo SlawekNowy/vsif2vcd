@@ -26,7 +26,7 @@
     int main(int argc, char* argv[]){
         //TODO: PROFILE!
         int ExitCode;
-        puts("VSIF2VCD version 2.0 (23 Apr 2012)");
+        puts("VSIF2VCD version 2.1 (1 Feb 2023)");
         puts("By http://steamcommunity.com/id/SiPlus and github.com/slaweknowy");
         string gameDir;
         if (argc < 2)
