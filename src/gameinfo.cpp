@@ -135,7 +135,7 @@ void FileSystem::CGameInfo::getSteamAppID()
 		appID = boost::lexical_cast<int>(std::find_if(fsNode->attribs.begin(), fsNode->attribs.end(), CompareFirst<std::string, std::string>("SteamAppId"))->second);
 	}
 }
-void FileSystem::CGameInfo::loadPAKs(std::string atPath)
+void FileSystem::CGameInfo::loadPAKs(PathID pathId, std::string atPath)
 {
 	for (int i = 1;i <= 99;i++)
 	{
@@ -155,7 +155,7 @@ void FileSystem::CGameInfo::loadPAKs(std::string atPath)
 		}
 		if (check)
 		{
-			searchPaths.emplace_back(PathID::GAME, relVPKFilePath);
+			searchPaths.emplace_back(pathId, relVPKFilePath);
 		}
 		else
 			break;
@@ -193,7 +193,7 @@ void FileSystem::CGameInfo::initGamepaths()
 		{
 			searchPaths.emplace_back(PathID::GAME, "update");
 
-			loadPAKs("update");
+			loadPAKs(PathID::GAME, "update");
 		}
 		//then DLCs
 		//part 1: discovery - how many dlcs to mount?
@@ -214,7 +214,7 @@ void FileSystem::CGameInfo::initGamepaths()
 			std::string baseGameDir = fileSys::path(modDir).filename().generic_string();
 			searchPaths.emplace_back(PathID::GAME, fmt::format("{0}_dlc{1}", baseGameDir, dlcCount));
 
-			loadPAKs(fmt::format("{0}_dlc{1}", baseGameDir, dlcCount));
+			loadPAKs(PathID::GAME, fmt::format("{0}_dlc{1}", baseGameDir, dlcCount));
 			dlcCount--;
 		}
 	}
@@ -231,7 +231,7 @@ void FileSystem::CGameInfo::initGamepaths()
 		searchPaths.insert(searchPaths.end(), pair);
 		if (!isSDK2013Game)
 		{
-			loadPAKs(pair.second);
+			loadPAKs(pair.first, pair.second);
 		}
 	}
 }
@@ -240,9 +240,8 @@ void FileSystem::CGameInfo::resolveLoadDirs()
 {
 	//TODO this might not have ending slash
 	for (auto iterator = searchPaths.begin(); iterator != searchPaths.end(); ++iterator) {
-	    resolveLoadDir(*iterator);
-
-	  }
+		resolveLoadDir(*iterator);
+	}
 }
 
 void FileSystem::CGameInfo::resolveLoadDir(std::pair<PathID, std::string>& entry)

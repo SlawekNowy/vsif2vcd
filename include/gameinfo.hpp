@@ -81,7 +81,7 @@ namespace FileSystem {
 
 
 	private:
-		void loadPAKs(std::string atPath);
+		void loadPAKs(PathID pathId, std::string atPath);
 	void getSteamAppID();
 		PathID resolvePathIDs(std::string input);
 		std::string getPathFromAppID(int appID, std::vector<std::string> steamLibDirs);
