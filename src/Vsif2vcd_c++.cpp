@@ -122,6 +122,8 @@
         RRParser::initRules(tmpDir);
         RRParser::dumpSceneNames();
 
+        dumpSceneNamesFromItemsGame(tmpDir);
+
         //TODO: Wait for the threads
 
     //#endif
@@ -191,4 +193,36 @@
         SPDLOG_INFO("Appended {0} hardcoded entries.", hardcodedEntries.size());
         BSPParser::Scenes.emplace("hardcoded",hardcodedScenes);
     }
+
+	// TODO move to own class
+	void Program::dumpSceneNamesFromItemsGame(std::string tmpDir)
+	{
+		std::string absoluteFile = tmpDir + "scripts/items/items_game.txt";
+		std::ifstream file(absoluteFile.c_str());
+		SPDLOG_INFO("Currently parsing: {0}", absoluteFile);
+		std::vector<BSPParser::Map_Scene> scenes;
+		scenes.reserve(65535);
+		std::string line;
+
+        if (file.fail()) {
+            SPDLOG_INFO("No items_game found, skipping");
+            return;
+        }
+
+		while (std::getline(file, line)) {
+            auto vcdPos = line.find(".vcd");
+			if (vcdPos == std::string::npos) {
+				continue;
+			}
+            auto scenesPos = line.find("scenes");
+            // HACKY, REPLACE WITH REGEX OR SOMETHING IDK
+            std::string scene = line.substr(scenesPos, (vcdPos + 4 - scenesPos));
+			scenes.emplace_back(scene.c_str());
+		}
+		SPDLOG_INFO("Succesfully parsed {0}", absoluteFile);
+		file.close();
+		scenes.shrink_to_fit();
+		SPDLOG_INFO("Appended {0} entries from items_game.", scenes.size());
+		BSPParser::Scenes.emplace("items_game", scenes);
+	}
 

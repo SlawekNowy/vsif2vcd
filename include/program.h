@@ -15,7 +15,8 @@ namespace Program {
     //extern VSIF::ValveScenesImageFile vsif;
 
 	void appendHardCodedEntries();
-
+	// TODO move to own class
+	void dumpSceneNamesFromItemsGame(std::string tmpDir);
 };
 
 

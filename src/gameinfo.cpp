@@ -377,6 +377,9 @@ bool FileSystem::CGameInfo::prepareTmpDirectory(std::string& tmpDir)
         filesChunk = tmpMountPath->Find("scripts/talker/*");
         files.insert(files.end(),filesChunk.begin(),filesChunk.end());
 
+		//filesChunk.clear();
+		filesChunk = tmpMountPath->Find("scripts/items/items_game.txt");
+		files.insert(files.end(), filesChunk.begin(), filesChunk.end());
 
         //filesChunk.clear();
         files.shrink_to_fit();
