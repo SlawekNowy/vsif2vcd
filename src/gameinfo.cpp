@@ -340,11 +340,13 @@ bool FileSystem::CGameInfo::prepareTmpDirectory(std::string& tmpDir)
         std::vector<std::shared_ptr<IFile>> files;
         std::vector<std::shared_ptr<IFile>> filesChunk;
 
+		auto tmpMountPath = filesAndTargets[element].second;
+
         files.reserve(65536);
 		// only copy maps if game has singleplayer
 		if (this->hasSingleplayer) {
 			// get map bsps
-			filesChunk = filesAndTargets[element].second->Find("maps/*.bsp");
+			filesChunk = tmpMountPath->Find("maps/*.bsp");
 			//HACK: filter out workshop entries.
 			filesChunk.erase(std::remove_if(filesChunk.begin(), filesChunk.end(), [](std::shared_ptr<IFile> element) {
 				return element->relPath.find("workshop/") != std::string::npos;
@@ -353,7 +355,7 @@ bool FileSystem::CGameInfo::prepareTmpDirectory(std::string& tmpDir)
 			filesChunk.clear();
 
 			// get map lmps
-			filesChunk = filesAndTargets[element].second->Find("maps/*.lmp");
+			filesChunk = tmpMountPath->Find("maps/*.lmp");
 			//HACK: filter out workshop entries.
 			filesChunk.erase(std::remove_if(filesChunk.begin(), filesChunk.end(), [](std::shared_ptr<IFile> element) {
 				return element->relPath.find("workshop/") != std::string::npos;
@@ -361,23 +363,23 @@ bool FileSystem::CGameInfo::prepareTmpDirectory(std::string& tmpDir)
 			files.insert(files.end(), filesChunk.begin(), filesChunk.end());
 		}
 
-        filesChunk = filesAndTargets[element].second->Find("scenes/scenes.image");
+        filesChunk = tmpMountPath->Find("scenes/scenes.image");
 
         //filesChunk.clear();
         files.insert(files.end(),filesChunk.begin(),filesChunk.end());
 
         //filesChunk.clear();
-        filesChunk = filesAndTargets[element].second->Find("scenes/*.vcd");
+        filesChunk = tmpMountPath->Find("scenes/*.vcd");
 
         files.insert(files.end(),filesChunk.begin(),filesChunk.end());
 
         //filesChunk.clear();
-        filesChunk = filesAndTargets[element].second->Find("scripts/talker/*");
+        filesChunk = tmpMountPath->Find("scripts/talker/*");
         files.insert(files.end(),filesChunk.begin(),filesChunk.end());
+
 
         //filesChunk.clear();
         files.shrink_to_fit();
-
 
         for (auto filePtr=files.begin();filePtr!=files.end();filePtr++) {
             SPDLOG_INFO("Now extracting {0} to {1}",filePtr->get()->relPath,tmpDir);
