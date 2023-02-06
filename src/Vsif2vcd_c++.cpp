@@ -15,6 +15,7 @@
 
 #include "fcaseopen.h"
 
+#include <regex>
 
 
 
@@ -97,7 +98,7 @@
         gi.prepareTmpDirectory(tmpDir);
         VSIF::ValveScenesImageFile vsif; //= VSIF::ValveScenesImageFile(tmpDir + "/scenes/scenes.image");
         bool error;
-        if(!VSIF::ValveScenesImageFile::Open(tmpDir + "/scenes/scenes.image",vsif,error)){
+        if(!VSIF::ValveScenesImageFile::Open(std::filesystem::weakly_canonical(tmpDir + "/scenes/scenes.image"),vsif,error)){
           //We're likely not needed...
             if(!error){
 
@@ -211,14 +212,22 @@
             return;
         }
 
-		while (std::getline(file, line)) {
+        //regex for singular line of this.
+        std::regex lineRegex("\\s+\"(.[^\"]+)\"\\s+\"(.[^\"]+)\"");
+        while (Helper::safeGetline(file, line)) {
             auto vcdPos = line.find(".vcd");
 			if (vcdPos == std::string::npos) {
 				continue;
 			}
-            auto scenesPos = line.find("scenes");
+            std::smatch regexMatch;
+            std::string scene;
+            std::regex_match(line,regexMatch,lineRegex);
+            if (regexMatch.size()==3) {
+                scene = regexMatch[2].str();
+            }
+            //auto scenesPos = line.find("scenes");
             // HACKY, REPLACE WITH REGEX OR SOMETHING IDK
-            std::string scene = line.substr(scenesPos, (vcdPos + 4 - scenesPos));
+            //std::string scene = line.substr(scenesPos, (vcdPos + 4 - scenesPos));
 			scenes.emplace_back(scene.c_str());
 		}
 		SPDLOG_INFO("Succesfully parsed {0}", absoluteFile);

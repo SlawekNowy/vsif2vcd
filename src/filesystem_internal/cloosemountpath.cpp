@@ -18,6 +18,9 @@ std::vector<std::shared_ptr<IFile>> CLooseMountPath::Find(std::string substr)
     using namespace std::filesystem;
     const path rootPath = dirHandle.path();
     std::vector<std::string> matchingPaths;
+    //lazy init
+    if(this->fileList.empty())
+        this->ListFiles(fileList);
     matchingPaths = filter(this->fileList,[substr](std::string path){
         return wildcard(substr.c_str(),path.c_str());
 });

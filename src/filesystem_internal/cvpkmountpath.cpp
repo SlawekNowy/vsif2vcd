@@ -12,6 +12,7 @@ CVPKMountPath::CVPKMountPath(std::string path)
 	hlInitialize();
 	packageHandler = HLLib::CPackage::AutoOpen(path.c_str(), HLFileMode::HL_MODE_READ);
 	filePath = path;
+
 }
 
 CVPKMountPath::~CVPKMountPath() {
@@ -21,12 +22,18 @@ CVPKMountPath::~CVPKMountPath() {
 
 std::vector<std::shared_ptr<IFile>> CVPKMountPath::Find(std::string substr)
 {
-	// vpk file paths usually use backslash
-	std::replace(substr.begin(), substr.end(), '/', '\\');
+
 	HLLib::CDirectoryFolder* pRoot = packageHandler->GetRoot();
 
 	pRoot->Sort(); //by default this searches alphabetically and recursively
-
+    //lazy init
+    if(this->fileList.empty())
+    {
+        this->ListFiles(fileList);
+        std::for_each(fileList.begin(),fileList.end(),[](std::string& element){
+            Helper::ReplaceAll(element,"\\","/");
+        });
+    }
 	std::vector<std::string> matchingPaths;
 	matchingPaths = filter(this->fileList, [substr](std::string path) {
 		return wildcard(substr.c_str(), path.c_str());
