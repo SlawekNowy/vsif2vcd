@@ -17,6 +17,13 @@ namespace Helper {
 
 
 
+    static inline void stripQuotes(std::string& quoted)
+    {
+        if (quoted[0] == '\"' && quoted[quoted.length()-1]=='\"') {
+            quoted = quoted.substr(1,quoted.length()-2);
+        }
+
+    }
 
     //https://stackoverflow.com/a/53268928
 

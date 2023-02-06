@@ -211,13 +211,6 @@ void RRParser::dumpSceneNames()
 
 }
 
-void RRParser::stripQuotes(std::string& quoted)
-{
-    if (quoted[0] == '\"' && quoted[quoted.length()-1]=='\"') {
-        quoted = quoted.substr(1,quoted.length()-2);
-    }
-
-}
 
 
 

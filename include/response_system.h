@@ -17,7 +17,7 @@ extern std::vector<CResponseRulesScript> responseSystems;
 
 
 
-static void stripQuotes(std::string& quoted);
+//static void stripQuotes(std::string& quoted);
 void initRules(std::string gameDir); //start parsing scripts
 class CResponseRulesScript { //Contains the entry point and its include akin to CDefaultResponseSystem and CInstancedResponseSystem
 private:

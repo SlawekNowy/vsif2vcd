@@ -213,17 +213,20 @@
         }
 
         //regex for singular line of this.
-        std::regex lineRegex("\\s+\"(.[^\"]+)\"\\s+\"(.[^\"]+)\"");
+        //std::regex lineRegex("\\s+\"(.[^\"]+)\"\\s+\"(.[^\"]+)\"");
         while (Helper::safeGetline(file, line)) {
             auto vcdPos = line.find(".vcd");
 			if (vcdPos == std::string::npos) {
 				continue;
 			}
-            std::smatch regexMatch;
+            boost::char_separator<char> sep(" \t");
+
+            boost::tokenizer<boost::char_separator<char>> tokens_raw(line,sep);
+            std::vector<std::string> tokens(tokens_raw.begin(),tokens_raw.end());
             std::string scene;
-            std::regex_match(line,regexMatch,lineRegex);
-            if (regexMatch.size()==3) {
-                scene = regexMatch[2].str();
+            if(tokens.size()==2){
+                Helper::stripQuotes(tokens[1]);
+                scene = tokens[1];
             }
             //auto scenesPos = line.find("scenes");
             // HACKY, REPLACE WITH REGEX OR SOMETHING IDK

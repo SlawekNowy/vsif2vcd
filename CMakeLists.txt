@@ -36,7 +36,7 @@ find_package(fmt CONFIG REQUIRED)
 
 find_package (Bitsery CONFIG REQUIRED)
 
-find_package(spdlog CONFIG REQUIRED)
+#find_package(spdlog CONFIG REQUIRED)
 #target_link_libraries(main PRIVATE spdlog::spdlog spdlog::spdlog_header_only)
 
 
@@ -89,6 +89,7 @@ add_subdirectory(thirdparty/hllib/HLLib)
 add_subdirectory(thirdparty/valve-bsp-parser)
 add_subdirectory(thirdparty/fcaseopen)
 add_subdirectory(thirdparty/wildcard)
+add_subdirectory(thirdparty/spdlog)
 
 
 add_dependencies(Vsif2vcd valve-bsp-parser lzma hllib)
