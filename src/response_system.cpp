@@ -237,7 +237,7 @@ void RRParser::CResponseRulesScript::parseScript(std::string gamedir,std::ifstre
                 //next token is the included file...
                 std::string includedFile = (++tok_it).current_token();
                 stripQuotes(includedFile);
-                includedFile = gamedir+"/scripts/"+includedFile;
+                includedFile = gamedir+"scripts/"+includedFile;
                 if (std::find(includedFiles.begin(),includedFiles.end(),includedFile)==includedFiles.end()) {
 
                     std::ifstream includedStream(includedFile);
@@ -248,7 +248,7 @@ void RRParser::CResponseRulesScript::parseScript(std::string gamedir,std::ifstre
                 //that's the line!
 
             }
-            if (tok_it.current_token().compare("enumeration")==0) {
+            if (boost::iequals(tok_it.current_token(), "enumeration")) {
                 //next token is enum's name.
                 std::string enumName = (++tok_it).current_token();
                 stripQuotes(enumName);
@@ -259,7 +259,7 @@ void RRParser::CResponseRulesScript::parseScript(std::string gamedir,std::ifstre
                 continue; //we're long past tokenized line (getline state is saved to the stream).
             }
 
-            if(tok_it.current_token().compare("response")==0) {
+            if(boost::iequals(tok_it.current_token(), "response")) {
                 // quite a lot of parsing in a single line...
                 //back up line tokens just in case
                 std::vector<std::string> responseTokens(tokens.begin(),tokens.end());
@@ -294,7 +294,7 @@ void RRParser::CResponseRulesScript::parseScript(std::string gamedir,std::ifstre
                 responseGroups.push_back(rGroup);
             }
 
-            if(tok_it.current_token().compare("criterion")==0) {
+            if(boost::iequals(tok_it.current_token(), "criterion")) {
                 //that's a one liner too.
                 //make vector of tokens then.
                 std::vector<std::string> criterionTokens(tokens.begin(),tokens.end());
@@ -308,7 +308,7 @@ void RRParser::CResponseRulesScript::parseScript(std::string gamedir,std::ifstre
                 continue;
             }
 
-            if(tok_it.current_token().compare("rule")==0) {
+            if(boost::iequals(tok_it.current_token(), "rule")) {
                 std::string ruleName = (++tok_it).current_token();
                 CScriptRule rule(ruleName);
                 rule.parseRule(file);
@@ -557,10 +557,19 @@ void RRParser::CScriptRule::parseRule(std::ifstream &file)
 void RRParser::CScriptCriterion::parseCriterion(std::vector<std::string> &flags)
 {
     // matchKey and Match value in that order.
-
-    std::string matchKey = flags[0],matchValue = flags[1];
+    if (flags.size() < 1) {
+        return;
+    }
+    std::string matchKey = flags[0];
+    std::string matchValue = "";
+    if (flags.size() > 1) {
+         matchValue = flags[1];
+    }
     stripQuotes(matchKey);stripQuotes(matchValue);
     this->matchKey=matchKey;this->matchValue=matchValue;
+    if (flags.size() < 2) {
+        return;
+    }
     std::vector optionals(flags.begin()+2,flags.end());
     for(auto token = optionals.begin();token!=optionals.end();token++) {
         std::string flag = *token;

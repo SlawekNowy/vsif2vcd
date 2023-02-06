@@ -31,11 +31,16 @@ int BSPParser::ExtractNames(std::string GameDirectory)
     std::vector<std::string> maplist;
     std::filesystem::path mapPath(GameDirectory+"/maps/");
 
-    for (auto path:std::filesystem::directory_iterator{mapPath}) {
-        std::string mapPath = path.path().filename().generic_string();
-        if (mapPath.substr(mapPath.size()-4)==".bsp") {
-            maplist.push_back(mapPath);
+    try {
+        for (auto path : std::filesystem::directory_iterator{ mapPath }) {
+            std::string mapPath = path.path().filename().generic_string();
+            if (mapPath.substr(mapPath.size() - 4) == ".bsp") {
+                maplist.push_back(mapPath);
+            }
         }
+    }
+    catch (std::filesystem::filesystem_error& fserror) {
+        return 0;
     }
     /*
     std::string line;

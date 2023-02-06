@@ -33,7 +33,7 @@
 #define BASEGAME_DIR_TMPL "|all_source_engine_paths|"
 #define MODDIR_TMPL "|gameinfo_path|"
 namespace FileSystem {
-	enum class PathID : unsigned char
+	enum class PathID : unsigned short
 	{
 		GAME = 1 << 0,
 		GAME_WRITE = 1 << 1,
@@ -43,6 +43,7 @@ namespace FileSystem {
 		DEFAULT_WRITE_PATH = 1 << 5,
 		PLATFORM = 1 << 6, //Skip this
 		DOWNLOAD = 1 << 7, //download dir for multiplayer
+		CUSTOM = 1 << 8,	// custom dir for client mods
 
 	};
 
@@ -55,6 +56,7 @@ namespace FileSystem {
 		std::string modDir;
 		gameInfoKV memGI; //this var holds memory representation of gameinfo.txt
 		bool isSDK2013Game; //This controls the path loading of gameinfo. If true this behaves explicitly. Otherwise implicit behavior is assumed.
+		bool hasSingleplayer; // game is either singleplayer_only or has no type (implying SP+MP). games that do not have singleplayer will not have scenes inside map files.
 		//FIXME: Handle older SDKs if anyone wants that.
         std::vector<std::pair<std::string,std::shared_ptr<IMountPath>>> filesAndTargets;
 		
@@ -79,7 +81,7 @@ namespace FileSystem {
 
 
 	private:
-		void loadPAKs(std::string atPath);
+		void loadPAKs(PathID pathId, std::string atPath);
 	void getSteamAppID();
 		PathID resolvePathIDs(std::string input);
 		std::string getPathFromAppID(int appID, std::vector<std::string> steamLibDirs);

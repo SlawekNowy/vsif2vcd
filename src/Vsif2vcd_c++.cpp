@@ -26,19 +26,23 @@
     int main(int argc, char* argv[]){
         //TODO: PROFILE!
         int ExitCode;
-        puts("VSIF2VCD version 2.0 (23 Apr 2012)");
-
-        if (argc < 2|| argc > 2)
+        puts("VSIF2VCD version 2.1 (1 Feb 2023)");
+        puts("By http://steamcommunity.com/id/SiPlus and github.com/slaweknowy");
+        string gameDir;
+        if (argc < 2)
         {
-            cerr << "By http://steamcommunity.com/id/SiPlus and github.com/slaweknowy \nUsage: VSIF2VCD [game directory]\n";
-            return 1;
+            puts("Input game directory:");
+            getline(cin, gameDir);
+        }
+        else {
+            gameDir = argv[1];
         }
         spdlog::set_pattern("[%L] %!: %v");
 
         auto console = spdlog::stdout_logger_mt("console");
         spdlog::set_default_logger(console);
         //puts("Initializing LZMA uncompression module");
-        ExitCode = Program::doStart(argv[1]);
+        ExitCode = Program::doStart(gameDir);
         return ExitCode;
     }
 
@@ -118,6 +122,8 @@
         RRParser::initRules(tmpDir);
         RRParser::dumpSceneNames();
 
+        dumpSceneNamesFromItemsGame(tmpDir);
+
         //TODO: Wait for the threads
 
     //#endif
@@ -131,60 +137,94 @@
             std::copy(pair.second.begin(),pair.second.end(),std::inserter(sceneSoup,sceneSoup.end()));
         }
 
-        SPDLOG_INFO("Now decompiling...");
+		SPDLOG_INFO("Now decompiling...");
+		int failed = 0;
+		for (int i = 0; i < Helper::vsif->vcds.size(); i++) {
+			VSIF::VSIF_Entry entry = Helper::vsif->entries[i];
+			std::string strDump = Helper::vsif->vcds[i].dumpText();
+			// now find the path this crc is refering to.
+			auto strEntryIter = std::find_if(sceneSoup.begin(), sceneSoup.end(), [&entry](const BSPParser::Map_Scene& element) {
+				return entry.CRC == element.CRC;
+				});
+			std::string targetPathStr = tmpDir;
+			if (strEntryIter != sceneSoup.end()) {
+				SPDLOG_INFO("CRC ({1:#08X}) hit! Path is {0}", strEntryIter->Name, entry.CRC);
+				std::string targetFile = strEntryIter->Name;
+				targetPathStr = tmpDir + targetFile;
 
-        for (int i=0;i<Helper::vsif->vcds.size();i++) {
-            VSIF::VSIF_Entry entry = Helper::vsif->entries[i];
-            std::string strDump = Helper::vsif->vcds[i].dumpText();
-            // now find the path this crc is refering to.
-            auto strEntryIter = std::find_if(sceneSoup.begin(),sceneSoup.end(),[&entry](const BSPParser::Map_Scene& element){
-                return entry.CRC==element.CRC;
-            });
-            std::string targetPathStr = tmpDir;
-            if (strEntryIter!=sceneSoup.end()) {
-                SPDLOG_INFO("CRC ({1:#08X}) hit! Path is {0}",strEntryIter->Name,entry.CRC);
-                std::string targetFile = strEntryIter->Name;
-                targetPathStr = tmpDir+targetFile;
+				//Now check if this is already unpacked.
+				FILE* fileTest;
+				fileTest = fcaseopen(targetPathStr.c_str(), "r");
+				if (fileTest)
+				{
+					SPDLOG_INFO("Path {0} already found! Skipping...", targetFile);
+					fclose(fileTest);
+					continue;
+				}
+				//fclose(fileTest);
+			}
+			else {
+				SPDLOG_INFO("CRC ({0:#08X}) miss!", entry.CRC);
+				std::string targetFile = "/_failed/" + fmt::format("{0:#08X}", entry.CRC) + ".vcd";
+				failed++;
+				targetPathStr = tmpDir + targetFile;
+			}
 
-                //Now check if this is already unpacked.
-                FILE* fileTest;
-                fileTest = fcaseopen(targetPathStr.c_str(),"r");
-                if(fileTest)
-                  {
-                    SPDLOG_INFO("Path {0} already found! Skipping...",targetFile);
-                    fclose(fileTest);
-                    continue;
-                  }
-                 fclose(fileTest);
-            } else {
-                SPDLOG_INFO("CRC ({0:#08X}) miss!",entry.CRC);
-                std::string targetFile = "/_failed/"+std::to_string(entry.CRC)+".vcd";
-                targetPathStr = tmpDir+targetFile;
-            }
+			std::filesystem::path targetPath(targetPathStr);
+			auto targetDir = targetPath;
+			targetDir = targetDir.remove_filename();
+			std::filesystem::create_directories(targetDir);
+			std::ofstream outputFile(targetPath);
+			outputFile << strDump;
+			outputFile.flush();
+			outputFile.close();
+		}
+        SPDLOG_INFO("Finished! Found {0} of {1} VCD names.", Helper::vsif->vcds.size() - failed, Helper::vsif->vcds.size());
+        SPDLOG_INFO("See output at {0}", tmpDir);
+		Helper::vsif = nullptr;
+		return 0;
+	}
 
-            std::filesystem::path targetPath(targetPathStr);
-            auto targetDir = targetPath;
-            targetDir = targetDir.remove_filename();
-            std::filesystem::create_directories(targetDir);
-            std::ofstream outputFile(targetPath);
-            outputFile << strDump;
-            outputFile.flush();
-            outputFile.close();
+	void Program::appendHardCodedEntries()
+	{
+		std::vector<BSPParser::Map_Scene> hardcodedScenes;
+		hardcodedScenes.reserve(hardcodedEntries.size());
+		for (auto iter = hardcodedEntries.begin(); iter != hardcodedEntries.end(); ++iter) {
+			hardcodedScenes.emplace_back((char*)iter->c_str());
+		}
+		SPDLOG_INFO("Appended {0} hardcoded entries.", hardcodedEntries.size());
+		BSPParser::Scenes.emplace("hardcoded", hardcodedScenes);
+	}
+
+	// TODO move to own class
+	void Program::dumpSceneNamesFromItemsGame(std::string tmpDir)
+	{
+		std::string absoluteFile = tmpDir + "scripts/items/items_game.txt";
+		std::ifstream file(absoluteFile.c_str());
+		SPDLOG_INFO("Currently parsing: {0}", absoluteFile);
+		std::vector<BSPParser::Map_Scene> scenes;
+		scenes.reserve(65535);
+		std::string line;
+
+        if (file.fail()) {
+            SPDLOG_INFO("No items_game found, skipping");
+            return;
         }
-        Helper::vsif = nullptr;
-        return 0;
 
-
-    }
-
-    void Program::appendHardCodedEntries()
-    {
-        std::vector<BSPParser::Map_Scene> hardcodedScenes;
-        hardcodedScenes.reserve(hardcodedEntries.size());
-        for (auto iter = hardcodedEntries.begin(); iter != hardcodedEntries.end(); ++iter) {
-            hardcodedScenes.emplace_back((char*)iter->c_str());
-        }
-        SPDLOG_INFO("Appended {0} hardcoded entries.", hardcodedEntries.size());
-        BSPParser::Scenes.emplace("hardcoded",hardcodedScenes);
-    }
+		while (std::getline(file, line)) {
+            auto vcdPos = line.find(".vcd");
+			if (vcdPos == std::string::npos) {
+				continue;
+			}
+            auto scenesPos = line.find("scenes");
+            // HACKY, REPLACE WITH REGEX OR SOMETHING IDK
+            std::string scene = line.substr(scenesPos, (vcdPos + 4 - scenesPos));
+			scenes.emplace_back(scene.c_str());
+		}
+		SPDLOG_INFO("Succesfully parsed {0}", absoluteFile);
+		file.close();
+		scenes.shrink_to_fit();
+		SPDLOG_INFO("Appended {0} entries from items_game.", scenes.size());
+		BSPParser::Scenes.emplace("items_game", scenes);
+	}
 

@@ -130,51 +130,50 @@ namespace FileSystem {
 }
 void FileSystem::CGameInfo::getSteamAppID()
 {
-
-  auto fsNode = std::find_if(memGI.childs.begin(),memGI.childs.end(),CompareFirst<std::string, std::shared_ptr<gameInfoKV>>("FileSystem"))->second;
-  if (std::find_if(fsNode->attribs.begin(), fsNode->attribs.end(), CompareFirst<std::string, std::string>("SteamAppId"))->second !="") {
-          appID = boost::lexical_cast<int>(std::find_if(fsNode->attribs.begin(), fsNode->attribs.end(), CompareFirst<std::string, std::string>("SteamAppId"))->second);
-  }
+	auto fsNode = std::find_if(memGI.childs.begin(), memGI.childs.end(), CompareFirst<std::string, std::shared_ptr<gameInfoKV>>("FileSystem"))->second;
+	if (std::find_if(fsNode->attribs.begin(), fsNode->attribs.end(), CompareFirst<std::string, std::string>("SteamAppId"))->second != "") {
+		appID = boost::lexical_cast<int>(std::find_if(fsNode->attribs.begin(), fsNode->attribs.end(), CompareFirst<std::string, std::string>("SteamAppId"))->second);
+	}
 }
-void FileSystem::CGameInfo::loadPAKs(std::string atPath)
+void FileSystem::CGameInfo::loadPAKs(PathID pathId, std::string atPath)
 {
-    for (int i=1;i<=99;i++)
-      {
-        std::string relVPKFilePath = atPath+ "/" +fmt::format("pak{0:02}_dir.vpk",i);
+	for (int i = 1;i <= 99;i++)
+	{
+		std::string relVPKFilePath = atPath + "/" + fmt::format("pak{0:02}_dir.vpk", i);
 
-        namespace fileSys=std::filesystem;
-        using fileSys::path;
+		namespace fileSys = std::filesystem;
+		using fileSys::path;
 
-        bool check= false;
-        if(path(atPath).is_absolute())
-          {
-            check = fileSys::exists(path(relVPKFilePath))&&fileSys::is_regular_file(path(relVPKFilePath));
-          }
-        else
-          {
-            check = fileSys::exists(path(baseDir+"/"+relVPKFilePath))&&fileSys::is_regular_file(path(baseDir +"/"+relVPKFilePath));
-          }
-        if (check)
-          {
-            searchPaths.emplace_back(PathID::GAME,relVPKFilePath);
-          }
-            else
-          break;
-      }
+		bool check = false;
+		if (path(atPath).is_absolute())
+		{
+			check = fileSys::exists(path(relVPKFilePath)) && fileSys::is_regular_file(path(relVPKFilePath));
+		}
+		else
+		{
+			check = fileSys::exists(path(baseDir + "/" + relVPKFilePath)) && fileSys::is_regular_file(path(baseDir + "/" + relVPKFilePath));
+		}
+		if (check)
+		{
+			searchPaths.emplace_back(pathId, relVPKFilePath);
+		}
+		else
+			break;
+	}
 }
 void FileSystem::CGameInfo::initGamepaths()
 {
-	assert(memGI.name == "GameInfo"); 
-	bool isMultiPlayer =true;
-	//check if the key exists and it's singleplayer
-	if (std::find_if(memGI.attribs.begin(), memGI.attribs.end(),CompareFirst<std::string,std::string>("type")) != memGI.attribs.end()) {
+	assert(memGI.name == "GameInfo");
+	this->hasSingleplayer = true;
+	// if a game's type is not `multiplayer_only`, it has singleplayer (either type key is missing or `singleplayer_only`)
+	if (std::find_if(memGI.attribs.begin(), memGI.attribs.end(), CompareFirst<std::string, std::string>("type")) != memGI.attribs.end()) {
 		auto gameType = std::find_if(memGI.attribs.begin(), memGI.attribs.end(), CompareFirst<std::string, std::string>("type"))->second;
-		if (gameType == "singleplayer_only") {
-			isMultiPlayer = false;
+		if (boost::iequals(gameType, "multiplayer_only")) {
+			this->hasSingleplayer = false;
 		}
 	}
 
-	auto fsNode = std::find_if(memGI.childs.begin(),memGI.childs.end(),CompareFirst<std::string, std::shared_ptr<gameInfoKV>>("FileSystem"))->second;
+	auto fsNode = std::find_if(memGI.childs.begin(), memGI.childs.end(), CompareFirst<std::string, std::shared_ptr<gameInfoKV>>("FileSystem"))->second;
 	//We have to use iterators for this one
 	auto searchPaths_raw = *(std::find_if(fsNode->childs.begin(), fsNode->childs.end(), CompareFirst<std::string, std::shared_ptr<gameInfoKV>>("SearchPaths"))->second);
 
@@ -185,55 +184,55 @@ void FileSystem::CGameInfo::initGamepaths()
 	// - game and its paks (up to 99)
 	// Note: paks have trailing zero, dlc's don't
 	//Note that this system mounts loose files first, inverse of SDK 2013 philosophy.
-	if(!isSDK2013Game)
-	  {
-	    namespace fileSys=std::filesystem;
-	    using fileSys::path;
-	    //first "update" directory
-	    if(fileSys::exists(path(baseDir+"/update"))&&fileSys::is_directory(path(baseDir+"/update")))
-	      {
-		searchPaths.emplace_back(PathID::GAME,"update");
+	if (!isSDK2013Game)
+	{
+		namespace fileSys = std::filesystem;
+		using fileSys::path;
+		//first "update" directory
+		if (fileSys::exists(path(baseDir + "/update")) && fileSys::is_directory(path(baseDir + "/update")))
+		{
+			searchPaths.emplace_back(PathID::GAME, "update");
 
-		loadPAKs("update");
-	      }
-	    //then DLCs
-	    //part 1: discovery - how many dlcs to mount?
-	      int dlcCount =0;
-	      for (int i=1;i<=99;i++) {
-		  std::string dlcDir=fmt::format("{0}_dlc{1}",fileSys::path(modDir).filename().generic_string(),i);
-		  if(fileSys::exists(baseDir+"/"+dlcDir)
-		     &&fileSys::is_directory(baseDir+"/"+dlcDir))
-		    {
-		      dlcCount++;
-		    } else
-		      break; //we're done here
+			loadPAKs(PathID::GAME, "update");
 		}
-	    //part 2: preparation. Mount them in reverse order
-	      while (dlcCount>0){
-
-		  std::string baseGameDir=fileSys::path(modDir).filename().generic_string();
-		  searchPaths.emplace_back(PathID::GAME,fmt::format("{0}_dlc{1}",baseGameDir,dlcCount));
-
-		  loadPAKs(fmt::format("{0}_dlc{1}",baseGameDir,dlcCount));
-		  dlcCount--;
+		//then DLCs
+		//part 1: discovery - how many dlcs to mount?
+		int dlcCount = 0;
+		for (int i = 1;i <= 99;i++) {
+			std::string dlcDir = fmt::format("{0}_dlc{1}", fileSys::path(modDir).filename().generic_string(), i);
+			if (fileSys::exists(baseDir + "/" + dlcDir)
+				&& fileSys::is_directory(baseDir + "/" + dlcDir))
+			{
+				dlcCount++;
+			}
+			else
+				break; //we're done here
 		}
-	  }
+		//part 2: preparation. Mount them in reverse order
+		while (dlcCount > 0) {
 
-	
+			std::string baseGameDir = fileSys::path(modDir).filename().generic_string();
+			searchPaths.emplace_back(PathID::GAME, fmt::format("{0}_dlc{1}", baseGameDir, dlcCount));
+
+			loadPAKs(PathID::GAME, fmt::format("{0}_dlc{1}", baseGameDir, dlcCount));
+			dlcCount--;
+		}
+	}
+
+
 	for (auto iterator = searchPaths_raw.attribs.begin(); iterator != searchPaths_raw.attribs.end(); ++iterator) {
 		std::pair<std::string, std::string> path = *iterator;
 		PathID pPathID = resolvePathIDs(path.first);
-		auto pair = std::make_pair(pPathID,path.second);
+		auto pair = std::make_pair(pPathID, path.second);
 
 		resolveLoadDir(pair);
-		pair.second = std::filesystem::canonical(pair.second).generic_string();
-		searchPaths.insert(searchPaths.end(),pair);
+		pair.second = std::filesystem::weakly_canonical(pair.second).generic_string();
 
-		if(!isSDK2013Game)
-		  {
-
-		    loadPAKs(pair.second);
-		  }
+		searchPaths.insert(searchPaths.end(), pair);
+		if (!isSDK2013Game)
+		{
+			loadPAKs(pair.first, pair.second);
+		}
 	}
 }
 
@@ -241,23 +240,23 @@ void FileSystem::CGameInfo::resolveLoadDirs()
 {
 	//TODO this might not have ending slash
 	for (auto iterator = searchPaths.begin(); iterator != searchPaths.end(); ++iterator) {
-	    resolveLoadDir(*iterator);
-
-	  }
+		resolveLoadDir(*iterator);
+	}
 }
 
 void FileSystem::CGameInfo::resolveLoadDir(std::pair<PathID, std::string>& entry)
 {
-  if ((entry.second.find(BASEGAME_DIR_TMPL) != std::string::npos)) {
-replace(entry.second, BASEGAME_DIR_TMPL, baseDir+"/");
-  }else if ((entry.second.find(MODDIR_TMPL) != std::string::npos)) {
-replace(entry.second, MODDIR_TMPL, modDir+"/");
-  }
-  else if (std::filesystem::path(entry.second).is_relative()){ //we do not want to add base dir twice.
-//assume we're loading from |all_source_engine_paths|
-//TODO: Linux's version of portal2 has bogus detection of custom sourcemods. This is diffrent than behavior in windows and must be reported to Valve.
-entry.second = baseDir+"/" + entry.second;
-  }
+	if ((entry.second.find(BASEGAME_DIR_TMPL) != std::string::npos)) {
+		replace(entry.second, BASEGAME_DIR_TMPL, baseDir + "/");
+	}
+	else if ((entry.second.find(MODDIR_TMPL) != std::string::npos)) {
+		replace(entry.second, MODDIR_TMPL, modDir + "/");
+	}
+	else if (std::filesystem::path(entry.second).is_relative()) { //we do not want to add base dir twice.
+  //assume we're loading from |all_source_engine_paths|
+  //TODO: Linux's version of portal2 has bogus detection of custom sourcemods. This is diffrent than behavior in windows and must be reported to Valve.
+		entry.second = baseDir + "/" + entry.second;
+	}
 }
 
 bool FileSystem::CGameInfo::replace(std::string& str, const std::string& from, const std::string& to) {
@@ -270,52 +269,51 @@ bool FileSystem::CGameInfo::replace(std::string& str, const std::string& from, c
 
 FileSystem::CGameInfo::CGameInfo(std::string modDir)
 {
-            this->isSDK2013Game = true;
-            std::ifstream txtGI_str;
-            this->modDir = modDir;
-			SPDLOG_INFO("Loading file {0}", modDir+"/gameinfo.txt");
-            txtGI_str.open(modDir+"/gameinfo.txt");
-            memGI = tyti::vdf::read< gameInfoKV>(txtGI_str);
-            txtGI_str.close();
+	this->isSDK2013Game = true;
+	std::ifstream txtGI_str;
+	this->modDir = modDir;
+	SPDLOG_INFO("Loading file {0}", modDir + "/gameinfo.txt");
+	txtGI_str.open(modDir + "/gameinfo.txt");
+	memGI = tyti::vdf::read< gameInfoKV>(txtGI_str);
+	txtGI_str.close();
 
-            getSteamAppID();
-            resolveBaseDir();
-            if(std::find(implicitLoadGameInfoID.begin(),implicitLoadGameInfoID.end(),appID)!=implicitLoadGameInfoID.end())
-              {
-              isSDK2013Game=false;
-              SPDLOG_INFO("Detected implicit loading from AppID: {0}",appID);
-              }
-            if(!isSDK2013Game) {
-                  auto modDir = this->modDir + "/";
-                  modDir = std::filesystem::canonical(modDir).generic_string();
-                  assert(std::filesystem::is_directory(modDir));
-                  auto modName = std::filesystem::path(modDir).filename().generic_string();
-                  if(modName.find("_dlc")!=std::string::npos) {
+	getSteamAppID();
+	resolveBaseDir();
+	if (std::find(implicitLoadGameInfoID.begin(), implicitLoadGameInfoID.end(), appID) != implicitLoadGameInfoID.end())
+	{
+		isSDK2013Game = false;
+		SPDLOG_INFO("Detected implicit loading from AppID: {0}", appID);
+	}
+	if (!isSDK2013Game) {
+		auto modDir = this->modDir + "/";
+		modDir = std::filesystem::canonical(modDir).generic_string();
+		assert(std::filesystem::is_directory(modDir));
+		auto modName = std::filesystem::path(modDir).filename().generic_string();
+		if (modName.find("_dlc") != std::string::npos) {
 
-                      SPDLOG_INFO("Detected DLC to the game! Removing now to be readded later.");
-                      if(this->baseDir != std::filesystem::path(modDir).parent_path().generic_string()) {
-                          //sanity check failed. bail.
+			SPDLOG_INFO("Detected DLC to the game! Removing now to be readded later.");
+			if (this->baseDir != std::filesystem::path(modDir).parent_path().generic_string()) {
+				//sanity check failed. bail.
 
-                          throw std::logic_error("DLC not in the same directory as the base game!");
-                        }
-                          ;
-                      //strip it. We're adding this later. The check is here, beacuse we need to reload gameinfo.
-                      modName.substr(0,modName.find("_dlc"));
-                      memGI = gameInfoKV{}; //reinit
-                      modDir = std::filesystem::path(modDir).parent_path().generic_string()+"/"+modName;
+				throw std::logic_error("DLC not in the same directory as the base game!");
+			}
+			//strip it. We're adding this later. The check is here, because we need to reload gameinfo.
+			modName = modName.substr(0, modName.find("_dlc"));
+			memGI = gameInfoKV{}; //reinit
+			modDir = std::filesystem::path(modDir).parent_path().generic_string() + "/" + modName;
 
-                      modDir = std::filesystem::canonical(modDir).generic_string();
-                      this->modDir = modDir;
-                      txtGI_str.open(modDir+"/gameinfo.txt");
-                      memGI = tyti::vdf::read< gameInfoKV>(txtGI_str);
-                      txtGI_str.close();
-                    }
-              }
-            //memGI = tyti::vdf::read< tyti::vdf::multikey_object>(txtGI_str);
-            //txtGI_str.close();
-            initGamepaths();
-            resolveLoadDirs();
-			SPDLOG_INFO("GameInfo file fully loaded.");
+			modDir = std::filesystem::canonical(modDir).generic_string();
+			this->modDir = modDir;
+			txtGI_str.open(modDir + "/gameinfo.txt");
+			memGI = tyti::vdf::read< gameInfoKV>(txtGI_str);
+			txtGI_str.close();
+		}
+	}
+	//memGI = tyti::vdf::read< tyti::vdf::multikey_object>(txtGI_str);
+	//txtGI_str.close();
+	initGamepaths();
+	resolveLoadDirs();
+	SPDLOG_INFO("GameInfo file fully loaded.");
 }
 
 
@@ -342,48 +340,49 @@ bool FileSystem::CGameInfo::prepareTmpDirectory(std::string& tmpDir)
         std::vector<std::shared_ptr<IFile>> files;
         std::vector<std::shared_ptr<IFile>> filesChunk;
 
+		auto tmpMountPath = filesAndTargets[element].second;
+
         files.reserve(65536);
-        filesChunk = filesAndTargets[element].second->Find("maps/*.bsp");
-        //HACK: filter out workshop entries.
-        //if(!filesChunk.empty())
-        //  {
+		// only copy maps if game has singleplayer
+		if (this->hasSingleplayer) {
+			// get map bsps
+			filesChunk = tmpMountPath->Find("maps/*.bsp");
+			//HACK: filter out workshop entries.
+			filesChunk.erase(std::remove_if(filesChunk.begin(), filesChunk.end(), [](std::shared_ptr<IFile> element) {
+				return element->relPath.find("workshop/") != std::string::npos;
+				}), filesChunk.end());
+			files.insert(files.end(), filesChunk.begin(), filesChunk.end());
+			filesChunk.clear();
 
-            filesChunk.erase(std::remove_if(filesChunk.begin(),filesChunk.end(),[](std::shared_ptr<IFile> element){
+			// get map lmps
+			filesChunk = tmpMountPath->Find("maps/*.lmp");
+			//HACK: filter out workshop entries.
+			filesChunk.erase(std::remove_if(filesChunk.begin(), filesChunk.end(), [](std::shared_ptr<IFile> element) {
+				return element->relPath.find("workshop/") != std::string::npos;
+				}), filesChunk.end());
+			files.insert(files.end(), filesChunk.begin(), filesChunk.end());
+		}
 
-                               return element->relPath.find("workshop/")!=std::string::npos;
-                             }),filesChunk.end());
-         // }
-
-
-        files.insert(files.end(),filesChunk.begin(),filesChunk.end());
-        filesChunk.clear();
-        filesChunk = filesAndTargets[element].second->Find("maps/*.lmp");
-        //HACK: filter out workshop entries.
-
-
-            filesChunk.erase(std::remove_if(filesChunk.begin(),filesChunk.end(),[](std::shared_ptr<IFile> element){
-
-                               return element->relPath.find("workshop/")!=std::string::npos;
-                             }),filesChunk.end());
-
-        files.insert(files.end(),filesChunk.begin(),filesChunk.end());
-        filesChunk = filesAndTargets[element].second->Find("scenes/scenes.image");
+        filesChunk = tmpMountPath->Find("scenes/scenes.image");
 
         //filesChunk.clear();
         files.insert(files.end(),filesChunk.begin(),filesChunk.end());
 
         //filesChunk.clear();
-        filesChunk = filesAndTargets[element].second->Find("scenes/*.vcd");
+        filesChunk = tmpMountPath->Find("scenes/*.vcd");
 
         files.insert(files.end(),filesChunk.begin(),filesChunk.end());
 
         //filesChunk.clear();
-        filesChunk = filesAndTargets[element].second->Find("scripts/talker/*");
+        filesChunk = tmpMountPath->Find("scripts/talker/*");
         files.insert(files.end(),filesChunk.begin(),filesChunk.end());
+
+		//filesChunk.clear();
+		filesChunk = tmpMountPath->Find("scripts/items/items_game.txt");
+		files.insert(files.end(), filesChunk.begin(), filesChunk.end());
 
         //filesChunk.clear();
         files.shrink_to_fit();
-
 
         for (auto filePtr=files.begin();filePtr!=files.end();filePtr++) {
             SPDLOG_INFO("Now extracting {0} to {1}",filePtr->get()->relPath,tmpDir);
@@ -402,18 +401,23 @@ void FileSystem::CGameInfo::initializeFileSystem()
     //this->resolveLoadDir();
 
     for (auto searchPaths_iter=searchPaths.begin();searchPaths_iter!=searchPaths.end();searchPaths_iter++){
+		if (((int)(searchPaths_iter->first) & (int)FileSystem::PathID::CUSTOM)) {
+			// skip custom folder for now
+			continue;
+		}
+		if (((int)(searchPaths_iter->first) & (int)FileSystem::PathID::DOWNLOAD)) {
+			// skip download folder for now
+			continue;
+		}
         if ( ((int)(searchPaths_iter->first) & (int)FileSystem::PathID::GAME ) |
              ((int)(searchPaths_iter->first) & (int)FileSystem::PathID::MOD)) {
 
             std::string packFile = searchPaths_iter->second;
 
             //TODO: IMountPath, IDir,IFileEntry
-            if (packFile.find("custom")==std::string::npos) {
-                std::shared_ptr<IMountPath> mountPath = IMountPath::Mount(packFile);
-                mountPath->ListFiles(mountPath->fileList);
-                filesAndTargets.push_back(std::make_pair(packFile,std::move(mountPath)));
-            }
-
+            std::shared_ptr<IMountPath> mountPath = IMountPath::Mount(packFile);
+            mountPath->ListFiles(mountPath->fileList);
+            filesAndTargets.push_back(std::make_pair(packFile,std::move(mountPath)));
         }
       }
 }
@@ -487,21 +491,22 @@ FileSystem::PathID FileSystem::CGameInfo::resolvePathIDs(std::string input) {
 	for (tokenizer::iterator tok_iter = tokens.begin();
 		tok_iter != tokens.end(); ++tok_iter) {
 	    auto token = *tok_iter;
-		if (iequals(token,"game") || iequals(token,"vpk"))
-            out |= FileSystem::PathID::GAME;
-        else if (iequals(token,"game_write"))
-            out |= FileSystem::PathID::GAME_WRITE;
-                else if (iequals(token,"gamebin"))
+		if (iequals(token, "game") || iequals(token, "vpk"))
+			out |= FileSystem::PathID::GAME;
+		else if (iequals(token, "game_write"))
+			out |= FileSystem::PathID::GAME_WRITE;
+		else if (iequals(token, "gamebin"))
 			out |= FileSystem::PathID::GAMEBIN;
-		else if (iequals(token,"mod"))
+		else if (iequals(token, "mod"))
 			out |= FileSystem::PathID::MOD;
-		else if (iequals(token,"mod_write"))
+		else if (iequals(token, "mod_write"))
 			out |= FileSystem::PathID::MOD_WRITE;
-		else if (iequals(token,"platform"))
+		else if (iequals(token, "platform"))
 			out |= FileSystem::PathID::PLATFORM;
-		else if (iequals(token,"download"))
+		else if (iequals(token, "download"))
 			out |= FileSystem::PathID::DOWNLOAD;
-
+		else if (iequals(token, "custom_mod"))
+			out |= FileSystem::PathID::CUSTOM;
 	}
 
 	return out;
