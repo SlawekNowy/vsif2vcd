@@ -28,7 +28,7 @@ add_executable(gameinfo "src/gameinfo.cpp"
     src/filesystem_internal/cloosemountpath.h src/filesystem_internal/cloosemountpath.cpp src/filesystem_internal/cloosefile.h src/filesystem_internal/cloosefile.cpp
     src/filesystem_internal/imountpath_internal.cpp ${PRIVATE_INCLUDES})
 #link to Boost libraries AND your targets and dependencies
-target_link_libraries(gameinfo ${Boost_LIBRARIES} Bitsery::bitsery lzma hllib spdlog::spdlog spdlog::spdlog_header_only)
+target_link_libraries(gameinfo ${Boost_LIBRARIES} Bitsery::bitsery lzma hllib spdlog::spdlog)
 
 
 #I like to move testing binaries into a testBin directory
@@ -59,7 +59,7 @@ COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/testBin/gameinfo)
 #Add compile target
 add_executable(VSIF src/VSIF.cpp ${PRIVATE_INCLUDES})
 #link to Boost libraries AND your targets and dependencies
-target_link_libraries(VSIF ${Boost_LIBRARIES} Bitsery::bitsery lzma spdlog::spdlog spdlog::spdlog_header_only)
+target_link_libraries(VSIF ${Boost_LIBRARIES} Bitsery::bitsery lzma spdlog::spdlog)
 
     set_target_properties(VSIF PROPERTIES EXCLUDE_FROM_ALL TRUE)
 
@@ -88,13 +88,13 @@ add_test(NAME VSIF
      #Add compile target
      add_executable(BVCD "src/BVCD.cpp" src/VSIF.cpp ${PRIVATE_INCLUDES})
      #link to Boost libraries AND your targets and dependencies
-     target_link_libraries(BVCD ${Boost_LIBRARIES} Bitsery::bitsery lzma fmt::fmt fmt::fmt-header-only spdlog::spdlog spdlog::spdlog_header_only)
+     target_link_libraries(BVCD ${Boost_LIBRARIES} Bitsery::bitsery lzma fmt::fmt spdlog::spdlog)
 
 
      #I like to move testing binaries into a testBin directory
      
     set_target_properties(BVCD PROPERTIES EXCLUDE_FROM_ALL TRUE)
-     target_include_directories(BVCD PRIVATE fmt::fmt-header-only)
+     target_include_directories(BVCD PRIVATE fmt::fmt)
 
      target_compile_definitions(BVCD PRIVATE ENABLE_TESTING TESTING_BVCD)
      target_include_directories(BVCD PUBLIC
@@ -116,12 +116,12 @@ add_test(NAME VSIF
      add_executable(map_bsp "src/map_bsp.cpp" "src/response_system.cpp" ${PRIVATE_INCLUDES})
      #link to Boost libraries AND your targets and dependencies
 
-     target_link_libraries(map_bsp ${Boost_LIBRARIES} Bitsery::bitsery fmt::fmt fmt::fmt-header-only valve-bsp-parser spdlog::spdlog spdlog::spdlog_header_only)
+     target_link_libraries(map_bsp ${Boost_LIBRARIES} Bitsery::bitsery fmt::fmt valve-bsp-parser spdlog::spdlog spdlog::spdlog_header_only)
 
 
      #I like to move testing binaries into a testBin directory
 
-     target_include_directories(map_bsp PRIVATE fmt::fmt-header-only)
+     target_include_directories(map_bsp PRIVATE fmt::fmt)
      
     set_target_properties(map_bsp PROPERTIES EXCLUDE_FROM_ALL TRUE)
      target_compile_definitions(map_bsp PRIVATE ENABLE_TESTING TESTING_BVCD)

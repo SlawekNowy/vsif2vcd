@@ -1,5 +1,5 @@
 {
-  "version": 3,
+  "version": 4,
   "cmakeMinimumRequired": {
     "major": 3,
     "minor": 21,
@@ -44,10 +44,17 @@
       "displayName": "MSBuild (vcpkg toolchain) Configure Settings",
       "description": "Configure with VS generators and with vcpkg toolchain",
       "binaryDir": "${sourceDir}/builds/${presetName}",
+      "installDir": "${sourceDir}/dist/${presetName}",
       "generator": "Visual Studio 17 2022",
       "architecture": {
         "strategy": "set",
         "value": "x64"
+      },
+
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Windows"
       },
       "cacheVariables": {
         "X_VCPKG_APPLOCAL_DEPS_INSTALL": "ON",
@@ -55,6 +62,7 @@
 
           "type": "FILEPATH",
           "value": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake"
+
         }
       }
     }
@@ -67,10 +75,18 @@
       "description": "Build with Ninja"
     },
     {
-      "name": "ninja-multi-vcpkg",
+      "name": "ninja-multi-vcpkg-debug",
       "configurePreset": "ninja-multi-vcpkg",
-      "displayName": "Build ninja-multi-vcpkg",
+      "displayName": "Build ninja-multi-vcpkg (Debug)",
       "description": "Build ninja-multi-vcpkg Configurations"
+    },
+    {
+      "name": "ninja-multi-vcpkg-release",
+      "configurePreset": "ninja-multi-vcpkg",
+      "displayName": "Build ninja-multi-vcpkg (Release)",
+      "description": "Build ninja-multi-vcpkg Configurations",
+        "configuration": "Release"
+       
     },
     {
       "name": "ninja-toolchain",
@@ -79,10 +95,17 @@
       "description": "Build ninja with a toolchain"
     },
     {
-      "name": "msbuild-vcpkg",
+      "name": "msbuild-vcpkg-debug",
       "configurePreset": "msbuild-vcpkg",
-      "displayName": "Build MSBuild",
+      "displayName": "Build MSBuild (Debug)",
       "description": "Build with MSBuild (VS)"
+    },
+    {
+      "name": "msbuild-vcpkg-release",
+      "configurePreset": "msbuild-vcpkg",
+      "displayName": "Build MSBuild (Release)",
+      "description": "Build with MSBuild (VS)",
+      "configuration": "Release"
     }
   ],
   "testPresets": [

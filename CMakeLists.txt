@@ -12,10 +12,16 @@ setup_vcpkg_before_project()
 endif()
 #TODO: stop if we use vs2015 or older
 
-project(Vsif2Vcd VERSION 1.0.1.0
+project(Vsif2Vcd VERSION 1.1.0.0
                   DESCRIPTION "Cross-platform decompiler for scenes.image file."
                   LANGUAGES CXX)
 
+
+
+if(WIN32)
+    set(VCPKG_APPLOCAL_DEPS ON)
+    set(X_VCPKG_APPLOCAL_DEPS_INSTALL ON)
+endif()
 
 
 
@@ -36,7 +42,9 @@ find_package(fmt CONFIG REQUIRED)
 
 find_package (Bitsery CONFIG REQUIRED)
 
-find_package(spdlog CONFIG REQUIRED)
+
+set(SPDLOG_FMT_EXTERNAL ON)
+add_subdirectory(thirdparty/spdlog)
 #target_link_libraries(main PRIVATE spdlog::spdlog spdlog::spdlog_header_only)
 
 
@@ -93,14 +101,14 @@ add_subdirectory(thirdparty/wildcard)
 
 add_dependencies(Vsif2vcd valve-bsp-parser lzma hllib)
 set_property(TARGET Vsif2vcd PROPERTY CXX_STANDARD 17)
-target_link_libraries(Vsif2vcd PUBLIC Boost::iostreams Bitsery::bitsery lzma valve-bsp-parser hllib spdlog::spdlog spdlog::spdlog_header_only fcaseopen wildest_card)
+target_link_libraries(Vsif2vcd PUBLIC Boost::iostreams Bitsery::bitsery lzma valve-bsp-parser hllib spdlog::spdlog fcaseopen wildest_card)
 
-target_link_libraries(Vsif2vcd PRIVATE fmt::fmt fmt::fmt-header-only )
+target_link_libraries(Vsif2vcd PRIVATE fmt::fmt)
 
 find_path(BOOST_CRC_INCLUDE_DIRS "boost/crc.hpp")
 target_include_directories(Vsif2vcd PRIVATE ${BOOST_CRC_INCLUDE_DIRS})
 
-target_include_directories(Vsif2vcd PRIVATE fmt::fmt-header-only)
+target_include_directories(Vsif2vcd PRIVATE fmt::fmt)
 target_include_directories(Vsif2vcd PRIVATE fcaseopen)
 target_include_directories(Vsif2vcd PRIVATE wildest_card)
 

@@ -23,7 +23,7 @@
 BOOST_AUTO_TEST_CASE(testVSIF) {
 
 
-	VSIF::ValveScenesImageFile vsif("/home/slawomir/Dane/hl2_tmp/scenes/scenes.image");
+	VSIF::ValveScenesImageFile vsif("D:/SteamLibrary/steamapps/common/Team Fortress 2/tmp/scenes/scenes.image");
 	
 }
 #endif
@@ -45,7 +45,7 @@ void VSIF::ValveScenesImageFile::fillWithVCDS()
 
 
         BVCD::VCD vcdMem = BVCD::getSceneFromBuffer(bvcd);
-        SPDLOG_INFO("Got VCD with CRC {0:#08X} from filebuffer size {1} B.", entry.CRC,entry.Size);
+        SPDLOG_INFO("Got VCD with CRC {0:#010X} from filebuffer size {1} B.", entry.CRC,entry.Size);
         //BVCD::VCD* vcdMemPtr = &vcdMem;
         vcds.push_back(vcdMem);
 

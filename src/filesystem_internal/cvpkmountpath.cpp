@@ -27,15 +27,24 @@ std::vector<std::shared_ptr<IFile>> CVPKMountPath::Find(std::string substr)
     pRoot->Sort(); //by default this searches alphabetically and recursively
 
     std::vector<std::string> matchingPaths;
-    matchingPaths = filter(this->fileList,[substr](std::string path){
-        return wildcard(substr.c_str(),path.c_str());
-});
+    if (substr.find('*') != std::string::npos || substr.find('?') != std::string::npos)
+    {
+        matchingPaths = filter(this->fileList, [substr](std::string path) {
+            return wildcard(substr.c_str(), path.c_str());
+            });
+    }
+    else
+    {
+        matchingPaths.push_back(substr);
+    }
     std::vector<std::shared_ptr<IFile>> results;
 
 
     for( const auto& path:matchingPaths){
 
         HLLib::CDirectoryItem* pSubstrPos = pRoot->GetRelativeItem(path.c_str());
+        if (!pSubstrPos)
+            continue;
         std::shared_ptr<IFile> fileHandle = std::make_shared<CVPKInFile>(CVPKInFile(this->filePath,path,pSubstrPos));
         results.push_back(std::move(fileHandle));
       }

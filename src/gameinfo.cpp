@@ -226,7 +226,7 @@ void FileSystem::CGameInfo::initGamepaths()
 		auto pair = std::make_pair(pPathID,path.second);
 
 		resolveLoadDir(pair);
-		pair.second = std::filesystem::canonical(pair.second).generic_string();
+		pair.second = std::filesystem::weakly_canonical(pair.second).generic_string();
 		searchPaths.insert(searchPaths.end(),pair);
 
 		if(!isSDK2013Game)
@@ -304,7 +304,7 @@ FileSystem::CGameInfo::CGameInfo(std::string modDir)
                       memGI = gameInfoKV{}; //reinit
                       modDir = std::filesystem::path(modDir).parent_path().generic_string()+"/"+modName;
 
-                      modDir = std::filesystem::canonical(modDir).generic_string();
+                      modDir = std::filesystem::weakly_canonical(modDir).generic_string();
                       this->modDir = modDir;
                       txtGI_str.open(modDir+"/gameinfo.txt");
                       memGI = tyti::vdf::read< gameInfoKV>(txtGI_str);

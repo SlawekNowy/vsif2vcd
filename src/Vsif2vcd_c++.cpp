@@ -155,7 +155,6 @@
                     fclose(fileTest);
                     continue;
                   }
-                 fclose(fileTest);
             } else {
                 SPDLOG_INFO("CRC ({0:#08X}) miss!",entry.CRC);
                 std::string targetFile = "/_failed/"+std::to_string(entry.CRC)+".vcd";

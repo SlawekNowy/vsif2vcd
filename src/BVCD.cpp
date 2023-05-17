@@ -129,7 +129,9 @@ BVCD::VCD BVCD::getSceneFromBuffer(std::vector<char> buffer) {
 
 VSIF::ValveScenesImageFile* Helper::vsif;
 BOOST_AUTO_TEST_CASE(testBVCD) {
-    VSIF::ValveScenesImageFile vsif =VSIF::ValveScenesImageFile("/home/slawomir/Dane/SteamLibrary/steamapps/common/Half-Life 2/tmp/scenes/scenes.image");
+    VSIF::ValveScenesImageFile vsif;
+    bool err = false;
+    vsif.Open("D:/SteamLibrary/steamapps/common/Team Fortress 2/tmp/scenes/scenes.image",vsif,err);
     Helper::vsif =&vsif;
 
     for (unsigned int i=0;i<Helper::vsif->header.ScenesCount;i++){

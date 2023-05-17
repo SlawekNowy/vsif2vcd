@@ -261,7 +261,7 @@ void serialize(S& s, VCD_AbsTags& tags);
         std::vector<VCD_Event> events;
         std::vector<VCD_Actor> actors;
         VCD_Ramp ramp;
-        //bool ignorePhonemes;
+        bool ignorePhonemes;
 
 
         std::string dumpText();
@@ -602,11 +602,10 @@ void BVCD::serialize(S& s, BVCD::VCD& vcd) {
     s.object(vcd.ramp);
 
 
-    /*
+    
     uint8_t tmpIgnorePhonemes;
     s.value1b(tmpIgnorePhonemes);
     vcd.ignorePhonemes = (tmpIgnorePhonemes)?true:false;
-    */
 }
 
 
