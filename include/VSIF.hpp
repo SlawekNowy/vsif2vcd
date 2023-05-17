@@ -91,6 +91,9 @@ namespace VSIF {
 	};
 	inline std::string CStringPool::getStringByID(unsigned short ID)
 	{
+        if (ID >= pool.size()) {
+            return std::to_string(ID);
+        }
         return pool.at(ID); //THIS MIGHT CRASH!
 	}
 

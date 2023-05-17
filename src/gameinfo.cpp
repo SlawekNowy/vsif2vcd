@@ -136,7 +136,7 @@ void FileSystem::CGameInfo::getSteamAppID()
           appID = boost::lexical_cast<int>(std::find_if(fsNode->attribs.begin(), fsNode->attribs.end(), CompareFirst<std::string, std::string>("SteamAppId"))->second);
   }
 }
-void FileSystem::CGameInfo::loadPAKs(std::string atPath)
+void FileSystem::CGameInfo::loadPAKs(PathID pathId, std::string atPath)
 {
     for (int i=1;i<=99;i++)
       {
@@ -185,37 +185,38 @@ void FileSystem::CGameInfo::initGamepaths()
 	// - game and its paks (up to 99)
 	// Note: paks have trailing zero, dlc's don't
 	//Note that this system mounts loose files first, inverse of SDK 2013 philosophy.
-	if(!isSDK2013Game)
-	  {
-	    namespace fileSys=std::filesystem;
-	    using fileSys::path;
-	    //first "update" directory
-	    if(fileSys::exists(path(baseDir+"/update"))&&fileSys::is_directory(path(baseDir+"/update")))
-	      {
-		searchPaths.emplace_back(PathID::GAME,"update");
+	if (!isSDK2013Game)
+	{
+		namespace fileSys = std::filesystem;
+		using fileSys::path;
+		//first "update" directory
+		if (fileSys::exists(path(baseDir + "/update")) && fileSys::is_directory(path(baseDir + "/update")))
+		{
+			searchPaths.emplace_back(PathID::GAME, "update");
 
-		loadPAKs("update");
-	      }
-	    //then DLCs
-	    //part 1: discovery - how many dlcs to mount?
-	      int dlcCount =0;
-	      for (int i=1;i<=99;i++) {
-		  std::string dlcDir=fmt::format("{0}_dlc{1}",fileSys::path(modDir).filename().generic_string(),i);
-		  if(fileSys::exists(baseDir+"/"+dlcDir)
-		     &&fileSys::is_directory(baseDir+"/"+dlcDir))
-		    {
-		      dlcCount++;
-		    } else
-		      break; //we're done here
+			loadPAKs(PathID::GAME, "update");
 		}
-	    //part 2: preparation. Mount them in reverse order
-	      while (dlcCount>0){
+		//then DLCs
+		//part 1: discovery - how many dlcs to mount?
+		int dlcCount = 0;
+		for (int i = 1;i <= 99;i++) {
+			std::string dlcDir = fmt::format("{0}_dlc{1}", fileSys::path(modDir).filename().generic_string(), i);
+			if (fileSys::exists(baseDir + "/" + dlcDir)
+				&& fileSys::is_directory(baseDir + "/" + dlcDir))
+			{
+				dlcCount++;
+			}
+			else
+				break; //we're done here
+		}
+		//part 2: preparation. Mount them in reverse order
+		while (dlcCount > 0) {
 
-		  std::string baseGameDir=fileSys::path(modDir).filename().generic_string();
-		  searchPaths.emplace_back(PathID::GAME,fmt::format("{0}_dlc{1}",baseGameDir,dlcCount));
+			std::string baseGameDir = fileSys::path(modDir).filename().generic_string();
+			searchPaths.emplace_back(PathID::GAME, fmt::format("{0}_dlc{1}", baseGameDir, dlcCount));
 
-		  loadPAKs(fmt::format("{0}_dlc{1}",baseGameDir,dlcCount));
-		  dlcCount--;
+			loadPAKs(PathID::GAME, fmt::format("{0}_dlc{1}", baseGameDir, dlcCount));
+			dlcCount--;
 		}
 	  }
 
@@ -227,13 +228,12 @@ void FileSystem::CGameInfo::initGamepaths()
 
 		resolveLoadDir(pair);
 		pair.second = std::filesystem::weakly_canonical(pair.second).generic_string();
-		searchPaths.insert(searchPaths.end(),pair);
 
-		if(!isSDK2013Game)
-		  {
-
-		    loadPAKs(pair.second);
-		  }
+		searchPaths.insert(searchPaths.end(), pair);
+		if (!isSDK2013Game)
+		{
+			loadPAKs(pair.first, pair.second);
+		}
 	}
 }
 
