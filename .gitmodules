@@ -13,3 +13,7 @@
 [submodule "thirdparty/wildcard"]
 	path = thirdparty/wildcard
 	url = https://github.com/SlawekNowy/wildest-card
+[submodule "thirdparty/spdlog"]
+	path = thirdparty/spdlog
+	url = https://github.com/SlawekNowy/spdlog
+	branch = v1.x
