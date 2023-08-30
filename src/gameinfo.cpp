@@ -410,12 +410,13 @@ void FileSystem::CGameInfo::initializeFileSystem()
             //TODO: IMountPath, IDir,IFileEntry
             if (packFile.find("custom")==std::string::npos) {
                 std::shared_ptr<IMountPath> mountPath = IMountPath::Mount(packFile);
-                mountPath->ListFiles(mountPath->fileList);
-                filesAndTargets.push_back(std::make_pair(packFile,std::move(mountPath)));
+                if ( mountPath != nullptr ) {
+                    mountPath->ListFiles(mountPath->fileList);
+                    filesAndTargets.push_back(std::make_pair(packFile,std::move(mountPath)));
+                }
             }
-
         }
-      }
+    }
 }
 
 
