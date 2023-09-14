@@ -158,8 +158,7 @@
                     SPDLOG_INFO("Path {0} already found! Skipping...",targetFile);
                     fclose(fileTest);
                     continue;
-                  }
-                 fclose(fileTest);
+                }
             } else {
                 SPDLOG_INFO("CRC ({0:#08X}) miss!",entry.CRC);
                 std::string targetFile = "/_failed/"+std::to_string(entry.CRC)+".vcd";
@@ -175,6 +174,9 @@
             outputFile.flush();
             outputFile.close();
         }
+
+        SPDLOG_INFO("Done decompiling!");
+
         Helper::vsif = nullptr;
         return 0;
 
