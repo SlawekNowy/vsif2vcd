@@ -18,6 +18,7 @@ project(Vsif2Vcd VERSION 1.1.0.0
 
 
 
+
 if(WIN32)
     set(VCPKG_APPLOCAL_DEPS ON)
     set(X_VCPKG_APPLOCAL_DEPS_INSTALL ON)
@@ -92,7 +93,6 @@ endif()
 add_executable (Vsif2vcd ${SOURCES} ${PRIVATE_INCLUDES})
 target_precompile_headers(Vsif2vcd PUBLIC "include/pch.hpp")
 
-
 add_subdirectory(thirdparty/hllib/HLLib)
 add_subdirectory(thirdparty/valve-bsp-parser)
 add_subdirectory(thirdparty/fcaseopen)
@@ -100,7 +100,7 @@ add_subdirectory(thirdparty/wildcard)
 
 
 add_dependencies(Vsif2vcd valve-bsp-parser lzma hllib)
-set_property(TARGET Vsif2vcd PROPERTY CXX_STANDARD 17)
+set_property(TARGET Vsif2vcd PROPERTY CXX_STANDARD 20)
 target_link_libraries(Vsif2vcd PUBLIC Boost::iostreams Bitsery::bitsery lzma valve-bsp-parser hllib spdlog::spdlog fcaseopen wildest_card)
 
 target_link_libraries(Vsif2vcd PRIVATE fmt::fmt)

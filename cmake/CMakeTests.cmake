@@ -45,7 +45,7 @@ target_include_directories(gameinfo PUBLIC
    ${Bitsery_INCLUDE_DIR})
 
 
-set_property(TARGET gameinfo PROPERTY CXX_STANDARD 17)
+set_property(TARGET gameinfo PROPERTY CXX_STANDARD 20)
 set_target_properties(gameinfo PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY  ${CMAKE_CURRENT_SOURCE_DIR}/testBin)
     set_target_properties(gameinfo PROPERTIES EXCLUDE_FROM_ALL TRUE)
@@ -75,7 +75,9 @@ target_include_directories(VSIF PUBLIC
    "${PROJECT_BINARY_DIR}/include/"
    ${Bitsery_INCLUDE_DIR})
 
-set_property(TARGET VSIF PROPERTY CXX_STANDARD 17)
+   
+set_property(TARGET VSIF PROPERTY CXX_STANDARD 20)
+
 set_target_properties(VSIF PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY  ${CMAKE_CURRENT_SOURCE_DIR}/testBin)
 #Finally add it to test execution -
@@ -107,7 +109,7 @@ add_test(NAME VSIF
         ${Bitsery_INCLUDE_DIR})
 
 
-     set_property(TARGET BVCD PROPERTY CXX_STANDARD 17)
+     set_property(TARGET BVCD PROPERTY CXX_STANDARD 20)
      set_target_properties(BVCD PROPERTIES
          RUNTIME_OUTPUT_DIRECTORY  ${CMAKE_CURRENT_SOURCE_DIR}/testBin)
      #Finally add it to test execution -
