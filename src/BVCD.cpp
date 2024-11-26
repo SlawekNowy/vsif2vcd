@@ -39,7 +39,7 @@ public:
   template <typename... Args>
   void print(fmt::string_view format_str, const Args&... args) {
     tabulation=indent?std::string(indent,'\t'):"";
-    std::string tmp=fmt::format(format_str, args...);
+    std::string tmp=fmt::vformat(format_str, fmt::make_format_args(args...));
     ReplaceAll(tmp,"\n","\n"+tabulation);
     fmt::print(tmp);
   }
@@ -47,7 +47,7 @@ public:
   template <typename... Args>
   std::string format(fmt::string_view format_str, const Args&... args) {
       tabulation=indent?std::string(indent,'\t'):"";
-      std::string tmp=fmt::format(format_str, args...);
+      std::string tmp=fmt::vformat(format_str, fmt::make_format_args(args...));
       ReplaceAll(tmp,"\n","\n"+tabulation);
       return tmp;
       //fmt::print(tmp);
