@@ -72,7 +72,7 @@ BVCD::VCD BVCD::getSceneFromBuffer(std::vector<char> buffer) {
         //using OutputAdapter = bitsery::OutputBufferAdapter<Buffer>;
         using InputAdapter = bitsery::InputBufferAdapter<Buffer>;
 
-        memccpy(magic,"LZMA",sizeof(char),4);
+        memcpy(magic,"LZMA",4* sizeof(char));
         if (readMagic == Helper::FourCC(magic)) {
             BVCD::CompressedVCD vcdToDecompress;
             bitsery::quickDeserialization<InputAdapter, BVCD::CompressedVCD>(InputAdapter{ buffer.begin(),buffer.end() }, vcdToDecompress);
@@ -112,7 +112,7 @@ BVCD::VCD BVCD::getSceneFromBuffer(std::vector<char> buffer) {
 
             }
 
-        memccpy(magic,"bvcd",sizeof(char),4);
+        memcpy(magic,"bvcd",sizeof(char)*4);
         assert(BVCD::FourCC(magic) == readMagic);
         BVCD::VCD vcd;
         bitsery::quickDeserialization<InputAdapter, BVCD::VCD>(InputAdapter{ buffer.begin(),buffer.end() }, vcd);
