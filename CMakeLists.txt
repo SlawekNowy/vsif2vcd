@@ -136,8 +136,13 @@ target_include_directories(Vsif2vcd PUBLIC
     "${PROJECT_BINARY_DIR}/include/"
     ${Bitsery_INCLUDE_DIR})
 
-install(TARGETS Vsif2vcd RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 
+  add_custom_command(TARGET Vsif2vcd POST_BUILD
+  COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_RUNTIME_DLLS:Vsif2vcd> $<TARGET_FILE_DIR:Vsif2vcd>
+  COMMAND_EXPAND_LISTS
+  )
+install(TARGETS Vsif2vcd RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
+install(FILES $<TARGET_RUNTIME_DLLS:Vsif2vcd> TYPE BIN)
 
 
 include(cmake/CMakeTests.cmake)

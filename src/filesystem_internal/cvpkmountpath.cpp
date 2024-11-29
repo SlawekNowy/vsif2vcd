@@ -47,32 +47,7 @@ std::vector<std::shared_ptr<IFile>> CVPKMountPath::Find(std::string substr)
 		results.push_back(std::move(fileHandle));
 	}
 
-	/*
-		//TODO: Refactor this to support wild cards.
-		HLLib::CDirectoryItem* pSubstrPos = pRoot->GetRelativeItem(substr.c_str());
-
-		std::vector<std::shared_ptr<IFile>> files;
-		if (pSubstrPos!=nullptr) {
-				char* pathStr = new char[65536];
-				std::memset(pathStr,0,65536);
-				pSubstrPos->GetPath(pathStr,65536);
-				std::shared_ptr<IFile> singleFileOrFolder = std::make_shared<CVPKInFile>(CVPKInFile(filePath,pathStr,pSubstrPos));
-				delete[] pathStr;
-				files.push_back(singleFileOrFolder); // this will MOVE the pointer to vector
-		}
-		*/
-
-		/*auto neededFile = pRoot->FindFirst(substr.c_str());
-
-		std::vector<IFile*> fileVector;
-
-		while (neededFile!=nullptr) {
-			//neededFile->GetPath()
-			//IFile* file = new CVPKInFile();
-
-			neededFile = pRoot->FindNext(neededFile,substr.c_str());
-
-		} */
+	
 
 	return results;
 }

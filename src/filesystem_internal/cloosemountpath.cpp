@@ -19,8 +19,13 @@ std::vector<std::shared_ptr<IFile>> CLooseMountPath::Find(std::string substr)
     const path rootPath = dirHandle.path();
     std::vector<std::string> matchingPaths;
     //lazy init
-    if(this->fileList.empty())
+    if (this->fileList.empty()) {
+
         this->ListFiles(fileList);
+        std::for_each(fileList.begin(), fileList.end(), [](std::string& element) {
+            Helper::ReplaceAll(element, "\\", "/");
+            });
+    }
     matchingPaths = filter(this->fileList,[substr](std::string path){
         return wildcard(substr.c_str(),path.c_str());
 });

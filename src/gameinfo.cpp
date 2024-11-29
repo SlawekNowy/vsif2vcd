@@ -412,6 +412,10 @@ void FileSystem::CGameInfo::initializeFileSystem()
                 std::shared_ptr<IMountPath> mountPath = IMountPath::Mount(packFile);
                 if ( mountPath != nullptr ) {
                     mountPath->ListFiles(mountPath->fileList);
+
+                    std::for_each(mountPath->fileList.begin(), mountPath->fileList.end(), [](std::string& element) {
+                        Helper::ReplaceAll(element, "\\", "/");
+                        });
                     filesAndTargets.push_back(std::make_pair(packFile,std::move(mountPath)));
                 }
             }
