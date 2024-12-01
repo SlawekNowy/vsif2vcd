@@ -96,6 +96,6 @@ fileStream.seekg(0, std::ios_base::end);
 
     fileStream.seekg(0, std::ios_base::beg);
     bitsery::quickDeserialization<InputAdapter, ValveScenesImageFile>(InputAdapter{ fileBuf.begin(),fileBuf.end() }, out);
-    //SPDLOG_INFO("File header loaded. Found {0} scenes.", out.entries.size());
+    SPDLOG_INFO("File header loaded. Found {0} scenes.", out.entries.size());
     return true;
 }

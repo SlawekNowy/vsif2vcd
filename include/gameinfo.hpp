@@ -72,7 +72,8 @@ namespace FileSystem {
 
 	public:
 		int appID=0;
-		CGameInfo() {};
+		CGameInfo(): isSDK2013Game(false),hasSingleplayer(false)
+		{};
         CGameInfo(std::string modDir); /* */
 
         bool prepareTmpDirectory(std::string&);

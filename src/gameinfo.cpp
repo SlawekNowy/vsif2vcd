@@ -17,8 +17,9 @@
 #include <filesystem>
 #include <boost/lexical_cast.hpp>
 #include <vector>
-
+#include <set>
 #include <iterator>
+#include <concepts>
 
 
 #include <spdlog/spdlog.h>
@@ -95,6 +96,27 @@ struct CompareFirst
 	}
 private:
 	K val_;
+};
+
+template<class P>
+concept Pair = requires(P p) {
+    typename P::first_type;
+    typename P::second_type;
+    p.first;
+    p.second;
+        requires std::same_as<decltype(p.first), typename P::first_type>;
+        requires std::same_as<decltype(p.second), typename P::second_type>;
+};
+
+template <Pair T>
+struct NotDuplicate {
+
+    using KeyType = typename T::first_type;
+    bool operator()(const T& element) {
+        return s_.insert(element.first).second; // true if s_.insert(element);
+    }
+private:
+    std::set<KeyType> s_;
 };
 
 namespace FileSystem {
@@ -411,16 +433,23 @@ void FileSystem::CGameInfo::initializeFileSystem()
             if (packFile.find("custom")==std::string::npos) {
                 std::shared_ptr<IMountPath> mountPath = IMountPath::Mount(packFile);
                 if ( mountPath != nullptr ) {
-                    mountPath->ListFiles(mountPath->fileList);
+                    /*mountPath->ListFiles(mountPath->fileList);
 
                     std::for_each(mountPath->fileList.begin(), mountPath->fileList.end(), [](std::string& element) {
                         Helper::ReplaceAll(element, "\\", "/");
-                        });
+                        }); */
                     filesAndTargets.push_back(std::make_pair(packFile,std::move(mountPath)));
                 }
             }
         }
     }
+    NotDuplicate<std::pair<std::string, std::shared_ptr<IMountPath>>> noDupesPred;
+    std::vector vectorCopy = filesAndTargets;
+    filesAndTargets.clear();
+    std::copy_if(vectorCopy.begin(), vectorCopy.end(),
+        std::back_inserter(filesAndTargets),
+        std::ref(noDupesPred));
+
 }
 
 
