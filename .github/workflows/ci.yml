@@ -22,10 +22,10 @@ jobs:
         os: [ubuntu-latest, macos-latest, windows-latest]
 
     steps:
-    - name: checkout all the submodules
-      uses: actions/checkout@v2
-      with:
-        submodules: recursive
+      - name: checkout all the submodules
+        uses: actions/checkout@v2
+        with:
+          submodules: recursive
       #-uses: actions/cache@v3   <===== YOU DO NOT NEED THIS!
 
       # Install latest CMake and Ninja.
