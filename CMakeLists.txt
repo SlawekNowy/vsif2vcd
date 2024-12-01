@@ -12,7 +12,7 @@ setup_vcpkg_before_project()
 endif()
 #TODO: stop if we use vs2015 or older
 
-project(Vsif2Vcd VERSION 1.1.0.0
+project(Vsif2Vcd VERSION 1.1.1.0
                   DESCRIPTION "Cross-platform decompiler for scenes.image file."
                   LANGUAGES CXX)
 
@@ -141,8 +141,9 @@ target_include_directories(Vsif2vcd PUBLIC
   COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_RUNTIME_DLLS:Vsif2vcd> $<TARGET_FILE_DIR:Vsif2vcd>
   COMMAND_EXPAND_LISTS
   )
-install(TARGETS Vsif2vcd RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
-install(FILES $<TARGET_RUNTIME_DLLS:Vsif2vcd> TYPE BIN)
+install(TARGETS Vsif2vcd RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX} COMPONENT Vsif2VCD)
+install(TARGETS hllib RUNTIME COMPONENT Vsif2vcd DESTINATION ${CMAKE_INSTALL_PREFIX})
+install(FILES $<TARGET_RUNTIME_DLLS:Vsif2vcd> TYPE BIN COMPONENT Vsif2VCD)
 
 
 include(cmake/CMakeTests.cmake)
