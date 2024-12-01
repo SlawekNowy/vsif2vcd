@@ -7,43 +7,54 @@
   },
   "configurePresets": [
     {
-      "name": "multi",
-      "generator": "Ninja Multi-Config"
+      "name": "ninja-multi-vcpkg",
+      "displayName": "Ninja Multi-Config (vcpkg toolchain) Configure Settings",
+      "description": "Configure with vcpkg toolchain",
+      "binaryDir": "${sourceDir}/builds/${presetName}",
+      "generator": "Ninja Multi-Config",
+      "cacheVariables": {
+        "CMAKE_TOOLCHAIN_FILE": {
+          "type": "FILEPATH",
+          "value": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake"
+        }
+      }
+    },
+	{
+      "name": "ninja-multi",
+      "displayName": "Ninja Multi-Config Configure Settings",
+      "description": "Configure",
+      "binaryDir": "${sourceDir}/builds/${presetName}",
+      "generator": "Ninja Multi-Config",
+    },
+    {
+      "name": "msbuild-vcpkg",
+      "displayName": "MSBuild (vcpkg toolchain) Configure Settings",
+      "description": "Configure with VS generators and with vcpkg toolchain",
+      "binaryDir": "${sourceDir}/builds/${presetName}",
+      "generator": "Visual Studio 17 2022",
+      "architecture": {
+        "strategy": "set",
+        "value": "x64"
+      },
+      "cacheVariables": {
+        "CMAKE_TOOLCHAIN_FILE": {
+          "type": "FILEPATH",
+          "value": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake"
+        }
+      }
+    },
+    {
+      "name": "msbuild",
+      "displayName": "MSBuild Configure Settings",
+      "description": "Configure with VS generators",
+      "binaryDir": "${sourceDir}/builds/${presetName}",
+      "generator": "Visual Studio 17 2022",
+      "architecture": {
+        "strategy": "set",
+        "value": "x64"
+      }
+      
     }
   ],
-  "buildPresets": [
-    {
-      "name": "release",
-      "configurePreset": "multi",
-      "configuration": "Release"
-    },
-    {
-      "name": "relwithDebInfo",
-      "configurePreset": "multi",
-      "configuration": "RelWithDebInfo"
-    },
-    {
-      "name": "debug",
-      "configurePreset": "multi",
-      "configuration": "Debug"
-    }
-  ],
-  "testPresets": [
-    {
-      "name": "release",
-      "configurePreset": "multi",
-      "configuration": "Release"
-    },
-    {
-      "name": "relwithDebInfo",
-      "configurePreset": "multi",
-      "configuration": "RelWithDebInfo"
-    },
-    {
-      "name": "debug",
-      "configurePreset": "multi",
-      "configuration": "Debug"
-    }
-  ]
 
 }
