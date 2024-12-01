@@ -89,7 +89,7 @@ fileStream.seekg(0, std::ios_base::end);
 
     if(out.header.Version!=2){
         error=true;
-        SPDLOG_ERROR("This utitility supports version 2 of VSIF file, got version {0}",out.header.Version);
+        SPDLOG_ERROR("This utility supports version 2 of VSIF file, got version {0}",out.header.Version);
         return false;
       }
 
