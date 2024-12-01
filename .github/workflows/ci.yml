@@ -34,6 +34,10 @@ jobs:
       # Since vcpkg.json is being used later on to install the packages
       # when `run-cmake` runs, no packages are installed at this time
       # (and vcpkg does not run).
+      - name: checkout all the submodules
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
       - name: Setup anew (or from cache) vcpkg (and does not build any package)
         uses: lukka/run-vcpkg@v11 # Always specify the specific _version_ of the
                                   # action you need, `v11` in this case to stay up
