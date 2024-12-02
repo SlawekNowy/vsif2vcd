@@ -4,10 +4,10 @@
 # SPDX short identifier: MIT
 name: release-beta
 on: 
-  workflow-dispatch:
   push:
     tags:
     - '*'
+  workflow_dispatch:
 
 
 jobs:
