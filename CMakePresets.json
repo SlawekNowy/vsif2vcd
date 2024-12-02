@@ -45,7 +45,7 @@
       "displayName": "VCPKG RelWithDebInfo",
       "configurePreset": "ninja-multi-vcpkg",
       "configuration": "RelWithDebInfo",
-    }
+    },
     {
       "name": "Debug",
       "displayName": "Debug",
