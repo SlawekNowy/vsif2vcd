@@ -143,8 +143,10 @@ target_include_directories(Vsif2vcd PUBLIC
   )
 install(TARGETS Vsif2vcd RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX} COMPONENT Vsif2VCD)
 install(TARGETS hllib RUNTIME COMPONENT Vsif2vcd DESTINATION ${CMAKE_INSTALL_PREFIX})
+#Outside of Windows TARGET_RUNTIME_DLL expands to empty strings which will screw up the install script.
+if(WIN32)
 install(FILES $<TARGET_RUNTIME_DLLS:Vsif2vcd> TYPE BIN COMPONENT Vsif2VCD)
-
+endif()
 
 include(cmake/CMakeTests.cmake)
 include(cmake/CPackConfig.cmake)

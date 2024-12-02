@@ -95,18 +95,18 @@ jobs:
           configurePresetAdditionalArgs: "[]"
 
           # This is the name of the CMakePresets.json's configuration to build the project.
-          buildPreset: 'VCPKG-RelWithDebInfo'
+          #buildPreset: 'VCPKG-Repease'
           # Additional arguments can be appended when building, for example to specify the
           # configuration to build.
           # This is useful to reduce the number of CMake's Presets you need in CMakePresets.json.
           buildPresetAdditionalArgs: "['--config Release']"
 
           # This is the name of the CMakePresets.json's configuration to test the project with.
-          testPreset: 'VCPKG-RelWithDebInfo'
+          #testPreset: 'VCPKG-RelWithDebInfo'
           # Additional arguments can be appended when testing, for example to specify the config
           # to test.
           # This is useful to reduce the number of CMake's Presets you need in CMakePresets.json.
-          testPresetAdditionalArgs: "['--config Release']"
+          #testPresetAdditionalArgs: "['--config Release']"
 
     #env:
     #  [OPTIONAL] Define the vcpkg's triplet you want to enforce, otherwise the default one
