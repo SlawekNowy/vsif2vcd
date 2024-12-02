@@ -107,7 +107,26 @@ jobs:
           # to test.
           # This is useful to reduce the number of CMake's Presets you need in CMakePresets.json.
           #testPresetAdditionalArgs: "['--config Release']"
-
+      - name: Zip the files
+        shell: pwsh
+        run: |
+            cd builds/ninja-multi-vcpkg/Release
+            $compress = @{
+                Path = "*"
+                DestinationPath = ${{ github.workspace }}/Vsif2VCD-${{ matrix.os }}.zip
+            }
+            Compress-Archive @compress
+        
+     # - name: Release
+     #   uses: softprops/action-gh-release@v1
+     #   with:
+      #    files: ${{ github.workspace }}/Vsif2VCD-${{ matrix.os }}.zip
+      
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: binaries
+          path: ${{ github.workspace }}/Vsif2VCD-${{ matrix.os }}.zip
     #env:
     #  [OPTIONAL] Define the vcpkg's triplet you want to enforce, otherwise the default one
     #  for the hosting system will be automatically choosen (x64 is the default on all
