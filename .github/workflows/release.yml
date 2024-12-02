@@ -4,6 +4,7 @@
 # SPDX short identifier: MIT
 name: release-beta
 on: 
+  workflow-dispatch:
   push:
     tags:
     - '*'
@@ -92,20 +93,20 @@ jobs:
           configurePresetAdditionalArgs: "[]"
 
           # This is the name of the CMakePresets.json's configuration to build the project.
-          buildPreset: 'VCPKG-Release'
+          buildPreset: 'VCPKG-RelWithDebInfo'
           # Additional arguments can be appended when building, for example to specify the
           # configuration to build.
           # This is useful to reduce the number of CMake's Presets you need in CMakePresets.json.
-          buildPresetAdditionalArgs: "['--config Release']"
+          buildPresetAdditionalArgs: "['--config RelWithDebInfo']"
         #TODO: Publish
         
       - name: Zip the files
         shell: pwsh
         run: |
-            cd builds/ninja-multi-vcpkg/Release
+            cd builds/ninja-multi-vcpkg/RelWithDebInfo
             $compress = @{
                 Path = "*"
-                DestinationPath = ${{ github.workspace }}/Vsif2VCD-${{ matrix.os }}.zip
+                DestinationPath = "${{ github.workspace }}/Vsif2VCD-${{ matrix.os }}.zip"
             }
             Compress-Archive @compress
         
