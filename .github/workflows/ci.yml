@@ -125,7 +125,7 @@ jobs:
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: binaries
+          name: binaries-${{ matrix.os }}
           path: ${{ github.workspace }}/Vsif2VCD-${{ matrix.os }}.zip
     #env:
     #  [OPTIONAL] Define the vcpkg's triplet you want to enforce, otherwise the default one
