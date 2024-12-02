@@ -137,14 +137,15 @@ target_include_directories(Vsif2vcd PUBLIC
     ${Bitsery_INCLUDE_DIR})
 
 
-  add_custom_command(TARGET Vsif2vcd POST_BUILD
-  COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_RUNTIME_DLLS:Vsif2vcd> $<TARGET_FILE_DIR:Vsif2vcd>
-  COMMAND_EXPAND_LISTS
-  )
+  
 install(TARGETS Vsif2vcd RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX} COMPONENT Vsif2VCD)
 install(TARGETS hllib RUNTIME COMPONENT Vsif2vcd DESTINATION ${CMAKE_INSTALL_PREFIX})
 #Outside of Windows TARGET_RUNTIME_DLL expands to empty strings which will screw up the install script.
 if(WIN32)
+add_custom_command(TARGET Vsif2vcd POST_BUILD
+  COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_RUNTIME_DLLS:Vsif2vcd> $<TARGET_FILE_DIR:Vsif2vcd>
+  COMMAND_EXPAND_LISTS
+  )
 install(FILES $<TARGET_RUNTIME_DLLS:Vsif2vcd> TYPE BIN COMPONENT Vsif2VCD)
 endif()
 
