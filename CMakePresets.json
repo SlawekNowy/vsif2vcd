@@ -29,6 +29,24 @@
 	],
 	"buildPresets": [
 		{
+			"name": "VCPKG-Debug",
+			"displayName": "VCPKG Debug",
+			"configurePreset": "ninja-multi-vcpkg",
+			"configuration": "Debug"
+		},
+		{
+			"name": "VCPKG-Release",
+			"displayName": "VCPKG Release",
+			"configurePreset": "ninja-multi-vcpkg",
+			"configuration": "Release"
+		},
+		{
+			"name": "VCPKG-RelWithDebInfo",
+			"displayName": "VCPKG RelWithDebInfo",
+			"configurePreset": "ninja-multi-vcpkg",
+			"configuration": "RelWithDebInfo"
+		},
+		{
 			"name": "Debug",
 			"displayName": "Debug",
 			"configurePreset": "ninja-multi",

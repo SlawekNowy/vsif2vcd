@@ -95,7 +95,7 @@ jobs:
           configurePresetAdditionalArgs: "[]"
 
           # This is the name of the CMakePresets.json's configuration to build the project.
-          #buildPreset: 'VCPKG-Repease'
+          buildPreset: 'VCPKG-Release'
           # Additional arguments can be appended when building, for example to specify the
           # configuration to build.
           # This is useful to reduce the number of CMake's Presets you need in CMakePresets.json.
