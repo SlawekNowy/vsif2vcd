@@ -113,7 +113,7 @@ jobs:
             cd builds/ninja-multi-vcpkg/Release
             $compress = @{
                 Path = "*"
-                DestinationPath = ${{ github.workspace }}/Vsif2VCD-${{ matrix.os }}.zip
+                DestinationPath = "${{ github.workspace }}/Vsif2VCD-${{ matrix.os }}.zip"
             }
             Compress-Archive @compress
         
