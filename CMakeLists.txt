@@ -3,11 +3,12 @@
 include_guard(GLOBAL)
 
 
-set(CMAKE_PDB_OUTPUT_DIRECTORY "pdbs")
+set(CMAKE_PDB_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/pdbs")
 #set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/externals/sanitizers-cmake/cmake" ${CMAKE_MODULE_PATH})
 #find_package(Sanitizers)
 if(NOT "$ENV{CI}")
 include(cmake/locate_vcpkg.cmake)
+
 #include(cmake/asan.cmake)
 setup_vcpkg_before_project()
 endif()
@@ -70,6 +71,7 @@ set(PRIVATE_INCLUDES
     "include/response_system.h"
     "include/split_serialization.h"
     "include/helper.hpp"
+    "include/VSIFStringPool.hpp"
 
     include/filesystem/ifile.h
     include/filesystem/imountpath.h

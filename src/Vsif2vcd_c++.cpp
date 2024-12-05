@@ -53,7 +53,8 @@
 
     CGameInfo Program::gi;
     std::map<std::string,std::vector<BSPParser::Map_Scene>> BSPParser::Scenes;
-    VSIF::ValveScenesImageFile* Helper::vsif;
+    //VSIF::ValveScenesImageFile* Helper::vsif;
+    VSIF::CStringPool* Helper::VsifStringPool;
 
 
 
@@ -107,12 +108,13 @@
               }
           return 0;
         }
-        Helper::vsif = &vsif;
+        //Helper::vsif = &vsif;
+        Helper::VsifStringPool = &vsif.stringPool;
         //} catch (std::filesystem::filesystem_error &fserror) {
 
         //}
 
-        Helper::vsif->fillWithVCDS();
+        vsif.fillWithVCDS();
 
         SPDLOG_INFO("Now extracting scene names from maps.");
     //BSPParser and RRParser should be easy to run at the same time
@@ -137,9 +139,9 @@
 
         SPDLOG_INFO("Now decompiling...");
 
-        for (int i=0;i<Helper::vsif->vcds.size();i++) {
-            VSIF::VSIF_Entry entry = Helper::vsif->entries[i];
-            std::string strDump = Helper::vsif->vcds[i].dumpText();
+        for (int i=0;i< vsif.vcds.size();i++) {
+            VSIF::VSIF_Entry entry = vsif.entries[i];
+            std::string strDump = vsif.vcds[i].dumpText();
             // now find the path this crc is refering to.
             auto strEntryIter = std::find_if(sceneSoup.begin(),sceneSoup.end(),[&entry](const BSPParser::Map_Scene& element){
                 return entry.CRC==element.CRC;
@@ -177,7 +179,9 @@
 
         SPDLOG_INFO("Done decompiling!");
 
-        Helper::vsif = nullptr;
+        Helper::VsifStringPool = nullptr;
+       // Helper::vsif = nullptr;
+
         return 0;
 
 

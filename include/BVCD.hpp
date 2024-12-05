@@ -5,16 +5,11 @@
 #include <typeinfo>
 #include "enum_bitmask.hpp"
 
-#include "VSIF.hpp"
+#include "VSIFStringPool.hpp"
 #include <LzmaLib.h>
 
 
 #include <sstream>
-
-extern  VSIF::ValveScenesImageFile* Helper::vsif;
-
-
-
 
 
 namespace BVCD {
@@ -176,9 +171,9 @@ template <typename S>
 void serialize(S& s, VCD_RelTag& tag) {
     uint16_t shortTmp;
     s.value2b(shortTmp);
-    tag.name=Helper::vsif->stringPool.getStringByID(shortTmp);
+    tag.name= Helper::VsifStringPool->getStringByID(shortTmp);
     s.value2b(shortTmp);
-    tag.wavName=Helper::vsif->stringPool.getStringByID(shortTmp);
+    tag.wavName= Helper::VsifStringPool->getStringByID(shortTmp);
 
 }
 struct VCD_FlexTimingTags {
@@ -345,7 +340,7 @@ void BVCD::serialize(S& s, BVCD::VCD_CC& subtitles) {
     subtitles.type=(BVCD::VCD_CC_Type)byteTmp;
     uint16_t shortTmp;
     s.value2b(shortTmp);
-    subtitles.cc_token=Helper::vsif->stringPool.getStringByID(shortTmp);
+    subtitles.cc_token= Helper::VsifStringPool->getStringByID(shortTmp);
     s.value1b(byteTmp);
     subtitles.flags=(BVCD::VCD_CC_Flags)byteTmp;
 }
@@ -377,7 +372,7 @@ template <typename S>
 void BVCD::serialize(S& s, BVCD::Flex_Tracks& track) {
     uint16_t shortTmp;
     s.value2b(shortTmp);
-    track.name=Helper::vsif->stringPool.getStringByID(shortTmp);
+    track.name= Helper::VsifStringPool->getStringByID(shortTmp);
     uint8_t byteTmp;
     s.value1b(byteTmp);
     track.flags=(BVCD::TrackFlags)byteTmp;
@@ -415,7 +410,7 @@ void BVCD::serialize(S& s, BVCD::VCD_RelTags& tags) {
 
     uint16_t shortTmp;
     s.value2b(shortTmp);
-    tags.name=Helper::vsif->stringPool.getStringByID(shortTmp);
+    tags.name= Helper::VsifStringPool->getStringByID(shortTmp);
     uint8_t byteTmp;
     s.value1b(byteTmp);
     tags.duration= byteTmp *BVCD::One255th;
@@ -426,7 +421,7 @@ template <typename S>
 void BVCD::serialize(S& s, BVCD::VCD_FlexTimingTags& tags) {
     uint16_t shortTmp;
     s.value2b(shortTmp);
-    tags.name=Helper::vsif->stringPool.getStringByID(shortTmp);
+    tags.name= Helper::VsifStringPool->getStringByID(shortTmp);
     uint8_t byteTmp;
     s.value1b(byteTmp);
     tags.duration= byteTmp *BVCD::One255th;
@@ -443,7 +438,7 @@ void BVCD::serialize(S& s, BVCD::VCD_AbsTags& tags) {
     */
     uint16_t shortTmp;
     s.value2b(shortTmp);
-    tags.name=Helper::vsif->stringPool.getStringByID(shortTmp);
+    tags.name= Helper::VsifStringPool->getStringByID(shortTmp);
     s.value2b(shortTmp); //here's the source of the confusion
     tags.duration=shortTmp*BVCD::One4096th;
 }
@@ -458,17 +453,17 @@ uint16_t stringIndexTmp;
 s.value1b(flagTmp);
 e.eventType=(BVCD::Event_Type)flagTmp;
 s.value2b(stringIndexTmp);
-e.name=Helper::vsif->stringPool.getStringByID(stringIndexTmp);
+e.name= Helper::VsifStringPool->getStringByID(stringIndexTmp);
 //Time
 s.value4b(e.eventStart);
 s.value4b(e.eventEnd);
 //Params
 s.value2b(stringIndexTmp);
-e.param1=Helper::vsif->stringPool.getStringByID(stringIndexTmp);
+e.param1= Helper::VsifStringPool->getStringByID(stringIndexTmp);
 s.value2b(stringIndexTmp);
-e.param2=Helper::vsif->stringPool.getStringByID(stringIndexTmp);
+e.param2= Helper::VsifStringPool->getStringByID(stringIndexTmp);
 s.value2b(stringIndexTmp);
-e.param3=Helper::vsif->stringPool.getStringByID(stringIndexTmp);
+e.param3= Helper::VsifStringPool->getStringByID(stringIndexTmp);
 //ramp
 s.object(e.ramp);
 //flags
@@ -550,7 +545,7 @@ void BVCD::serialize(S& s, BVCD::VCD_Channel& c){
 
     uint16_t stringIndex;
     s.value2b(stringIndex);
-    c.name = Helper::vsif->stringPool.getStringByID(stringIndex);
+    c.name = Helper::VsifStringPool->getStringByID(stringIndex);
     uint8_t eventCount;
     s.value1b(eventCount);
     c.events.resize(eventCount);
@@ -567,7 +562,7 @@ template <typename S>
 void BVCD::serialize(S& s, BVCD::VCD_Actor& a) {
     uint16_t stringIndex;
     s.value2b(stringIndex);
-    a.name = Helper::vsif->stringPool.getStringByID(stringIndex);
+    a.name = Helper::VsifStringPool->getStringByID(stringIndex);
     uint8_t channelCount;
     s.value1b(channelCount);
     a.channels.resize(channelCount);
@@ -584,7 +579,7 @@ void BVCD::serialize(S& s, BVCD::VCD_Actor& a) {
 
 template <typename S>
 void BVCD::serialize(S& s, BVCD::VCD& vcd) {
-    //std::string test = Helper::vsif->stringPool.getStringByID(5);
+    //std::string test = Helper::VsifStringPool->getStringByID(5);
     s.value4b(vcd.magic);
     s.value1b(vcd.version);
     s.value4b(vcd.CRC);

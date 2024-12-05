@@ -5,6 +5,7 @@
 
 namespace VSIF {
     class ValveScenesImageFile;
+    class CStringPool;
 }
 
 #pragma once
@@ -13,8 +14,8 @@ namespace Helper {
 		return (ID[0] | (ID[1] << 8) | (ID[2] << 16) | (ID[3] << 24));
 	}
 
-    extern VSIF::ValveScenesImageFile* vsif;
-
+    //extern VSIF::ValveScenesImageFile* vsif;
+    extern VSIF::CStringPool* VsifStringPool;
 
 
 
