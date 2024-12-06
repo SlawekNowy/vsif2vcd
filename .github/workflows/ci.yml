@@ -145,7 +145,7 @@ jobs:
         uses: actions/upload-artifact@v4
         if: ${{ matrix.os == 'windows-latest'}}
         with:
-          name: binaries-${{ matrix.os }}
+          name: debug-pdbs
           path: ${{ github.workspace }}/staging_pdb/
     #env:
     #  [OPTIONAL] Define the vcpkg's triplet you want to enforce, otherwise the default one
