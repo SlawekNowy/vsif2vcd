@@ -28,7 +28,7 @@
 		},
 		{
 			"name": "ninja-multi-vs-clang",
-			"displayName": "Ninja Multi-Config Configure Settings",
+			"displayName": "Ninja Multi-Config Configure Settings (VSClang)",
 			"description": "Configure",
 			"binaryDir": "${sourceDir}/builds/${presetName}",
 			"generator": "Ninja Multi-Config",
